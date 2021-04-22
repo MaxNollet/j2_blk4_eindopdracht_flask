@@ -1,0 +1,3 @@
+recursive-include gene-app-scraper/static
+recursive-include gene-app-scraper/templates
+global-exclude *.pyc
