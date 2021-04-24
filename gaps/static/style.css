@@ -1,0 +1,9 @@
+html {
+    background: yellowgreen;
+}
+
+h1, h2, p {
+    text-align: center;
+    font-family: "Comic Sans MS", Chilanka, cursive;
+    color: blueviolet;
+}

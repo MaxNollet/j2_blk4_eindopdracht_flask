@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 
 
 def create_app(test_config=None):
@@ -12,6 +12,6 @@ def create_app(test_config=None):
 
     @app.route("/")
     def hello_world():
-        return "Hello Flask!"
+        return render_template("hello_flask.html")
 
     return app
