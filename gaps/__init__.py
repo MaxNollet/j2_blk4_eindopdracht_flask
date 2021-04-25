@@ -1,4 +1,6 @@
 from flask import Flask, render_template
+from .home_page import home_page    # . voor de structuur
+from .query import query_page
 
 
 def create_app(test_config=None):
@@ -10,8 +12,12 @@ def create_app(test_config=None):
     else:
         app.config.from_mapping(test_config)
 
-    @app.route("/")
-    def hello_world():
-        return render_template("hello_flask.html")
+    app.register_blueprint(home_page)
+
+    app.register_blueprint(query_page)
+
+    # @app.route("/")
+    # def hello_world():
+    #     return render_template("hello_flask.html")
 
     return app
