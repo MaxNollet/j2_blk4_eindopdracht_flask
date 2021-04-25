@@ -5,6 +5,7 @@ home_page = Blueprint("home_page", __name__)
 
 @home_page.route("/")
 def homepage():
-    return render_template("homepage.html", active="home")
+    search = request.args.get("search")
+    return render_template("homepage.html", active="home", search=search)
 
 # shift command r = hard refresh cache/ en zooi
