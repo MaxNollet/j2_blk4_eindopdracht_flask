@@ -139,6 +139,7 @@ class WordListGenerator:
         """
         self.__url_word_list = "http://www.mit.edu/~ecprice/wordlist.10000"
         self.__retrieved_words = None
+        self.__filtered_words = None
         # start generating a list of words automatically.
         if auto_generate is True:
             self.generate_list()
@@ -148,17 +149,30 @@ class WordListGenerator:
            and save a list of generated words. The list will be
            available through a corresponding getter.
         """
-        self.__retrieve_words()
+        self.__retrieved_words = self.__retrieve_words(self.__url_word_list)
+        self.__filtered_words = self.__filter_words(self.__retrieved_words)
         return None
 
-    def __retrieve_words(self) -> None:
+    @staticmethod
+    def __retrieve_words(url_word_list: str) -> set:
         """A method which retrieved a list of English words
            and saves all unique words inside the object.
+
+        Input = url where a list of words can be downloaded (str).
+        Output = unique words downloaded form the url (set).
         """
-        r = requests.get(self.__url_word_list)
+        r = requests.get(url_word_list)
         if r.status_code == 200:
-            self.__retrieved_words = set(r.text)
-        return None
+            return set(r.text)
+        else:
+            raise ErrorWhileDownloading(r.status_code)
+
+    @staticmethod
+    def __filter_words(word_list: set) -> set:
+        for word in word_list:
+            if len(word) == 1:
+                print(word)
+        return set()
 
 
 class IncorrectFileName(Exception):
@@ -170,8 +184,23 @@ class IncorrectFileName(Exception):
 
 class NoFileEntered(Exception):
     """Exception raised when a filename was entered as
-       None-type."""
+       None-type.
+    """
     pass
+
+
+class ErrorWhileDownloading(Exception):
+    """Exception raised when the download of the word list
+       did not return a 200 (=OK)-statuscode.
+    """
+    def __init__(self, status_code: int) -> None:
+        """A method which constructs the object and send a
+           message to the superclass to be displayed.
+
+        Input = status code of the download (int).
+        """
+        self.message = f"Download exited with status code {status_code}"
+        super().__init__(self.message)
 
 
 if __name__ == "__main__":
