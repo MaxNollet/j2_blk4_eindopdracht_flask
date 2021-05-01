@@ -3,6 +3,8 @@ import os
 
 def main():
     parser = GenePanelParser(file_name="GenPanelOverzicht_DG-3.1.0_HAN_original.tsv")
+    print(len(parser.get_symbols()))
+    print(len(parser.get_aliases()))
     return 0
 
 
@@ -26,9 +28,9 @@ class GenePanelParser:
         if file_name is not None:
             self.set_file_name(file_name)
             if self.__file_name is not None:
-                self.read_file()
+                self.parse_file()
 
-    def read_file(self) -> None:
+    def parse_file(self) -> None:
         """A method which reads a file and stores HGNC-symbols
            and aliases in separate datastructures which can be
            accessed via corresponding getter-methods.
@@ -94,6 +96,30 @@ class GenePanelParser:
         else:
             raise NoFileEntered
         return None
+
+    def get_symbols(self) -> tuple:
+        """A method which returns a sorted tuple of all
+           unique symbols parsed from the file. If no file
+           has been parsed yet, an empty tuple is returned.
+
+        Output = all unique symbols parsed form the file (tuple).
+        """
+        if self.__symbols is not None:
+            return tuple(sorted(self.__symbols))
+        else:
+            return tuple()
+
+    def get_aliases(self) -> tuple:
+        """A method which returns a sorted tuple of all
+           unique aliases parsed from the file. If no file
+           has been parsed yet, an empty list is returned.
+
+        Output = all unique aliases parsed from the file (tuple).
+        """
+        if self.__aliases is not None:
+            return tuple(sorted(self.__aliases))
+        else:
+            return tuple()
 
 
 class IncorrectFileName(Exception):
