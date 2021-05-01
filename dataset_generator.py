@@ -1,4 +1,5 @@
 import os
+import random
 import requests
 
 
@@ -194,6 +195,7 @@ class DatasetGenerator:
         self.__aliases = aliases.difference(symbols)
         self.__words = words.difference(symbols).difference(aliases)
         if auto_process:
+            self.equalize_dataset()
             pass
 
     def equalize_dataset(self) -> None:
@@ -201,10 +203,43 @@ class DatasetGenerator:
         count_aliases = len(self.__aliases)
         count_words = len(self.__words)
         if count_symbols + count_aliases > count_words:
-            count_half_words = round(count_words/2)
-            if count_symbols <= count_half_words:
-                print("")
+            test = self.__equalize_lengths(self.__aliases, 5000)
+            print(len(test))
         return None
+
+    @staticmethod
+    def __equalize_lengths(unequal: set, size: int) -> set:
+        categorized = DatasetGenerator.__categorize_lengths(unequal)
+        groups_count = len(categorized)
+        group_size = round(size/groups_count)
+        equalized = set()
+        for _, values in DatasetGenerator.__sort_dictionary(categorized):
+            count = len(values)
+            if count == group_size:
+                equalized.update(values)
+            elif count > group_size:
+                equalized.update((random.sample(values, group_size)))
+            else:
+                equalized.update(values)
+            groups_count -= 1
+            if groups_count > 0:
+                group_size = round((size-len(equalized))/groups_count)
+        return equalized
+
+    @staticmethod
+    def __categorize_lengths(uncategorized: set) -> dict:
+        categorized = dict()
+        for item in uncategorized:
+            length = len(item)
+            if length in categorized:
+                categorized[length].add(item)
+            else:
+                categorized[length] = {item}
+        return categorized
+
+    @staticmethod
+    def __sort_dictionary(dictionary: dict) -> list:
+        return sorted(dictionary.items(), key=lambda element: len(element[1]))
 
 
 class IncorrectFileName(Exception):
