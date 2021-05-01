@@ -202,7 +202,8 @@ class DatasetGenerator:
         count_words = len(self.__words)
         if count_symbols + count_aliases > count_words:
             count_half_words = round(count_words/2)
-            if count_symbols <= count_half_words: pass
+            if count_symbols <= count_half_words:
+                pass
         return None
 
 
