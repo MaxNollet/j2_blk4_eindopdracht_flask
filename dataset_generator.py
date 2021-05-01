@@ -3,9 +3,13 @@ import requests
 
 
 def main():
-    parser = GenePanelParser(file_name="GenPanelOverzicht_DG-3.1.0_HAN_original.tsv", auto_parse=False)
+    parser = GenePanelParser(file_name="GenPanelOverzicht_DG-3.1.0_HAN_original.tsv")
+    print(f"Count of all symbols: {len(parser.get_symbols())}")
+    print(f"Count of all aliases: {len(parser.get_aliases())}")
     print(f"Sum of symbols and aliases: {len(parser.get_symbols()) + len(parser.get_aliases())}")
     generator = WordListGenerator()
+    print(f"Count of all retrieved words: {len(generator.get_word_list())}")
+    DatasetGenerator(symbols=parser.get_symbols(), aliases=parser.get_aliases(), words=generator.get_word_list())
     return 0
 
 
@@ -30,7 +34,7 @@ class GenePanelParser:
         # Set filename if given and start parsing automatically.
         if file_name is not None:
             self.set_file_name(file_name)
-            if auto_parse is True and self.__file_name is not None:
+            if auto_parse and self.__file_name is not None:
                 self.parse_file()
 
     def parse_file(self) -> None:
@@ -139,7 +143,7 @@ class WordListGenerator:
         self.__url_word_list = "http://www.mit.edu/~ecprice/wordlist.10000"
         self.__retrieved_words = None
         # start generating a list of words automatically.
-        if auto_generate is True:
+        if auto_generate:
             self.generate_list()
 
     def generate_list(self) -> None:
@@ -179,6 +183,27 @@ class WordListGenerator:
             return self.__retrieved_words
         else:
             return set()
+
+
+class DatasetGenerator:
+    def __init__(self, symbols: set, aliases: set, words: set,
+                 auto_process: bool = True,
+                 equal_dataset: bool = True,
+                 capitalize_words_half: bool = True) -> None:
+        self.__symbols = symbols
+        self.__aliases = aliases.difference(symbols)
+        self.__words = words.difference(symbols).difference(aliases)
+        if auto_process:
+            pass
+
+    def equalize_dataset(self) -> None:
+        count_symbols = len(self.__symbols)
+        count_aliases = len(self.__aliases)
+        count_words = len(self.__words)
+        if count_symbols + count_aliases > count_words:
+            count_half_words = round(count_words/2)
+            if count_symbols <= count_half_words: pass
+        return None
 
 
 class IncorrectFileName(Exception):
