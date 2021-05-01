@@ -1,10 +1,12 @@
 import os
+import requests
 
 
 def main():
     parser = GenePanelParser(file_name="GenPanelOverzicht_DG-3.1.0_HAN_original.tsv", auto_parse=False)
-    print(len(parser.get_symbols()))
-    print(len(parser.get_aliases()))
+    print(f"Sum of symbols and aliases: {len(parser.get_symbols()) + len(parser.get_aliases())}")
+    generator = WordListGenerator()
+    generator.generate_list()
     return 0
 
 
@@ -26,7 +28,7 @@ class GenePanelParser:
         self.__aliases_column_name = "Aliases"
         self.__symbols = None
         self.__aliases = None
-        # Set filename if given
+        # Set filename if given and start parsing automatically.
         if file_name is not None:
             self.set_file_name(file_name)
             if auto_parse is True and self.__file_name is not None:
@@ -122,6 +124,41 @@ class GenePanelParser:
             return tuple(sorted(self.__aliases))
         else:
             return tuple()
+
+
+class WordListGenerator:
+    """A class which generates a list of words and filters
+       this list according to requirements.
+    """
+    def __init__(self, auto_generate: bool = True) -> None:
+        """A method which constructs the object and starts
+           to generate a list of words automatically if the
+           variable 'auto_generate' is set to True.
+
+        Input = indication to start generating a list of words automatically (bool).
+        """
+        self.__url_word_list = "http://www.mit.edu/~ecprice/wordlist.10000"
+        self.__retrieved_words = None
+        # start generating a list of words automatically.
+        if auto_generate is True:
+            self.generate_list()
+
+    def generate_list(self) -> None:
+        """A method which calls other methods to retrieve, filter
+           and save a list of generated words. The list will be
+           available through a corresponding getter.
+        """
+        self.__retrieve_words()
+        return None
+
+    def __retrieve_words(self) -> None:
+        """A method which retrieved a list of English words
+           and saves all unique words inside the object.
+        """
+        r = requests.get(self.__url_word_list)
+        if r.status_code == 200:
+            self.__retrieved_words = set(r.text)
+        return None
 
 
 class IncorrectFileName(Exception):
