@@ -6,7 +6,6 @@ def main():
     parser = GenePanelParser(file_name="GenPanelOverzicht_DG-3.1.0_HAN_original.tsv", auto_parse=False)
     print(f"Sum of symbols and aliases: {len(parser.get_symbols()) + len(parser.get_aliases())}")
     generator = WordListGenerator()
-    generator.generate_list()
     return 0
 
 
@@ -139,7 +138,6 @@ class WordListGenerator:
         """
         self.__url_word_list = "http://www.mit.edu/~ecprice/wordlist.10000"
         self.__retrieved_words = None
-        self.__filtered_words = None
         # start generating a list of words automatically.
         if auto_generate is True:
             self.generate_list()
@@ -150,7 +148,6 @@ class WordListGenerator:
            available through a corresponding getter.
         """
         self.__retrieved_words = self.__retrieve_words(self.__url_word_list)
-        self.__filtered_words = self.__filter_words(self.__retrieved_words)
         return None
 
     @staticmethod
@@ -163,16 +160,25 @@ class WordListGenerator:
         """
         r = requests.get(url_word_list)
         if r.status_code == 200:
-            return set(r.text)
+            word_list = set()
+            for word in str(r.text).split("\n"):
+                stripped_word = word.strip()
+                if stripped_word != "":
+                    word_list.add(stripped_word)
+            return word_list
         else:
             raise ErrorWhileDownloading(r.status_code)
 
-    @staticmethod
-    def __filter_words(word_list: set) -> set:
-        for word in word_list:
-            if len(word) == 1:
-                print(word)
-        return set()
+    def get_word_list(self) -> set:
+        """a method which returns a list of all unique
+           retrieved words.
+
+        Output = list of all unique retrieved words (set).
+        """
+        if self.__retrieved_words is not None:
+            return self.__retrieved_words
+        else:
+            return set()
 
 
 class IncorrectFileName(Exception):
