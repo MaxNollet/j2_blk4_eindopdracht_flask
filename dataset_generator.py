@@ -100,29 +100,29 @@ class GenePanelParser:
             raise NoFileEntered
         return None
 
-    def get_symbols(self) -> tuple:
-        """A method which returns a sorted tuple of all
-           unique symbols parsed from the file. If no file
-           has been parsed yet, an empty tuple is returned.
+    def get_symbols(self) -> set:
+        """A method which returns a set of all unique
+           symbols parsed from the file. If no file has
+           been parsed yet, an empty set is returned.
 
-        Output = all unique symbols parsed form the file (tuple).
+        Output = all unique symbols parsed form the file (set).
         """
         if self.__symbols is not None:
-            return tuple(sorted(self.__symbols))
+            return self.__symbols
         else:
-            return tuple()
+            return set()
 
-    def get_aliases(self) -> tuple:
-        """A method which returns a sorted tuple of all
-           unique aliases parsed from the file. If no file
-           has been parsed yet, an empty list is returned.
+    def get_aliases(self) -> set:
+        """A method which returns a set of all unique
+           aliases parsed from the file. If no file has
+           been parsed yet, an empty set is returned.
 
-        Output = all unique aliases parsed from the file (tuple).
+        Output = all unique aliases parsed from the file (set).
         """
         if self.__aliases is not None:
-            return tuple(sorted(self.__aliases))
+            return self.__aliases
         else:
-            return tuple()
+            return set()
 
 
 class WordListGenerator:
