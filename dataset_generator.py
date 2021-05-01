@@ -2,7 +2,7 @@ import os
 
 
 def main():
-    parser = GenePanelParser(file_name="GenPanelOverzicht_DG-3.1.0_HAN_original.tsv")
+    parser = GenePanelParser(file_name="GenPanelOverzicht_DG-3.1.0_HAN_original.tsv", auto_parse=False)
     print(len(parser.get_symbols()))
     print(len(parser.get_aliases()))
     return 0
@@ -13,10 +13,12 @@ class GenePanelParser:
        the HGNC-symbols and aliases. These results can
        be retrieved by using corresponding getter-methods.
     """
-    def __init__(self, file_name: str = None) -> None:
+
+    def __init__(self, file_name: str = None, auto_parse: bool = True) -> None:
         """A method which initializes the object.
 
-        Input = name of the file to be parsed (str).
+        Input = -name of the file to be parsed (str).
+                -indication to start parsing automatically (bool).
         Output = none (None).
         """
         self.__file_name = None
@@ -27,7 +29,7 @@ class GenePanelParser:
         # Set filename if given
         if file_name is not None:
             self.set_file_name(file_name)
-            if self.__file_name is not None:
+            if auto_parse is True and self.__file_name is not None:
                 self.parse_file()
 
     def parse_file(self) -> None:
