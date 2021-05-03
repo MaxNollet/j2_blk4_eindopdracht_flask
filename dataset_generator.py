@@ -1,26 +1,35 @@
 import os
 import random
 import requests
+import matplotlib.pyplot as plot
+import numpy as np
 
 
 def main():
-    parser = GenePanelParser(file_name="GenPanelOverzicht_DG-3.1.0_HAN_original.tsv")
-    print(f"Count of all symbols: {len(parser.get_symbols())}")
-    print(f"Count of all aliases: {len(parser.get_aliases())}")
-    print(f"Sum of symbols and aliases: {len(parser.get_symbols()) + len(parser.get_aliases())}")
-    generator = WordListGenerator()
-    print(f"Count of all retrieved words: {len(generator.get_word_list())}")
-    DatasetGenerator(symbols=parser.get_symbols(), aliases=parser.get_aliases(), words=generator.get_word_list())
+    parser1 = SymbolParser(file_name="GenPanelOverzicht_DG-3.1.0_HAN_original.tsv")
+    print(f"Count of all symbols: {len(parser1.get_symbols())}")
+    print(f"Count of all aliases: {len(parser1.get_aliases())}")
+    print(f"Sum of symbols and aliases: {len(parser1.get_symbols()) + len(parser1.get_aliases())}")
+    parser2 = SymbolParser(file_name="hgnc_complete_set.txt",
+                           symbols_column_name="symbol",
+                           aliases_column_name="alias_symbol")
+    print(len(parser2.get_symbols()))
+    print(len(parser2.get_aliases()))
+    # generator = WordListGenerator()
+    # print(f"Count of all retrieved words: {len(generator.get_word_list())}")
+    # DatasetGenerator(symbols=parser.get_symbols(), aliases=parser.get_aliases(), words=generator.get_word_list())
     return 0
 
 
-class GenePanelParser:
+class SymbolParser:
     """A class which reads a gene panel file and stores
        the HGNC-symbols and aliases. These results can
        be retrieved by using corresponding getter-methods.
     """
 
-    def __init__(self, file_name: str = None, auto_parse: bool = True) -> None:
+    def __init__(self, file_name: str, auto_parse: bool = True,
+                 symbols_column_name: str = "Symbol_HGNC",
+                 aliases_column_name: str = "Aliases") -> None:
         """A method which initializes the object.
 
         Input = -name of the file to be parsed (str).
@@ -28,8 +37,8 @@ class GenePanelParser:
         Output = none (None).
         """
         self.__file_name = None
-        self.__symbols_column_name = "Symbol_HGNC"
-        self.__aliases_column_name = "Aliases"
+        self.__symbols_column_name = symbols_column_name
+        self.__aliases_column_name = aliases_column_name
         self.__symbols = None
         self.__aliases = None
         # Set filename if given and start parsing automatically.
@@ -46,7 +55,7 @@ class GenePanelParser:
         self.__symbols = set()
         self.__aliases = set()
         if self.__file_name is not None:
-            with open(self.__file_name, "r") as file:
+            with open(self.__file_name, "r", encoding="utf-8") as file:
                 line = file.readline()
                 while line == "":
                     line = file.readline()
