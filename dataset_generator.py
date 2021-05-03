@@ -34,6 +34,8 @@ class SymbolParser:
 
         Input = -name of the file to be parsed (str).
                 -indication to start parsing automatically (bool).
+                -column name where symbols are stored (sr).
+                -column name where aliases are stored (str).
         Output = none (None).
         """
         self.__file_name = None
