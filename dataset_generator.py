@@ -2,23 +2,38 @@ import os
 import random
 import requests
 import matplotlib.pyplot as plot
+from matplotlib.gridspec import GridSpec
 import numpy as np
 
 
 def main():
     parser1 = SymbolParser(file_name="GenPanelOverzicht_DG-3.1.0_HAN_original.tsv")
-    print(f"Count of all symbols: {len(parser1.get_symbols())}")
-    print(f"Count of all aliases: {len(parser1.get_aliases())}")
-    print(f"Sum of symbols and aliases: {len(parser1.get_symbols()) + len(parser1.get_aliases())}")
-    parser2 = SymbolParser(file_name="hgnc_complete_set.txt",
-                           symbols_column_name="symbol",
-                           aliases_column_name="alias_symbol")
-    print(len(parser2.get_symbols()))
-    print(len(parser2.get_aliases()))
+    # print(f"Count of all symbols: {len(parser1.get_symbols())}")
+    # print(f"Count of all aliases: {len(parser1.get_aliases())}")
+    # print(f"Sum of symbols and aliases: {len(parser1.get_symbols()) + len(parser1.get_aliases())}")
+    pretty_print(DatasetGenerator.categorize_lengths(parser1.get_aliases()))
+    GraphGenerator((parser1.get_aliases(), parser1.get_symbols()),
+                   ("Aliases", "Symbols"),
+                   "Lengths of aliases and symbols from genepanels")
+    # parser2 = SymbolParser(file_name="hgnc_complete_set.txt",
+    #                        symbols_column_name="symbol",
+    #                        aliases_column_name="alias_symbol")
+    # GraphGenerator((parser2.get_aliases(), parser2.get_symbols()),
+    #                ("Aliases", "Symbols"),
+    #                "Lengths of aliases and symbols from HGNC")
+    # print(len(parser2.get_symbols()))
+    # print(len(parser2.get_aliases()))
     # generator = WordListGenerator()
     # print(f"Count of all retrieved words: {len(generator.get_word_list())}")
     # DatasetGenerator(symbols=parser.get_symbols(), aliases=parser.get_aliases(), words=generator.get_word_list())
     return 0
+
+
+def pretty_print(categorized: dict):
+    # print(sorted(categorized.keys()))
+    for key in sorted(categorized.keys()):
+        print(f"{key}: {len(categorized.get(key))}")
+    return None
 
 
 class SymbolParser:
@@ -145,6 +160,7 @@ class WordListGenerator:
     """A class which generates a list of words and filters
        this list according to requirements.
     """
+
     def __init__(self, auto_generate: bool = True) -> None:
         """A method which constructs the object and starts
            to generate a list of words automatically if the
@@ -214,15 +230,22 @@ class DatasetGenerator:
         count_aliases = len(self.__aliases)
         count_words = len(self.__words)
         if count_symbols + count_aliases > count_words:
-            test = self.__equalize_lengths(self.__aliases, 5000)
-            print(len(test))
+            equalized_aliases = self.__equalize_lengths(self.__aliases, 5000)
+            frequencies_aliases = DatasetGenerator.__convert_to_lengths(equalized_aliases)
+            equalized_symbols = self.__equalize_lengths(self.__symbols, 500)
+            frequencies_symbols = DatasetGenerator.__convert_to_lengths(equalized_symbols)
+            array1 = np.array(frequencies_aliases)
+            array2 = np.array(frequencies_symbols)
+            test = np.concatenate((array1, array2), axis=0)
+            print(test)
+            # self.generate_graph(array)
         return None
 
     @staticmethod
     def __equalize_lengths(unequal: set, size: int) -> set:
-        categorized = DatasetGenerator.__categorize_lengths(unequal)
+        categorized = DatasetGenerator.categorize_lengths(unequal)
         groups_count = len(categorized)
-        group_size = round(size/groups_count)
+        group_size = round(size / groups_count)
         equalized = set()
         for _, values in DatasetGenerator.__sort_dictionary(categorized):
             count = len(values)
@@ -234,11 +257,11 @@ class DatasetGenerator:
                 equalized.update(values)
             groups_count -= 1
             if groups_count > 0:
-                group_size = round((size-len(equalized))/groups_count)
+                group_size = round((size - len(equalized)) / groups_count)
         return equalized
 
     @staticmethod
-    def __categorize_lengths(uncategorized: set) -> dict:
+    def categorize_lengths(uncategorized: set) -> dict:
         categorized = dict()
         for item in uncategorized:
             length = len(item)
@@ -251,6 +274,95 @@ class DatasetGenerator:
     @staticmethod
     def __sort_dictionary(dictionary: dict) -> list:
         return sorted(dictionary.items(), key=lambda element: len(element[1]))
+
+    @staticmethod
+    def __convert_to_lengths(values: set) -> list:
+        frequencies = list()
+        [frequencies.append(len(element)) for element in values]
+        return sorted(frequencies)
+
+    @staticmethod
+    def generate_graph(categories: tuple):
+        # print(sorted(categories[0]))
+        # values = set()
+        # [values.update(category) for category in categories]
+        # values = list(values)
+        # values.append(max(values))
+
+        plot.hist(x=categories, bins=categories, stacked=True, align="left",
+                  edgecolor="black", linewidth=0.5)
+        # labels = list(values)
+        # plot.xticks(labels)
+        plot.show()
+        plot.close()
+        return None
+
+
+class GraphGenerator:
+    def __init__(self, dataset: tuple, labels: tuple, title: str) -> None:
+        self.__dataset = dataset
+        self.__types = labels
+        self.__title = title
+        # Variables from analysis.
+        self.__lengths = None
+        self.__bins = None
+        self.__labels = None
+        self.__numbers = None
+        # Calling methods to prep the data for the graph.
+        self.determine_lengths()
+        self.determine_bins()
+        self.numbers()
+        self.histogram()
+
+    def determine_lengths(self):
+        self.__lengths = list()
+        for values in self.__dataset:
+            lengths = list()
+            [lengths.append(len(length)) for length in values]
+            self.__lengths.append(lengths)
+        return None
+
+    def determine_bins(self) -> None:
+        bins = set()
+        for lengths in self.__lengths:
+            bins.update(lengths)
+        self.__labels = sorted(bins)
+        bins.add(max(bins) + 1)
+        self.__bins = sorted(bins)
+        return None
+
+    def numbers(self):
+        numbers = 0
+        no_numbers = 0
+        for dataset in self.__dataset:
+            for element in dataset:
+                if any(character.isdigit() for character in element):
+                    numbers += 1
+                else:
+                    no_numbers += 1
+        if numbers != 0 and no_numbers != 0:
+            self.__numbers = (numbers, no_numbers)
+        return None
+
+    def histogram(self) -> None:
+        plot.hist(x=self.__lengths, bins=self.__bins, stacked=True,
+                  align="left", linewidth=0.5, edgecolor="black")
+        plot.xticks(self.__labels)
+        plot.title(self.__title)
+        plot.xlabel("Length")
+        plot.ylabel("Frequency")
+        plot.legend(self.__types)
+        # plot.tight_layout()
+        # plot.savefig(f"{self.__title}.svg")
+        plot.show()
+        plot.close()
+        return None
+
+    def donut(self) -> None:
+        plot.pie(self.__numbers, autopct="%.0f%%")
+        plot.title("test")
+        plot.legend(("test1", "test2"))
+        return None
 
 
 class IncorrectFileName(Exception):
@@ -271,6 +383,7 @@ class ErrorWhileDownloading(Exception):
     """Exception raised when the download of the word list
        did not return a 200 (=OK)-statuscode.
     """
+
     def __init__(self, status_code: int) -> None:
         """A method which constructs the object and send a
            message to the superclass to be displayed.
