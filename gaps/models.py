@@ -11,6 +11,9 @@ metadata = Base.metadata
 
 
 class Gene(Base):
+    """A class which maps to the table 'gene' in
+       the database.
+    """
     __tablename__ = 'gene'
     __table_args__ = {'schema': 'eindopdracht'}
 
@@ -23,6 +26,9 @@ class Gene(Base):
 
 
 class Genepanel(Base):
+    """A class which maps to the table 'genepanel'
+       in the database.
+    """
     __tablename__ = 'genepanel'
     __table_args__ = {'schema': 'eindopdracht'}
 
@@ -33,6 +39,9 @@ class Genepanel(Base):
 
 
 class Journal(Base):
+    """A class which maps to the table 'journal'
+       in the database.
+    """
     __tablename__ = 'journal'
     __table_args__ = {'schema': 'eindopdracht'}
 
@@ -41,6 +50,9 @@ class Journal(Base):
 
 
 class Alias(Base):
+    """A class which maps to the table 'alias'
+       in the database.
+    """
     __tablename__ = 'alias'
     __table_args__ = {'schema': 'eindopdracht'}
 
@@ -52,6 +64,9 @@ class Alias(Base):
 
 
 class Article(Base):
+    """A class which maps to the table 'article'
+       in the database.
+    """
     __tablename__ = 'article'
     __table_args__ = {'schema': 'eindopdracht'}
 
@@ -76,6 +91,9 @@ t_genepanel_gene = Table(
 
 
 class GenepanelSymbol(Base):
+    """A class which maps to the table 'genepanel_symbol'
+       in the database.
+    """
     __tablename__ = 'genepanel_symbol'
     __table_args__ = {'schema': 'eindopdracht'}
 
