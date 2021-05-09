@@ -2,12 +2,18 @@ from os import environ
 
 from flask import Flask
 
-from gaps.home_page import home_page  # . voor de structuur
+from gaps.home_page import home_page
 from gaps.query import query_page
 from gaps.models import db
 
 
 def create_app():
+    """A function which configures the application and
+       the database. Uses the environment-variable
+       'FLASK_ENV' to choose a config-profile.
+
+    :return Configured Flask-app (Flask).
+    """
     app = Flask(__name__, instance_relative_config=True)
     if environ.get("FLASK_ENV") is None:
         app.config.from_object("config.Production", silent=True)
@@ -20,9 +26,4 @@ def create_app():
     db.init_app(app)
     app.register_blueprint(home_page)
     app.register_blueprint(query_page)
-
-    # @app.route("/")
-    # def hello_world():
-    #     return render_template("hello_flask.html")
-
     return app
