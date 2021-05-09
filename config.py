@@ -6,6 +6,9 @@ load_dotenv(path.join(base_directory, ".env"))
 
 
 class Config(object):
+    """A class which contains settings applicable
+       for all configurations.
+    """
     SECRET_KEY = environ.get("SECRET_KEY")
     # Config for the database
     SQLALCHEMY_DATABASE_URI = environ.get("SQLALCHEMY_DATABASE_URI")
@@ -13,6 +16,9 @@ class Config(object):
 
 
 class Production(Config):
+    """A class which contains settings specific for
+       the production-environment.
+    """
     FLASK_ENV = "production"
     DEBUG = False
     TESTING = False
@@ -21,6 +27,9 @@ class Production(Config):
 
 
 class Development(Config):
+    """A class which contains settings specific for
+       the development-environment.
+    """
     FLASK_ENV = "development"
     DEBUG = True
     TESTING = True
