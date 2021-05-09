@@ -1,19 +1,24 @@
-from flask import Flask, render_template
-from .home_page import home_page    # . voor de structuur
-from .query import query_page
+from os import environ
+
+from flask import Flask
+
+from gaps.home_page import home_page  # . voor de structuur
+from gaps.query import query_page
+from gaps.models import db
 
 
-def create_app(test_config=None):
+def create_app():
     app = Flask(__name__, instance_relative_config=True)
-    app.config.from_mapping(SECRET_KEY="dev")
-
-    if test_config is None:
-        app.config.from_pyfile("config.py", silent=True)
+    if environ.get("FLASK_ENV") is None:
+        app.config.from_object("config.Production", silent=True)
     else:
-        app.config.from_mapping(test_config)
-
+        value = environ.get('FLASK_ENV').lower().capitalize()
+        try:
+            app.config.from_object(f"config.{value}")
+        except ImportError:
+            app.config.from_object("config.Production", silent=True)
+    db.init_app(app)
     app.register_blueprint(home_page)
-
     app.register_blueprint(query_page)
 
     # @app.route("/")
