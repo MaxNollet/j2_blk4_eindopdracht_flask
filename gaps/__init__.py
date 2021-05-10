@@ -1,23 +1,30 @@
-from flask import Flask, render_template
-from .home_page import home_page    # . voor de structuur
-from .query import query_page
+from os import environ
+
+from flask import Flask
+
+from gaps.blueprint_home import blueprint_home
+from gaps.blueprint_query import blueprint_query
+from gaps.models import db
 
 
-def create_app(test_config=None):
+def create_app():
+    """A function which configures the application and
+       the database. Uses the environment-variable
+       'FLASK_ENV' to choose a config-profile.
+
+    :return Configured Flask-app (Flask).
+    """
     app = Flask(__name__, instance_relative_config=True)
-    app.config.from_mapping(SECRET_KEY="dev")
-
-    if test_config is None:
-        app.config.from_pyfile("config.py", silent=True)
+    if environ.get("FLASK_ENV") is None:
+        app.config.from_object("config.Production", silent=True)
     else:
-        app.config.from_mapping(test_config)
-
-    app.register_blueprint(home_page)
-
-    app.register_blueprint(query_page)
-
-    # @app.route("/")
-    # def hello_world():
-    #     return render_template("hello_flask.html")
-
+        value = environ.get('FLASK_ENV').lower().capitalize()
+        try:
+            app.config.from_object(f"config.{value}")
+        except ImportError:
+            app.config.from_object("config.Production", silent=True)
+    # Initiate database and register blueprints.
+    db.init_app(app)
+    app.register_blueprint(blueprint_home)
+    app.register_blueprint(blueprint_query)
     return app
