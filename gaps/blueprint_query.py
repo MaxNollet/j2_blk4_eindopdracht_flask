@@ -4,7 +4,7 @@ blueprint_query = Blueprint("blueprint_query", __name__)
 
 
 @blueprint_query.route("/query")
-def homepage():
+def query():
     """A function which handles requests of the '.query'-
        route for the webapp.
 
