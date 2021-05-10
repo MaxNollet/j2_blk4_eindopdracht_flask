@@ -8,8 +8,8 @@
 </head>
 <body>
     <div class="topnav">
-            <a class="{% if active=="home" %}active{%endif %}" href="https://bi2a3.azurewebsites.net/">Home</a>
-            <a class="{% if active=="query_input" %}active{%endif %}" href="https://bi2a3.azurewebsites.net/query">Insert query</a>
+            <a class="{% if active=="home" %}active{%endif %}" href="{{ url_for("blueprint_home.homepage") }}">Home</a>
+            <a class="{% if active=="query_input" %}active{%endif %}" href="{{ url_for("blueprint_query.query") }}">Insert query</a>
     </div>
     {% block content %}
 {% endblock %}
