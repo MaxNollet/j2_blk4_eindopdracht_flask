@@ -1,4 +1,6 @@
 # coding: utf-8
+from dataclasses import dataclass
+
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer, String, Table, text
 from sqlalchemy.ext.declarative import declarative_base
@@ -10,6 +12,7 @@ Base = declarative_base()
 metadata = Base.metadata
 
 
+@dataclass
 class Gene(Base):
     """A class which maps to the table 'gene' in
        the database.
@@ -25,6 +28,7 @@ class Gene(Base):
     genepanels = relationship('Genepanel', secondary='eindopdracht.genepanel_gene')
 
 
+@dataclass
 class Genepanel(Base):
     """A class which maps to the table 'genepanel'
        in the database.
@@ -38,6 +42,7 @@ class Genepanel(Base):
     naam: str = Column(String(100), nullable=False)
 
 
+@dataclass
 class Journal(Base):
     """A class which maps to the table 'journal'
        in the database.
@@ -49,6 +54,7 @@ class Journal(Base):
     name: str = Column(String(60), nullable=False)
 
 
+@dataclass
 class Alias(Base):
     """A class which maps to the table 'alias'
        in the database.
@@ -63,6 +69,7 @@ class Alias(Base):
     gene = relationship('Gene')
 
 
+@dataclass
 class Article(Base):
     """A class which maps to the table 'article'
        in the database.
@@ -90,6 +97,7 @@ t_genepanel_gene = Table(
 )
 
 
+@dataclass
 class GenepanelSymbol(Base):
     """A class which maps to the table 'genepanel_symbol'
        in the database.
