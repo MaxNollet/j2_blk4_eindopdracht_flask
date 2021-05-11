@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}{% endblock %}</title>
+    {% block head %}{% endblock %}
     <link rel="stylesheet" type="text/css" href="{{ url_for("static", filename="style.css") }}">
     <link rel="icon" type="image/png" href="{{ url_for("static", filename="mining.png") }}">
 </head>
 <body>
-    <div class="topnav">
-            <a class="{% if active=="home" %}active{%endif %}" href="{{ url_for("blueprint_home.homepage") }}">Home</a>
-            <a class="{% if active=="query_input" %}active{%endif %}" href="{{ url_for("blueprint_query.query") }}">Insert query</a>
-    </div>
-    {% block content %}
-{% endblock %}
+<div class="topnav">
+    <a class="{% if active=="home" %}active{% endif %}" href="{{ url_for("blueprint_home.homepage") }}">Home</a>
+    <a class="{% if active=="query_input" %}active{% endif %}" href="{{ url_for("blueprint_query.query") }}">Insert
+        query</a>
+</div>
+{% block content %}{% endblock %}
 </body>
 </html>
