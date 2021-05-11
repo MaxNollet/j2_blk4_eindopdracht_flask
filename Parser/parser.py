@@ -14,7 +14,7 @@ def reader(file, headers):
     data = {}  # is this the correct data structure?
     # Gene(id="")
     # Gene object contains: GeneID
-
+    data_test = []
     with open(file, mode="r", encoding="utf-8-sig") as f:
         # https://stackoverflow.com/questions/17912307/u-ufeff-in-python-string
         # data = [i for i, j in enumerate(f.readline().strip().split(";")) if "GenePanels" in j]
@@ -22,15 +22,18 @@ def reader(file, headers):
         # for i, j in enumerate(f.readline().strip().split(";")):
         for i, j in enumerate(f.readline().strip().split("\t")):
             # i is the index and j is the value
+
             for h in headers:
+                # print(h, j)
                 if h in j:
                     # data.update({i: j})  # hier staat er \ufeff voor
+
                     data[i] = [j]
         for line in f:
+            gene = Gene(in_genepanel=True)
             for key_index, value in data.items():  # beter naam voor
                 # value nodig beetje karig het is nu gwn een list waar alle data van een kolom in komt
                 # print(key, value)
-                gene = Gene(in_genepanel=True)
                 # value.append(line.strip().split("\t")[key_index])
                 # if re.findall("(?<=_).+?(?=\])", headers[key_index]) == "ncbi":
                 if re.search("NCBI", headers[key_index]):
@@ -38,14 +41,18 @@ def reader(file, headers):
                 if re.search("HGNC", headers[key_index]):
                     gene.hgnc_symbol = line.strip().split("\t")[key_index]
                 value.append(gene)
-                print(line)
+            data_test.append(gene)
+            # print(line)
+
     # if headers[key_index] == "GeneID_NCBI":
     # value.append(Gline.strip().split("\t")[key_index])
     # value.append(line.strip().split("\t")[keyword])
     # print(line.strip().split("\t")[key_index])
     # add column to selected keyword
 
-    print(data)
+    print(len(data.get(1)))
+    print(len(data_test))
+    print(data_test)
 
     # print(data.get(0)[1])
     # t = [Gene(ncbi_gene_id=data.get(0)[1])]
@@ -63,7 +70,6 @@ def reader(file, headers):
         print(keyword)
 
     print("Voltooid")
-
 
 @dataclass()
 class ParseItems:
