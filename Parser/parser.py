@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from gaps.models import Gene
+import re
 
 
 def reader(file, headers):
@@ -26,31 +27,50 @@ def reader(file, headers):
                     # data.update({i: j})  # hier staat er \ufeff voor
                     data[i] = [j]
         for line in f:
-            for key, value in data.items():
+            for key_index, value in data.items():  # beter naam voor
+                # value nodig beetje karig het is nu gwn een list waar alle data van een kolom in komt
                 # print(key, value)
-                value.append(line.strip().split("\t")[key])
-                # add column to selected keyword
-                # print(value)
+                gene = Gene(in_genepanel=True)
+                # value.append(line.strip().split("\t")[key_index])
+                # if re.findall("(?<=_).+?(?=\])", headers[key_index]) == "ncbi":
+                if re.search("NCBI", headers[key_index]):
+                    gene.ncbi_gene_id = line.strip().split("\t")[key_index]
+                if re.search("HGNC", headers[key_index]):
+                    gene.hgnc_symbol = line.strip().split("\t")[key_index]
+                value.append(gene)
+                print(line)
+    # if headers[key_index] == "GeneID_NCBI":
+    # value.append(Gline.strip().split("\t")[key_index])
+    # value.append(line.strip().split("\t")[keyword])
+    # print(line.strip().split("\t")[key_index])
+    # add column to selected keyword
 
     print(data)
 
-    print(data.get(0)[1])
-    t = [Gene(ncbi_gene_id=data.get(0)[1])]
+    # print(data.get(0)[1])
+    # t = [Gene(ncbi_gene_id=data.get(0)[1])]
+    # a = [Gene(ncbi_gene_id=data.get(0)[1])]
+    # a[0].hgnc_symbol=data.get(1)[1]
+    # print(a)
+    # print(a[0])
+
+    # tt = ParseItems(ncbi_gene_id=int(data.get(0)[1]))
+    # print(tt)
 
     # print(len(data.get(0)))
     # print(data)
-    for key, value in data.items():
-        print(key)
+    for keyword, value in data.items():
+        print(keyword)
 
     print("Voltooid")
 
 
 @dataclass()
-class parseItems:
-    genid: int
-    sym_gene = str
+class ParseItems:
+    ncbi_gene_id: int
+    hgnc_symbol = str
     alias = list
-    PanelSymbol = str
+    in_panel = bool
 
 
 def main():
