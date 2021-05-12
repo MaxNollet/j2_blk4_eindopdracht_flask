@@ -11,9 +11,29 @@ window.onload = function () {
 }
 
 function QueryBuilder() {
-    alert("TEST!!")
+    const element_field = document.getElementById("query_field");
+    const element_term = document.getElementById("query_search_term");
+    const element_type = document.getElementById("query_add_type");
+    const element_query = document.getElementById("query_generated");
+    const field = element_field.options[element_field.selectedIndex].value;
+    const term = element_term.value.trim();
+    const type = element_type.options[element_type.selectedIndex].value;
+    const query = element_query.value.trim();
+    if (term !== "") {
+        const new_query = Concatenate(field, term, type, query);
+        if (new_query !== "") {
+            element_query.value = new_query;
+            element_term.value = "";
+        }
+    }
 }
 
-function Concatinate() {
-
+function Concatenate(field, term, type, query) {
+    if (term !== "") {
+        if (query === "") {
+            return `${term}[${field}]`;
+        } else {
+            return `(${query}) ${type} (${term}[${field}])`;
+        }
+    } else return "";
 }
