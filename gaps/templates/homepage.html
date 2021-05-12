@@ -6,9 +6,9 @@
 {% block content %}
     <h2>Homepage</h2>
     <form name="form_query" id="form_query">
-        <label for="query_field">testlabel</label>
+        <label for="query_field" title="Use the fields below to build a query">Query builder</label>
         <br>
-        <select name="query_field" id="query_field">
+        <select name="query_field" id="query_field" title="Field to search">
             <option value="AFFL" title="Author's institutional affiliation and address">Affiliation</option>
             <option value="ALL" title="All terms from all searchable fields" selected>All Fields</option>
             <option value="AUTH" title="Author(s) of publication">Author</option>
@@ -61,23 +61,15 @@
             <option value="UID" title="Unique number assigned to publication">UID</option>
             <option value="VOL" title="Volume number of publication">Volume</option>
         </select>
-        <input name="query_search_term" id="query_search_term" type="text">
-        <select name="query_add_type" id="query_add_type">
+        <input name="query_search_term" id="query_search_term" type="text" placeholder="e.g. alzheimer"
+               title="Value to search">
+        <select name="query_add_type" id="query_add_type" title="Type of addition to the query">
             <option value="AND">AND</option>
             <option value="OR">OR</option>
             <option value="NOT">NOT</option>
         </select>
-        <input name="add_search_item" id="add_search_item" type="button" value="Add to query">
+        <input name="add_search_item" id="add_search_item" type="button" value="Add to query" title="Add to query">
         <br>
         <textarea name="query_generated" id="query_generated" cols="70" rows="10"></textarea>
     </form>
-    {#    <p>Vul iets in:</p>#}
-    {#    <form method="get">#}
-    {#        <input type="text" name="search">#}
-    {#        <input type="submit" name="value">#}
-    {#        <br>#}
-    {#        <p2><input type="number" id="limit" name="limit"#}
-    {#                   min="1" max="100" value=25></p2>#}
-    {#        Zoek: {{ search }}#}
-    {#    </form>#}
 {% endblock %}
