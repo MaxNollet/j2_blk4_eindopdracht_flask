@@ -32,6 +32,14 @@ class Development(Config):
     """
     FLASK_ENV = "development"
     DEBUG = True
+    TESTING = False
+    # Config for the database
+    SQLALCHEMY_ECHO = True
+
+
+class Testing(Config):
+    FLASK_ENV = "development"
+    DEBUG = True
     TESTING = True
     # Config for the database
     SQLALCHEMY_ECHO = True
