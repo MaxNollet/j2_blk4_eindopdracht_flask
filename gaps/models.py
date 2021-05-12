@@ -3,17 +3,16 @@ from dataclasses import dataclass
 
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer, String, Table, text
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
 db = SQLAlchemy()
 
-Base = declarative_base()
-metadata = Base.metadata
+Model = db.Model
+metadata = db.metadata
 
 
 @dataclass
-class Gene(Base):
+class Gene(Model):
     """A class which maps to the table 'gene' in
        the database.
     """
@@ -21,15 +20,15 @@ class Gene(Base):
     __table_args__ = {'schema': 'eindopdracht'}
 
     id: int = Column(Integer, primary_key=True, server_default=text("nextval('eindopdracht.gene_id_seq'::regclass)"))
-    ncbi_gene_id: str = Column(String(60), nullable=False)
-    hgnc_symbol: str = Column(String(15), nullable=False)
-    in_genepanel: bool = Column(Boolean, nullable=False)
+    ncbi_gene_id: str = Column(String(25))
+    hgnc_symbol: str = Column(String(25), nullable=False, unique=True)
+    in_genepanel: bool = Column(Boolean, nullable=False, server_default=text("false"))
 
     genepanels = relationship('Genepanel', secondary='eindopdracht.genepanel_gene')
 
 
 @dataclass
-class Genepanel(Base):
+class Genepanel(Model):
     """A class which maps to the table 'genepanel'
        in the database.
     """
@@ -38,12 +37,26 @@ class Genepanel(Base):
 
     id: int = Column(Integer, primary_key=True,
                      server_default=text("nextval('eindopdracht.genepanel_id_seq'::regclass)"))
-    afkorting: str = Column(String(40), nullable=False)
-    naam: str = Column(String(100), nullable=False)
+    abbreviation: str = Column(String(40), nullable=False, unique=True)
+
+    inheritance_types = relationship('InheritanceType', secondary='eindopdracht.genepanel_inheritance')
 
 
 @dataclass
-class Journal(Base):
+class InheritanceType(Model):
+    """A class which maps to the table 'inheritance_type'
+       in the database.
+    """
+    __tablename__ = 'inheritance_type'
+    __table_args__ = {'schema': 'eindopdracht'}
+
+    id: int = Column(Integer, primary_key=True,
+                     server_default=text("nextval('eindopdracht.inheritance_type_id_seq'::regclass)"))
+    type: str = Column(String(15), nullable=False, unique=True)
+
+
+@dataclass
+class Journal(Model):
     """A class which maps to the table 'journal'
        in the database.
     """
@@ -55,7 +68,7 @@ class Journal(Base):
 
 
 @dataclass
-class Alias(Base):
+class Alias(Model):
     """A class which maps to the table 'alias'
        in the database.
     """
@@ -63,14 +76,14 @@ class Alias(Base):
     __table_args__ = {'schema': 'eindopdracht'}
 
     id: int = Column(Integer, primary_key=True, server_default=text("nextval('eindopdracht.alias_id_seq'::regclass)"))
-    hgnc_symbol: str = Column(String(15), nullable=False)
+    hgnc_symbol: str = Column(String(15), nullable=False, unique=True)
     gene_id: int = Column(ForeignKey('eindopdracht.gene.id'), nullable=False)
 
     gene = relationship('Gene')
 
 
 @dataclass
-class Article(Base):
+class Article(Model):
     """A class which maps to the table 'article'
        in the database.
     """
@@ -79,11 +92,11 @@ class Article(Base):
 
     id: int = Column(Integer, primary_key=True, server_default=text("nextval('eindopdracht.article_id_seq'::regclass)"))
     title: str = Column(String(200), nullable=False)
-    pubmed_id: int = Column(Integer, nullable=False)
-    doi: str = Column(String(60), nullable=False)
-    publication_date: Date = Column(Date, nullable=False)
+    pubmed_id: int = Column(Integer)
+    doi: str = Column(String(60), nullable=False, unique=True)
+    publication_date: Date = Column(Date)
     abstract: str = Column(String(3000), nullable=False)
-    journal_id: int = Column(ForeignKey('eindopdracht.journal.id'), nullable=False)
+    journal_id: int = Column(ForeignKey('eindopdracht.journal.id'))
 
     journal = relationship('Journal')
     genes = relationship('Gene', secondary='eindopdracht.article_gene')
@@ -96,9 +109,16 @@ t_genepanel_gene = Table(
     schema='eindopdracht'
 )
 
+t_genepanel_inheritance = Table(
+    'genepanel_inheritance', metadata,
+    Column('genepanel_id', ForeignKey('eindopdracht.genepanel.id'), nullable=False),
+    Column('inheritance_type_id', ForeignKey('eindopdracht.inheritance_type.id'), nullable=False),
+    schema='eindopdracht'
+)
+
 
 @dataclass
-class GenepanelSymbol(Base):
+class GenepanelSymbol(Model):
     """A class which maps to the table 'genepanel_symbol'
        in the database.
     """
@@ -107,7 +127,7 @@ class GenepanelSymbol(Base):
 
     id: int = Column(Integer, primary_key=True,
                      server_default=text("nextval('eindopdracht.genepanel_symbol_id_seq'::regclass)"))
-    symbol: str = Column(String(15), nullable=False)
+    symbol: str = Column(String(15), nullable=False, unique=True)
     gene_id: int = Column(ForeignKey('eindopdracht.gene.id'), nullable=False)
 
     gene = relationship('Gene')
