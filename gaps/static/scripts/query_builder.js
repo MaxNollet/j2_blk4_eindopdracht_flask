@@ -1,3 +1,9 @@
+/**
+ * A function which adds several event triggers to
+ * elements in the interface.
+ *
+ * @author Max Nollet
+ * */
 window.onload = function () {
     document.getElementById("query_search_term")
         .addEventListener("keypress", function (event) {
@@ -10,6 +16,13 @@ window.onload = function () {
         .addEventListener("click", QueryBuilder);
 }
 
+/**
+ * A function which retrieves values from the interface
+ * and uses these values to update the interface with a
+ * new query.
+ *
+ * @author Max Nollet
+ * */
 function QueryBuilder() {
     const element_field = document.getElementById("query_field");
     const element_term = document.getElementById("query_search_term");
@@ -20,20 +33,29 @@ function QueryBuilder() {
     const type = element_type.options[element_type.selectedIndex].value;
     const query = element_query.value.trim();
     if (term !== "") {
-        const new_query = Concatenate(field, term, type, query);
-        if (new_query !== "") {
-            element_query.value = new_query;
-            element_term.value = "";
-        }
+        element_query.value = Concatenate(field, term, type, query);
+        element_term.value = "";
     }
 }
 
+/**
+ * A function which concatenates values to build a new
+ * query.
+ *
+ * @author Max Nollet
+ * @param field Field to be searched in scientific articles.
+ * @param term Search term entered by the user to search scientific articles.
+ * @param type Type of addition to the query (AND, OR, NOT).
+ * @param query Base query where new values are appended.
+ * @return query New concatenated query.
+ * */
 function Concatenate(field, term, type, query) {
     if (term !== "") {
         if (query === "") {
-            return `${term}[${field}]`;
+            query = `${term}[${field}]`;
         } else {
-            return `(${query}) ${type} (${term}[${field}])`;
+            query = `(${query}) ${type} (${term}[${field}])`;
         }
-    } else return "";
+    }
+    return query;
 }
