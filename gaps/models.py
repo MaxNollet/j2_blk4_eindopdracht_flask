@@ -2,7 +2,8 @@
 from dataclasses import dataclass
 
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer, String, Table, text
+from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer, String, \
+    Table, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
@@ -20,12 +21,14 @@ class Gene(Base):
     __tablename__ = 'gene'
     __table_args__ = {'schema': 'eindopdracht'}
 
-    id: int = Column(Integer, primary_key=True, server_default=text("nextval('eindopdracht.gene_id_seq'::regclass)"))
+    id: int = Column(Integer, primary_key=True, server_default=text(
+        "nextval('eindopdracht.gene_id_seq'::regclass)"))
     ncbi_gene_id: str = Column(String(60), nullable=False)
     hgnc_symbol: str = Column(String(15), nullable=False)
     in_genepanel: bool = Column(Boolean, nullable=False)
 
-    genepanels = relationship('Genepanel', secondary='eindopdracht.genepanel_gene')
+    genepanels = relationship('Genepanel',
+                              secondary='eindopdracht.genepanel_gene')
 
 
 @dataclass
@@ -37,7 +40,8 @@ class Genepanel(Base):
     __table_args__ = {'schema': 'eindopdracht'}
 
     id: int = Column(Integer, primary_key=True,
-                     server_default=text("nextval('eindopdracht.genepanel_id_seq'::regclass)"))
+                     server_default=text(
+                         "nextval('eindopdracht.genepanel_id_seq'::regclass)"))
     afkorting: str = Column(String(40), nullable=False)
     naam: str = Column(String(100), nullable=False)
 
@@ -50,7 +54,8 @@ class Journal(Base):
     __tablename__ = 'journal'
     __table_args__ = {'schema': 'eindopdracht'}
 
-    id: int = Column(Integer, primary_key=True, server_default=text("nextval('eindopdracht.journal_id_seq'::regclass)"))
+    id: int = Column(Integer, primary_key=True, server_default=text(
+        "nextval('eindopdracht.journal_id_seq'::regclass)"))
     name: str = Column(String(60), nullable=False)
 
 
@@ -62,7 +67,8 @@ class Alias(Base):
     __tablename__ = 'alias'
     __table_args__ = {'schema': 'eindopdracht'}
 
-    id: int = Column(Integer, primary_key=True, server_default=text("nextval('eindopdracht.alias_id_seq'::regclass)"))
+    id: int = Column(Integer, primary_key=True, server_default=text(
+        "nextval('eindopdracht.alias_id_seq'::regclass)"))
     hgnc_symbol: str = Column(String(15), nullable=False)
     gene_id: int = Column(ForeignKey('eindopdracht.gene.id'), nullable=False)
 
@@ -77,13 +83,15 @@ class Article(Base):
     __tablename__ = 'article'
     __table_args__ = {'schema': 'eindopdracht'}
 
-    id: int = Column(Integer, primary_key=True, server_default=text("nextval('eindopdracht.article_id_seq'::regclass)"))
+    id: int = Column(Integer, primary_key=True, server_default=text(
+        "nextval('eindopdracht.article_id_seq'::regclass)"))
     title: str = Column(String(200), nullable=False)
     pubmed_id: int = Column(Integer, nullable=False)
     doi: str = Column(String(60), nullable=False)
     publication_date: Date = Column(Date, nullable=False)
     abstract: str = Column(String(3000), nullable=False)
-    journal_id: int = Column(ForeignKey('eindopdracht.journal.id'), nullable=False)
+    journal_id: int = Column(ForeignKey('eindopdracht.journal.id'),
+                             nullable=False)
 
     journal = relationship('Journal')
     genes = relationship('Gene', secondary='eindopdracht.article_gene')
@@ -92,7 +100,8 @@ class Article(Base):
 t_genepanel_gene = Table(
     'genepanel_gene', metadata,
     Column('gene_id', ForeignKey('eindopdracht.gene.id'), nullable=False),
-    Column('genepanel_id', ForeignKey('eindopdracht.genepanel.id'), nullable=False),
+    Column('genepanel_id', ForeignKey('eindopdracht.genepanel.id'),
+           nullable=False),
     schema='eindopdracht'
 )
 
@@ -106,7 +115,8 @@ class GenepanelSymbol(Base):
     __table_args__ = {'schema': 'eindopdracht'}
 
     id: int = Column(Integer, primary_key=True,
-                     server_default=text("nextval('eindopdracht.genepanel_symbol_id_seq'::regclass)"))
+                     server_default=text(
+                         "nextval('eindopdracht.genepanel_symbol_id_seq'::regclass)"))
     symbol: str = Column(String(15), nullable=False)
     gene_id: int = Column(ForeignKey('eindopdracht.gene.id'), nullable=False)
 
@@ -116,6 +126,15 @@ class GenepanelSymbol(Base):
 t_article_gene = Table(
     'article_gene', metadata,
     Column('gene_id', ForeignKey('eindopdracht.gene.id'), nullable=False),
-    Column('article_id', ForeignKey('eindopdracht.article.id'), nullable=False),
+    Column('article_id', ForeignKey('eindopdracht.article.id'),
+           nullable=False),
     schema='eindopdracht'
 )
+
+
+@dataclass
+class FileInfo:
+    gene: Gene
+    # panel: Genepanel
+    alias: list
+    # p_symbol: GenepanelSymbol

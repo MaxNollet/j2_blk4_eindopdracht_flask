@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from gaps.models import Gene
+from gaps.models import Gene, Alias, FileInfo, Genepanel, GenepanelSymbol
 import re
 
 
@@ -15,6 +15,9 @@ def reader(file, headers):
     # Gene(id="")
     # Gene object contains: GeneID
     data_test = []
+    t_data = {}
+    t = []  # test
+    tt = []  # object test
     with open(file, mode="r", encoding="utf-8-sig") as f:
         # https://stackoverflow.com/questions/17912307/u-ufeff-in-python-string
         # data = [i for i, j in enumerate(f.readline().strip().split(";")) if "GenePanels" in j]
@@ -22,26 +25,48 @@ def reader(file, headers):
         # for i, j in enumerate(f.readline().strip().split(";")):
         for i, j in enumerate(f.readline().strip().split("\t")):
             # i is the index and j is the value
-
             for h in headers:
                 # print(h, j)
                 if h in j:
                     # data.update({i: j})  # hier staat er \ufeff voor
-
                     data[i] = [j]
+                    print(data.items())
         for line in f:
             gene = Gene(in_genepanel=True)
+            id = False
+
             for key_index, value in data.items():  # beter naam voor
+                print(headers[key_index])
+                print(value)
                 # value nodig beetje karig het is nu gwn een list waar alle data van een kolom in komt
                 # print(key, value)
                 # value.append(line.strip().split("\t")[key_index])
                 # if re.findall("(?<=_).+?(?=\])", headers[key_index]) == "ncbi":
                 if re.search("NCBI", headers[key_index]):
                     gene.ncbi_gene_id = line.strip().split("\t")[key_index]
+                    id = True
                 if re.search("HGNC", headers[key_index]):
                     gene.hgnc_symbol = line.strip().split("\t")[key_index]
+
+                if re.search("GenePanels_Symbol", headers[key_index]):
+                    print("")
+                if re.search("Aliases", headers[key_index]) and id == True:
+                    aliases = []
+                    # print(line.strip().split("\t")[key_index].split("|"))
+                    for alias in line.strip().split("\t")[key_index].split(
+                            "|"):
+                        al = Alias(hgnc_symbol=alias)
+                        aliases.append(al)
+                    # print(line.strip().split("\t")[key_index])
+                # t.append(aliases)
                 value.append(gene)
+            fi = FileInfo(gene=gene, alias=aliases)
+            tt.append(fi)
             data_test.append(gene)
+
+            # f = FileInfo(gene=gene)
+
+            # t.append(FileInfo(gene=gene))
             # print(line)
 
     # if headers[key_index] == "GeneID_NCBI":
@@ -52,8 +77,9 @@ def reader(file, headers):
 
     print(len(data.get(1)))
     print(len(data_test))
-    print(data_test)
-
+    # print(data_test)
+    # print(t)
+    print(tt)
     # print(data.get(0)[1])
     # t = [Gene(ncbi_gene_id=data.get(0)[1])]
     # a = [Gene(ncbi_gene_id=data.get(0)[1])]
@@ -71,6 +97,7 @@ def reader(file, headers):
 
     print("Voltooid")
 
+
 @dataclass()
 class ParseItems:
     ncbi_gene_id: int
@@ -80,8 +107,9 @@ class ParseItems:
 
 
 def main():
-    # headers = ["GeneID_NCBI", "Symbol_HGNC", "Aliases"]
-    headers = ["GeneID_NCBI", "Symbol_HGNC"]
+    headers = ["GeneID_NCBI", "Symbol_HGNC", "Aliases"]
+    # headers = ["GeneID_NCBI", "Symbol_HGNC", "Aliases", "GenePanels_Symbol"]
+    # headers = ["GeneID_NCBI", "Symbol_HGNC", "Aliases", "GenePanels_Symbol"]
     file = "/Users/lean/Documenten/School/Flask/Course8_project/Parser/GenPanelOverzicht_edited.csv"
     file = "/Users/lean/Documenten/School/Flask/Course8_project/Parser/GenPanelOverzicht_DG-3.1.0_HAN_original_tsv.txt"
     reader(file, headers)
