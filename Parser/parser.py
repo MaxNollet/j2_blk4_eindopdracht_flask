@@ -67,7 +67,7 @@ def reader(file, headers):
                         # print(line.strip().split("\t")[key_index])  # eg
                         test = line.strip().split("\t")[key_index].split(";")
                     for te in test:  # test is list, te is element from index
-                        een_genpanel = []
+                        een_genpanel = []  # wordt per extra afkorting opnieuw aangemaakt
                         p = re.findall(f"(?<=\().+?(?=\))",
                                        te)
                         print(test)
