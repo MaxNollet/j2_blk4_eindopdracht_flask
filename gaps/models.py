@@ -130,11 +130,3 @@ t_article_gene = Table(
            nullable=False),
     schema='eindopdracht'
 )
-
-
-@dataclass
-class FileInfo:
-    gene: Gene
-    # panel: Genepanel
-    alias: list
-    # p_symbol: GenepanelSymbol

@@ -30,27 +30,30 @@ def reader(file, headers):
                 if h in j:
                     # data.update({i: j})  # hier staat er \ufeff voor
                     data[i] = [j]
-                    print(data.items())
         for line in f:
             gene = Gene(in_genepanel=True)
+            p_symbol = GenepanelSymbol()
             id = False
 
             for key_index, value in data.items():  # beter naam voor
-                print(headers[key_index])
-                print(value)
+
+                # print(headers[key_index])
+                # print(value)
                 # value nodig beetje karig het is nu gwn een list waar alle data van een kolom in komt
                 # print(key, value)
                 # value.append(line.strip().split("\t")[key_index])
                 # if re.findall("(?<=_).+?(?=\])", headers[key_index]) == "ncbi":
-                if re.search("NCBI", headers[key_index]):
-                    gene.ncbi_gene_id = line.strip().split("\t")[key_index]
-                    id = True
-                if re.search("HGNC", headers[key_index]):
+                # if re.search("NCBI", headers[key_index]):
+                #     gene.ncbi_gene_id = line.strip().split("\t")[key_index]
+                #     id = True
+                # if re.search("NCBI", value[0]):
+                #     print(key_index, value)
+                if re.search("HGNC", value[0]):
                     gene.hgnc_symbol = line.strip().split("\t")[key_index]
-
-                if re.search("GenePanels_Symbol", headers[key_index]):
-                    print("")
-                if re.search("Aliases", headers[key_index]) and id == True:
+                    id = True
+                if re.search("GenePanels_Symbol", value[0]):
+                    p_symbol.symbol = line.strip().split("\t")[key_index]
+                if re.search("Aliases", value[0]) and id == True:
                     aliases = []
                     # print(line.strip().split("\t")[key_index].split("|"))
                     for alias in line.strip().split("\t")[key_index].split(
@@ -60,25 +63,19 @@ def reader(file, headers):
                     # print(line.strip().split("\t")[key_index])
                 # t.append(aliases)
                 value.append(gene)
-            fi = FileInfo(gene=gene, alias=aliases)
-            tt.append(fi)
+            fi = FileInfo(gene=gene, alias=aliases, p_symbol=p_symbol)
+            tt.append(fi)  # kan niet in 1 regel
             data_test.append(gene)
 
             # f = FileInfo(gene=gene)
 
             # t.append(FileInfo(gene=gene))
-            # print(line)
-
-    # if headers[key_index] == "GeneID_NCBI":
-    # value.append(Gline.strip().split("\t")[key_index])
-    # value.append(line.strip().split("\t")[keyword])
-    # print(line.strip().split("\t")[key_index])
-    # add column to selected keyword
 
     print(len(data.get(1)))
     print(len(data_test))
     # print(data_test)
     # print(t)
+    print(len(tt))
     print(tt)
     # print(data.get(0)[1])
     # t = [Gene(ncbi_gene_id=data.get(0)[1])]
@@ -106,9 +103,18 @@ class ParseItems:
     in_panel = bool
 
 
+@dataclass
+class FileInfo:
+    gene: Gene
+    # panel: Genepanel
+    # alias: List[Alias]
+    p_symbol: GenepanelSymbol
+    alias: list = field(default_factory=list)
+
+
 def main():
-    headers = ["GeneID_NCBI", "Symbol_HGNC", "Aliases"]
-    # headers = ["GeneID_NCBI", "Symbol_HGNC", "Aliases", "GenePanels_Symbol"]
+    # headers = ["GeneID_NCBI", "Symbol_HGNC", "Aliases"]
+    headers = ["GeneID_NCBI", "Symbol_HGNC", "Aliases", "GenePanels_Symbol"]
     # headers = ["GeneID_NCBI", "Symbol_HGNC", "Aliases", "GenePanels_Symbol"]
     file = "/Users/lean/Documenten/School/Flask/Course8_project/Parser/GenPanelOverzicht_edited.csv"
     file = "/Users/lean/Documenten/School/Flask/Course8_project/Parser/GenPanelOverzicht_DG-3.1.0_HAN_original_tsv.txt"
