@@ -52,7 +52,7 @@ def reader(file, headers):
                     print(haken, "HAKEN")
                     if re.search(";",
                                  str(haken)):  # checks if ; in (ab; ar, xl) etc
-                        for h in haken:
+                        for h in haken:  # loop over alle gevonden ()
                             print(h, " h")
                             testje = h.replace(";",
                                                ",")  # replace de ; binnen de ()
@@ -66,7 +66,7 @@ def reader(file, headers):
                     else:
                         # print(line.strip().split("\t")[key_index])  # eg
                         test = line.strip().split("\t")[key_index].split(";")
-                    for te in test:
+                    for te in test:  # test is list, te is element from index
                         een_genpanel = []
                         p = re.findall(f"(?<=\().+?(?=\))",
                                        te)
@@ -78,7 +78,7 @@ def reader(file, headers):
                         # test = line.strip().split("\t")[key_index].split(";")
                         # print(test)
                         print(te, "te")
-                        if len(p) >= 1:
+                        if len(p) >= 1:  # vgm niet nodig
                             # print(p, "P")
                             for ih in p:  # p = ['AD', 'AD',
                                 # 'AD;UK,AR,AD,XL', 'AD']
