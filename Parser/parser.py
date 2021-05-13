@@ -50,12 +50,15 @@ def reader(file, headers):
                     haken = re.findall(f"(?<=\().+?(?=\))",
                                        line.strip().split("\t")[key_index])
                     print(haken, "HAKEN")
-                    if re.search(";", str(haken)):
+                    if re.search(";",
+                                 str(haken)):  # checks if ; in (ab; ar, xl) etc
                         for h in haken:
                             print(h, " h")
-                            testje = h.replace(";", ",")
+                            testje = h.replace(";",
+                                               ",")  # replace de ; binnen de ()
                             # print(line.strip().split("\t")[key_index])  # eg
                             test = re.sub(h, testje,
+                                          # vervang de () met ; door een zonder
                                           line.strip().split("\t")[key_index])
                             test = test.split(";")
                             print(test, "testen")
