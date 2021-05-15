@@ -18,8 +18,6 @@ def reader(file, headers):
     with open(file, mode="r", encoding="utf-8-sig") as f:
         # https://stackoverflow.com/questions/17912307/
         # u-ufeff-in-python-string
-        # data = [i for i, j in enumerate(f.readline().strip()
-        # .split(";")) if "GenePanels" in j]
         for i, j in enumerate(f.readline().strip().split("\t")):
             # i is the index and j is the value
             for h in headers:
@@ -38,38 +36,33 @@ def reader(file, headers):
                     p_symbol.symbol = line.strip().split("\t")[key_index]
                 if re.search("Aliases", value[0]):
                     aliases = []
-                    # print(line.strip().split("\t")[key_index].split("|"))
                     for alias in line.strip().split("\t")[key_index].split(
                             "|"):
                         al = Alias(hgnc_symbol=alias)
                         aliases.append(al)
                 if "GenePanel" == value[0]:
-                    panels = []  # list with 'LENGTE','MR', 'SCHISIS' eg
-                    # currently not in use
-                    combi_panel = []  # combi [OMIM, AR, AD] example
-                    # print(line.strip().split("\t")[key_index]) # eg
+                    combi_panel = []  # combi [OMIM],[ AR, AD]] example
                     haken = re.findall(f"(?<=\().+?(?=\))",
                                        line.strip().split("\t")[key_index])
                     if re.search(";", str(haken)):
                         # checks if ; in (ab; ar, xl) etc
                         for h in haken:  # loop over alle gevonden ()
-                            repl = h.replace(";",  # repl = replace
-                                             ",")  # replace de ; binnen de ()
-                            # print(line.strip().split("\t")[key_index])  # eg
-                            line_fix = re.sub(h, repl,
-                                              # vervang de () met ; door een zonder
-                                              line.strip().split("\t")[
-                                                  key_index])
-                            line_fix = line_fix.split(";")
+                            if ";" in h:
+                                repl = h.replace(";", ",")
+                                # replace de ; binnen de ()
+                                line_fix = re.sub(h, repl, line.strip().
+                                                  split("\t")[key_index])
+                                # vervang de () met ; door een ,
+                                line_fix = line_fix.split(";")
                     else:
                         # print(line.strip().split("\t")[key_index])  # eg
                         line_fix = line.strip().split("\t")[key_index].split(
                             ";")
-                    for li in line_fix:  # line_fix is list, te is element from index
+                    for li in line_fix:  # line_fix is list from split
                         een_genpanel = []  # new for each new combi
-                        all_ih = re.findall(f"(?<=\().+?(?=\))",
-                                            li)  # the inheritance between ()
-                        if len(all_ih) >= 1:  # vgm niet nodig
+                        all_ih = re.findall(f"(?<=\().+?(?=\))", li)
+                        # the inheritance between ()
+                        if len(all_ih) >= 0:  # vgm niet nodig
                             for ih in all_ih:  # p = ['AD', 'AD'] ih= UK, AR
                                 # 'AD;UK,AR,AD,XL', 'AD']
                                 if ";" or "," in str(ih):  # ih 'AD;UK,XL'
@@ -77,46 +70,23 @@ def reader(file, headers):
                                     for j in ihh:
                                         een_genpanel.append(
                                             InheritanceType(type=j))
-                                        # ihh_list.append(InheritanceType(type=j))
                                 else:
                                     for j in ih:  # example 'AD'
                                         een_genpanel.append(
                                             InheritanceType(type=j))
-                                        # ihh_list.append(InheritanceType(type=j))
-                        if int(gene.ncbi_gene_id) == 23090:
-                            print("23090")
-                            print(line_fix)
-                            print(li)
-                            print(line)
-                        if int(gene.ncbi_gene_id) == 8139:
-                            print(line_fix)
-                            print(li)
-                            print(line)
                         t = re.sub(f"(?<=\().+?(?=\))", "", li)
                         k = t.replace(" ()", "").replace("\"", "").split(";")
-                        # print(k, line)
-                        for a in k:  # k contains ['HEMOS', 'OMIM'] example
-                            # print(k, "-", a)
-                            gp = Genepanel(abbreviation=a)
-                            panels.append(gp)
-                            een_genpanel.append(gp)
+                        # k = ['OMIM'] for example
+                        een_genpanel.append(Genepanel(abbreviation=k[0]))
                         combi_panel.append(een_genpanel)
-                        # print(re.findall(f".+?(?=\s\()", t))
-            # fi = FileInfo(gene=gene, alias=aliases, p_symbol=p_symbol,
-            #               panel=panels, p_inheritance=ihh_list)
             fi = FileInfo(gene=gene, alias=aliases, p_symbol=p_symbol,
                           panel=combi_panel)
             file_list.append(fi)  # kan niet in 1 regel
     print("complete")
     # print(file_list)
-    print(file_list[len(file_list) - 6])
-    # print(file_list[len(file_list) - 1])
-
-    print(file_list[1569])  # 1571
-
-    # "BEWEGING (AD,AR);DERM (AR);HMSN (AR);OMIM (AR;AD,AR);PCS (AR)"
-
-    # "BLIND (AR);CILIO (AD,AR);NIER (AR);OMIM (AR;AD,AR);PCS (AR)"
+    print(file_list[len(file_list) - 6])  # 79755 GeneID_NCBI
+    print(file_list[len(file_list) - 1])  # examples
+    print(file_list[1569])  # 1571 ncbi_geneID = 8139
     return tuple(file_list)
 
 
