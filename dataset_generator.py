@@ -10,10 +10,11 @@ def main():
     # GraphGenerator((symbols.get_aliases(), symbols.get_symbols()),
     #                ("Aliases", "Symbols"),
     #                "Lengths of aliases and symbols from HGNC")
-    words = WordListGenerator(file_name="words_alpha.txt")
+    words = WordListReader(file_name="words.txt")
     print(f"Symbols: {len(symbols.get_symbols())}")
     print(f"Aliases: {len(symbols.get_aliases())}")
-    print(f"Words: {len(words.get_word_list())}")
+    print(f"Words: {len(words.get_words())}")
+    equalizer = DatasetEqualizer(symbols=symbols, words=words)
     return 0
 
 
@@ -60,7 +61,7 @@ class SymbolParser:
         self.__symbols = set()
         self.__aliases = set()
         if self.__file_name is not None:
-            with open(self.__file_name, "r", encoding="utf-8") as file:
+            with open(self.__file_name, "r", encoding="UTF-8") as file:
                 line = file.readline()
                 while line == "":
                     line = file.readline()
@@ -144,7 +145,7 @@ class SymbolParser:
             return set()
 
 
-class WordListGenerator:
+class WordListReader:
     """A class which generates a list of words and filters
        this list according to requirements.
     """
@@ -170,7 +171,7 @@ class WordListGenerator:
         """
         if self.__filename is not None and self.__filename != "":
             words = set()
-            with open(self.__filename, "r") as file:
+            with open(self.__filename, "r", encoding="UTF-8") as file:
                 for line in file:
                     word = line.strip()
                     if word != "":
@@ -179,9 +180,9 @@ class WordListGenerator:
         else:
             raise NoFileEntered
 
-    def get_word_list(self) -> set:
+    def get_words(self) -> set:
         """a method which returns a list of all unique
-           retrieved words.
+           words from the specified file.
 
         Output = list of all unique retrieved words (set).
         """
@@ -191,63 +192,46 @@ class WordListGenerator:
             return set()
 
 
-class DatasetGenerator:
-    def __init__(self, symbols: set, aliases: set, words: set,
+class DatasetEqualizer:
+    def __init__(self, symbols: SymbolParser,
+                 words: WordListReader,
                  auto_process: bool = True,
                  equal_dataset: bool = True,
-                 capitalize_words_half: bool = True) -> None:
+                 output_file: str = "dataset") -> None:
+        self.__symbol_parser = symbols
+        self.__word_reader = words
+        self.__output_file = output_file
+        if auto_process:
+            self.__extract_unique_variables()
+            self.write_dataset()
+
+    def __extract_unique_variables(self) -> None:
+        """A method which extracts all unique symbols, aliases
+           and words from the parsers and stores them inside
+           the object.
+        """
+        symbols = self.__symbol_parser.get_symbols()
+        aliases = self.__symbol_parser.get_aliases()
+        words = self.__word_reader.get_words()
         self.__symbols = symbols
         self.__aliases = aliases.difference(symbols)
-        self.__words = words.difference(symbols).difference(aliases)
-        if auto_process:
-            self.equalize_dataset()
-            pass
-
-    def equalize_dataset(self) -> None:
-        count_symbols = len(self.__symbols)
-        count_aliases = len(self.__aliases)
-        count_words = len(self.__words)
-        if count_symbols + count_aliases > count_words:
-            equalized_aliases = self.__equalize_lengths(self.__aliases, 5000)
-            frequencies_aliases = DatasetGenerator.__convert_to_lengths(equalized_aliases)
-            equalized_symbols = self.__equalize_lengths(self.__symbols, 500)
-            frequencies_symbols = DatasetGenerator.__convert_to_lengths(equalized_symbols)
-            # array1 = np.array(frequencies_aliases)
-            # array2 = np.array(frequencies_symbols)
-            # test = np.concatenate((array1, array2), axis=0)
-            # print(test)
-            # self.generate_graph(array)
+        self.__words = words.difference(aliases).difference(symbols)
         return None
 
-    @staticmethod
-    def __equalize_lengths(unequal: set, size: int) -> set:
-        categorized = DatasetGenerator.categorize_lengths(unequal)
-        groups_count = len(categorized)
-        group_size = round(size / groups_count)
-        equalized = set()
-        for _, values in DatasetGenerator.__sort_dictionary(categorized):
-            count = len(values)
-            if count == group_size:
-                equalized.update(values)
-            elif count > group_size:
-                equalized.update((random.sample(values, group_size)))
-            else:
-                equalized.update(values)
-            groups_count -= 1
-            if groups_count > 0:
-                group_size = round((size - len(equalized)) / groups_count)
-        return equalized
-
-    @staticmethod
-    def categorize_lengths(uncategorized: set) -> dict:
-        categorized = dict()
-        for item in uncategorized:
-            length = len(item)
-            if length in categorized:
-                categorized[length].add(item)
-            else:
-                categorized[length] = {item}
-        return categorized
+    def write_dataset(self) -> None:
+        """A method which writes the dataset to a file. Each line
+           in the file contains one symbol or word with a
+           corresponding label.
+        """
+        if self.__symbols is not None and self.__symbols is not None and self.__words is not None:
+            with open(self.__output_file, "w", encoding="UTF-8") as file:
+                for symbol in sorted(self.__symbols):
+                    file.write(f"{symbol}\tsymbol\n")
+                for alias in sorted(self.__aliases):
+                    file.write(f"{alias}\tsymbol\n")
+                for word in sorted(self.__words):
+                    file.write(f"{word}\tword\n")
+        return None
 
     @staticmethod
     def __sort_dictionary(dictionary: dict) -> list:
