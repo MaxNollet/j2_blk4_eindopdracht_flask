@@ -70,6 +70,10 @@ def reader(file, headers):
                           panel=panels, p_inheritance=ihh_list)
             file_list.append(fi)  # kan niet in 1 regel
     print("complete")
+
+    print(file_list[len(file_list) - 6])
+
+    print(file_list[1569])  # 1571
     return tuple(file_list)
 
 
