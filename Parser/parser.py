@@ -83,10 +83,10 @@ def reader(file, headers):
                           panel=combi_panel)
             file_list.append(fi)  # kan niet in 1 regel
     print("complete")
-    # print(file_list)
-    print(file_list[len(file_list) - 6])  # 79755 GeneID_NCBI
-    print(file_list[len(file_list) - 1])  # examples
-    print(file_list[1569])  # 1571 ncbi_geneID = 8139
+    print(len(file_list))
+    # print(file_list[len(file_list) - 6])  # 79755 GeneID_NCBI
+    # print(file_list[len(file_list) - 1])  # examples
+    # print(file_list[1569])  # 1571 ncbi_geneID = 8139
     return tuple(file_list)
 
 
