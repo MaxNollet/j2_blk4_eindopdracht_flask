@@ -1,31 +1,19 @@
 import os
 import random
-import requests
 import matplotlib.pyplot as plot
-from matplotlib.gridspec import GridSpec
-import numpy as np
 
 
 def main():
-    parser1 = SymbolParser(file_name="GenPanelOverzicht_DG-3.1.0_HAN_original.tsv")
-    # print(f"Count of all symbols: {len(parser1.get_symbols())}")
-    # print(f"Count of all aliases: {len(parser1.get_aliases())}")
-    # print(f"Sum of symbols and aliases: {len(parser1.get_symbols()) + len(parser1.get_aliases())}")
-    pretty_print(DatasetGenerator.categorize_lengths(parser1.get_aliases()))
-    GraphGenerator((parser1.get_aliases(), parser1.get_symbols()),
-                   ("Aliases", "Symbols"),
-                   "Lengths of aliases and symbols from genepanels")
-    # parser2 = SymbolParser(file_name="hgnc_complete_set.txt",
-    #                        symbols_column_name="symbol",
-    #                        aliases_column_name="alias_symbol")
-    # GraphGenerator((parser2.get_aliases(), parser2.get_symbols()),
+    symbols = SymbolParser(file_name="hgnc_complete_set.txt",
+                           symbols_column_name="symbol",
+                           aliases_column_name="alias_symbol")
+    # GraphGenerator((symbols.get_aliases(), symbols.get_symbols()),
     #                ("Aliases", "Symbols"),
     #                "Lengths of aliases and symbols from HGNC")
-    # print(len(parser2.get_symbols()))
-    # print(len(parser2.get_aliases()))
-    # generator = WordListGenerator()
-    # print(f"Count of all retrieved words: {len(generator.get_word_list())}")
-    # DatasetGenerator(symbols=parser.get_symbols(), aliases=parser.get_aliases(), words=generator.get_word_list())
+    words = WordListGenerator(file_name="words_alpha.txt")
+    print(f"Symbols: {len(symbols.get_symbols())}")
+    print(f"Aliases: {len(symbols.get_aliases())}")
+    print(f"Words: {len(words.get_word_list())}")
     return 0
 
 
@@ -161,45 +149,35 @@ class WordListGenerator:
        this list according to requirements.
     """
 
-    def __init__(self, auto_generate: bool = True) -> None:
+    def __init__(self, file_name: str, auto_parse: bool = True) -> None:
         """A method which constructs the object and starts
            to generate a list of words automatically if the
            variable 'auto_generate' is set to True.
 
         Input = indication to start generating a list of words automatically (bool).
         """
-        self.__url_word_list = "http://www.mit.edu/~ecprice/wordlist.10000"
-        self.__retrieved_words = None
+        self.__filename = file_name
+        self.__words = None
         # start generating a list of words automatically.
-        if auto_generate:
-            self.generate_list()
+        if auto_parse:
+            self.__words = self.read_words()
 
-    def generate_list(self) -> None:
-        """A method which calls other methods to retrieve, filter
-           and save a list of generated words. The list will be
-           available through a corresponding getter.
+    def read_words(self) -> set:
+        """A method which reads all words from a file and stores
+           all unique words in a set.
+
+        Output = all unique words from the specified file (set).
         """
-        self.__retrieved_words = self.__retrieve_words(self.__url_word_list)
-        return None
-
-    @staticmethod
-    def __retrieve_words(url_word_list: str) -> set:
-        """A method which retrieved a list of English words
-           and saves all unique words inside the object.
-
-        Input = url where a list of words can be downloaded (str).
-        Output = unique words downloaded form the url (set).
-        """
-        r = requests.get(url_word_list)
-        if r.status_code == 200:
-            word_list = set()
-            for word in str(r.text).split("\n"):
-                stripped_word = word.strip()
-                if stripped_word != "":
-                    word_list.add(stripped_word)
-            return word_list
+        if self.__filename is not None and self.__filename != "":
+            words = set()
+            with open(self.__filename, "r") as file:
+                for line in file:
+                    word = line.strip()
+                    if word != "":
+                        words.add(word)
+            return words
         else:
-            raise ErrorWhileDownloading(r.status_code)
+            raise NoFileEntered
 
     def get_word_list(self) -> set:
         """a method which returns a list of all unique
@@ -207,8 +185,8 @@ class WordListGenerator:
 
         Output = list of all unique retrieved words (set).
         """
-        if self.__retrieved_words is not None:
-            return self.__retrieved_words
+        if self.__words is not None:
+            return self.__words
         else:
             return set()
 
@@ -234,10 +212,10 @@ class DatasetGenerator:
             frequencies_aliases = DatasetGenerator.__convert_to_lengths(equalized_aliases)
             equalized_symbols = self.__equalize_lengths(self.__symbols, 500)
             frequencies_symbols = DatasetGenerator.__convert_to_lengths(equalized_symbols)
-            array1 = np.array(frequencies_aliases)
-            array2 = np.array(frequencies_symbols)
-            test = np.concatenate((array1, array2), axis=0)
-            print(test)
+            # array1 = np.array(frequencies_aliases)
+            # array2 = np.array(frequencies_symbols)
+            # test = np.concatenate((array1, array2), axis=0)
+            # print(test)
             # self.generate_graph(array)
         return None
 
@@ -280,22 +258,6 @@ class DatasetGenerator:
         frequencies = list()
         [frequencies.append(len(element)) for element in values]
         return sorted(frequencies)
-
-    @staticmethod
-    def generate_graph(categories: tuple):
-        # print(sorted(categories[0]))
-        # values = set()
-        # [values.update(category) for category in categories]
-        # values = list(values)
-        # values.append(max(values))
-
-        plot.hist(x=categories, bins=categories, stacked=True, align="left",
-                  edgecolor="black", linewidth=0.5)
-        # labels = list(values)
-        # plot.xticks(labels)
-        plot.show()
-        plot.close()
-        return None
 
 
 class GraphGenerator:
@@ -377,21 +339,6 @@ class NoFileEntered(Exception):
        None-type.
     """
     pass
-
-
-class ErrorWhileDownloading(Exception):
-    """Exception raised when the download of the word list
-       did not return a 200 (=OK)-statuscode.
-    """
-
-    def __init__(self, status_code: int) -> None:
-        """A method which constructs the object and send a
-           message to the superclass to be displayed.
-
-        Input = status code of the download (int).
-        """
-        self.message = f"Download exited with status code {status_code}"
-        super().__init__(self.message)
 
 
 if __name__ == "__main__":
