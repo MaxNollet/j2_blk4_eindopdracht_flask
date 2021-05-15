@@ -245,6 +245,22 @@ class DatasetEqualizer:
             self.__bigger_dataset.update(self.__words)
         return None
 
+    def __categorize_lengths(self, dataset: set) -> dict:
+        """A method which sorts all elements from a given
+           dataset on the length of an element.
+
+        Input = dataset to be sorted (set).
+        Output = sorted dataset in length (dict).
+        """
+        lengths = dict()
+        for element in dataset:
+            length = len(element)
+            if length not in lengths:
+                lengths[length] = 1
+            else:
+                lengths[length] += 1
+        return lengths
+
     def write_dataset(self) -> None:
         """A method which writes the dataset to a file. Each line
            in the file contains one symbol or word with a
