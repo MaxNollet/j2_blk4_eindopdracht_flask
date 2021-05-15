@@ -228,10 +228,15 @@ class DatasetEqualizer:
         lengths_smaller_dataset = self.__categorize_lengths(self.__smaller_dataset)
         lengths_bigger_dataset = self.__categorize_lengths(self.__bigger_dataset)
         equalized_bigger_dataset = self.__equalize_lengths(lengths_smaller_dataset, lengths_bigger_dataset)
-        small_letters = self.__filter(dataset=equalized_bigger_dataset, pattern=r"[A-Z]", include=False)
-        big_letters = self.__filter(dataset=equalized_bigger_dataset, pattern=r"[A-Z]", include=True)
-        no_digits = self.__filter(dataset=equalized_bigger_dataset, pattern=r"[0-9]", include=False)
-        contains_digits = self.__filter(dataset=equalized_bigger_dataset, pattern=r"[0-9]", include=True)
+        pattern_letters = "[A-Z]"
+        pattern_digits = "[0-9]"
+        pattern_special = r"[~`!@#$%^&*()\-_+={}\[\]\|\/:;\"'<>,\.\?]"
+        small_letters = self.__filter(dataset=equalized_bigger_dataset, pattern=pattern_letters, include=False)
+        big_letters = self.__filter(dataset=equalized_bigger_dataset, pattern=pattern_letters, include=True)
+        no_digits = self.__filter(dataset=equalized_bigger_dataset, pattern=pattern_digits, include=False)
+        contains_digits = self.__filter(dataset=equalized_bigger_dataset, pattern=pattern_digits, include=True)
+        no_special_characters = self.__filter(dataset=equalized_bigger_dataset, pattern=pattern_special, include=False)
+        special_characters = self.__filter(dataset=equalized_bigger_dataset, pattern=pattern_special, include=True)
         return 0
 
     def __determine_dataset_size(self) -> None:
