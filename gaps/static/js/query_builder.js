@@ -5,15 +5,18 @@
  * @author Max Nollet
  * */
 window.onload = function () {
-    document.getElementById("query_search_term")
+    document.getElementById("input_search_term")
         .addEventListener("keypress", function (event) {
             if (event.key === "Enter") {
                 event.preventDefault();
-                document.getElementById("add_search_item").click();
+                document.getElementById("button_add_item").click();
             }
         });
-    document.getElementById("add_search_item")
+    document.getElementById("button_add_item")
         .addEventListener("click", QueryBuilder);
+    document.getElementById("input_generated_query")
+        .addEventListener("change", OnQueryChange);
+    OnQueryChange();
 }
 
 /**
@@ -24,10 +27,10 @@ window.onload = function () {
  * @author Max Nollet
  * */
 function QueryBuilder() {
-    const element_field = document.getElementById("query_field");
-    const element_term = document.getElementById("query_search_term");
-    const element_type = document.getElementById("query_add_type");
-    const element_query = document.getElementById("query_generated");
+    const element_field = document.getElementById("input_field");
+    const element_term = document.getElementById("input_search_term");
+    const element_type = document.getElementById("input_add_type");
+    const element_query = document.getElementById("input_generated_query");
     const field = element_field.options[element_field.selectedIndex].value;
     const term = element_term.value.trim();
     const type = element_type.options[element_type.selectedIndex].value;
@@ -35,6 +38,7 @@ function QueryBuilder() {
     if (term !== "") {
         element_query.value = Concatenate(field, term, type, query);
         element_term.value = "";
+        OnQueryChange();
     }
 }
 
@@ -58,4 +62,10 @@ function Concatenate(field, term, type, query) {
         }
     }
     return query;
+}
+
+function OnQueryChange() {
+    const element_query = document.getElementById("input_generated_query");
+    const element_add = document.getElementById("input_add_type");
+    element_add.disabled = element_query.value.trim() === "";
 }

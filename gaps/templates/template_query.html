@@ -1,0 +1,113 @@
+{% extends "base_template.html" %}
+
+{% block title %}Build a query{% endblock %}
+
+{% block head %}
+    <script src="{{ url_for("static", filename="js/query_builder.js") }}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container" id="page_query_builder">
+        <form id="input_form" class="gy-5">
+            <div class="row gy-5 gx-5" id="row_query_symbols">
+                <div class="col-lg-7 d-flex flex-column" id="col_query_builder">
+                    <h2 id="header_query_builder" style="font-weight: 400;color: var(--bs-gray-dark);">1. Build a query</h2>
+                    <div class="row gy-3" id="row_parameters">
+                        <div class="col-12 col-xxl-auto" id="col_input_field"><label class="form-label" id="label_field" for="input_field">Field to search</label><select class="form-select" id="input_field">
+                                <option value="AFFL">Affiliation</option>
+                                <option value="ALL" selected="">All Fields</option>
+                                <option value="AUTH">Author</option>
+                                <option value="COLN">Author - Corporate</option>
+                                <option value="FAUT">Author - First</option>
+                                <option value="FULL">Author - Full</option>
+                                <option value="AUID">Author - Identifier</option>
+                                <option value="LAUT">Author - Last</option>
+                                <option value="AUCL">Author Cluster ID</option>
+                                <option value="BOOK">Book</option>
+                                <option value="COIS">Conflict of Interest Statements</option>
+                                <option value="DSO">DSO</option>
+                                <option value="CDAT">Date - Completion</option>
+                                <option value="CRDT">Date - Create</option>
+                                <option value="EDAT">Date - Entrez</option>
+                                <option value="MHDA">Date - MeSH</option>
+                                <option value="MDAT">Date - Modification</option>
+                                <option value="PDAT">Date - Publication</option>
+                                <option value="ECNO">EC/RN Number</option>
+                                <option value="ED">Editor</option>
+                                <option value="EPDT">Electronic Publication Date</option>
+                                <option value="EID">Extended PMID</option>
+                                <option value="FILT">Filter</option>
+                                <option value="GRNT">Grant Number</option>
+                                <option value="ISBN">ISBN</option>
+                                <option value="INVR">Investigator</option>
+                                <option value="FINV">Investigator - Full</option>
+                                <option value="ISS">Issue</option>
+                                <option value="JOUR">Journal</option>
+                                <option value="LANG">Language</option>
+                                <option value="LID">Location ID</option>
+                                <option value="MAJR">MeSH Major Topic</option>
+                                <option value="SUBH">MeSH Subheading</option>
+                                <option value="MESH">MeSH Terms</option>
+                                <option value="OTRM">Other Term</option>
+                                <option value="PAGE">Pagination</option>
+                                <option value="PAPX">Pharmacological Action</option>
+                                <option value="CNTY">Place of Publication</option>
+                                <option value="PPDT">Print Publication Date</option>
+                                <option value="PTYP">Publication Type</option>
+                                <option value="PUBN">Publisher</option>
+                                <option value="PID">Publisher ID</option>
+                                <option value="SI">Secondary Source ID</option>
+                                <option value="PS">Subject - Personal Name</option>
+                                <option value="SUBS">Supplementary Concept</option>
+                                <option value="WORD">Text Word</option>
+                                <option value="TITL">Title</option>
+                                <option value="TIAB">Title/Abstract</option>
+                                <option value="TT">Transliterated Title</option>
+                                <option value="UID">UID</option>
+                                <option value="VOL">Volume</option>
+                            </select></div>
+                        <div class="col-12 col-sm-auto flex-grow-1" id="col_input_term"><label class="form-label" id="label_search_term" for="input_search_term">Search term</label><input class="form-control font-monospace" type="text" id="input_search_term" placeholder="e.g. Alzheimer" autocomplete="off"></div>
+                        <div class="col-sm-auto flex-grow-1 flex-sm-grow-0" id="col_input_addition" style="width: auto;"><label class="form-label" id="label_search_term" for="input_add_type">Type of addition</label>
+                            <div class="input-group flex-nowrap" id="input_group_add"><select class="form-select" id="input_add_type" disabled="">
+                                    <option value="AND" selected="">AND</option>
+                                    <option value="OR">OR</option>
+                                    <option value="NOT">NOT</option>
+                                </select><button class="btn btn-outline-primary" id="button_add_item" type="button">Add</button></div>
+                        </div>
+                    </div>
+                    <div class="row d-flex flex-grow-1" id="row_generated_query">
+                        <div class="col d-flex flex-column gy-3" id="col_generated_query"><label class="form-label" id="label_generated_query" for="input_generated_query">Query</label><textarea class="form-control d-flex flex-grow-1 font-monospace" id="input_generated_query" spellcheck="false" autocomplete="off" placeholder="No query found" style="min-height: 93px;"></textarea><small class="form-text" id="help_query">Or, write/paste your own query</small></div>
+                    </div>
+                </div>
+                <div class="col-lg-5" id="col_specify_symbols">
+                    <h2 id="header_specify_symbols" style="font-weight: 400;color: var(--bs-gray-dark);">2. Specify gene symbols</h2>
+                    <div class="row gy-3" id="row_specify_symbols">
+                        <div class="col" id="col_include_exclude_symbols"><label class="form-label" id="label_inlude_exclude_symbols">Include or exclude gene symbols from search</label>
+                            <div class="form-check" id="radio_label_include_symbols"><input class="form-check-input" type="radio" id="radio_include_symbols" name="radio_include_exclude" value="true" checked=""><label class="form-check-label" id="label_include_label" for="radio_include_symbols">Include gene symbols</label></div>
+                            <div class="form-check" id="radio_label_exclude_symbols"><input class="form-check-input" type="radio" id="radio_exclude_symbols" name="radio_include_exclude" value="false"><label class="form-check-label" id="label_exclude_symbols" for="radio_exclude_symbols">Exclude gene symbols</label></div>
+                        </div>
+                        <div class="col-lg-12" id="col_display_symbols"><label class="form-label" id="label_symbols" for="input_symbols">Gene symbols to include/exclude</label><textarea class="form-control font-monospace" id="input_symbols" autocomplete="off" spellcheck="false" placeholder="No gene symbols specified" style="min-height: 93px;"></textarea><small class="form-text" id="help_multiple_symbols">Separate gene symbols with a comma-sign (,)</small></div>
+                        <div class="col" id="col_load_symbols"><label class="form-label" id="label_load_symbols" for="input_load_symbols">Or, load gene symbols from a file</label>
+                            <div class="input-group" id="input_group_clear_file"><input class="form-control" type="file" id="input_load_symbols"><button class="btn btn-outline-primary" id="button_clear_file" type="button">Clear</button></div><small class="form-text">File may contain only one gene symbol per line</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12" id="col_options">
+                    <h2 id="header_options" style="font-weight: 400;color: var(--bs-gray-dark);">3. Optional options</h2>
+                    <div class="row gy-3" id="row_date_options">
+                        <div class="col text-nowrap" id="row_date_after"><label class="form-label" id="label_date_after" for="input_date_after">Search articles published after</label><input class="form-control" id="input_date_after" type="date"></div>
+                        <div class="col text-nowrap" id="row_date_before"><label class="form-label" id="label_date_before" for="input_date_before">Search articles published before</label><input class="form-control" id="input_date_before" type="date"></div>
+                    </div>
+                </div>
+                <div class="col" id="col_submit">
+                    <div class="row">
+                        <div class="col-auto d-flex align-items-center">
+                            <div class="form-check form-switch"><input type="checkbox" id="check_new_tab" class="form-check-input"><label class="form-label form-check-label my-0" for="check_new_tab">Open search in new tab</label></div>
+                        </div>
+                        <div class="col"><button class="btn btn-primary text-nowrap" type="submit">Run query</button></div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}
