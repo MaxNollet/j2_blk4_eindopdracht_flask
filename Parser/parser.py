@@ -18,8 +18,6 @@ def reader(file, headers):
     with open(file, mode="r", encoding="utf-8-sig") as f:
         # https://stackoverflow.com/questions/17912307/
         # u-ufeff-in-python-string
-        # data = [i for i, j in enumerate(f.readline().strip()
-        # .split(";")) if "GenePanels" in j]
         for i, j in enumerate(f.readline().strip().split("\t")):
             # i is the index and j is the value
             for h in headers:
@@ -38,44 +36,57 @@ def reader(file, headers):
                     p_symbol.symbol = line.strip().split("\t")[key_index]
                 if re.search("Aliases", value[0]):
                     aliases = []
-                    # print(line.strip().split("\t")[key_index].split("|"))
                     for alias in line.strip().split("\t")[key_index].split(
                             "|"):
                         al = Alias(hgnc_symbol=alias)
                         aliases.append(al)
                 if "GenePanel" == value[0]:
-                    panels = []  # list with 'LENGTE','MR', 'SCHISIS' eg
-                    ihh_list = []  # list with inheritance
-                    # print(line.strip().split("\t")[key_index]) # eg
-                    p = re.findall(f"(?<=\().+?(?=\))",
-                                   line.strip().split("\t")[key_index])
-                    # the inheritance between ()
-                    if len(p) >= 1:
-                        for ih in p:  # p = ['AD', 'AD',
-                            # 'AD;UK,AR,AD,XL', 'AD']
-                            if ";" or "," in str(ih):  # ih 'AD;UK,XL'
-                                ihh = str(ih).replace(";", ",").split(",")
-                                for j in ihh:
-                                    ihh_list.append(InheritanceType(type=j))
-                            else:
-                                for j in ih:  # example 'AD'
-                                    ihh_list.append(InheritanceType(type=j))
-
-                    t = re.sub(f"(?<=\().+?(?=\))", "",
-                               str(line.strip().split("\t")[key_index]))
-                    k = t.replace(" ()", "").replace("\"", "").split(";")
-                    for a in k:  # k contains ['HEMOS', 'OMIM'] example
-                        gp = Genepanel(abbreviation=a)
-                        panels.append(gp)
-                    # print(re.findall(f".+?(?=\s\()", t))
+                    combi_panel = []  # combi [OMIM],[ AR, AD]] example
+                    haken = re.findall(f"(?<=\().+?(?=\))",
+                                       line.strip().split("\t")[key_index])
+                    if re.search(";", str(haken)):
+                        # checks if ; in (ab; ar, xl) etc
+                        for h in haken:  # loop over alle gevonden ()
+                            if ";" in h:
+                                repl = h.replace(";", ",")
+                                # replace de ; binnen de ()
+                                line_fix = re.sub(h, repl, line.strip().
+                                                  split("\t")[key_index])
+                                # vervang de () met ; door een ,
+                                line_fix = line_fix.split(";")
+                    else:
+                        # print(line.strip().split("\t")[key_index])  # eg
+                        line_fix = line.strip().split("\t")[key_index].split(
+                            ";")
+                    for li in line_fix:  # line_fix is list from split
+                        een_genpanel = []  # new for each new combi
+                        all_ih = re.findall(f"(?<=\().+?(?=\))", li)
+                        # the inheritance between ()
+                        if len(all_ih) >= 0:  # vgm niet nodig
+                            for ih in all_ih:  # p = ['AD', 'AD'] ih= UK, AR
+                                # 'AD;UK,AR,AD,XL', 'AD']
+                                if ";" or "," in str(ih):  # ih 'AD;UK,XL'
+                                    ihh = str(ih).replace(";", ",").split(",")
+                                    for j in ihh:
+                                        een_genpanel.append(
+                                            InheritanceType(type=j))
+                                else:
+                                    for j in ih:  # example 'AD'
+                                        een_genpanel.append(
+                                            InheritanceType(type=j))
+                        t = re.sub(f"(?<=\().+?(?=\))", "", li)
+                        k = t.replace(" ()", "").replace("\"", "").split(";")
+                        # k = ['OMIM'] for example
+                        een_genpanel.append(Genepanel(abbreviation=k[0]))
+                        combi_panel.append(een_genpanel)
             fi = FileInfo(gene=gene, alias=aliases, p_symbol=p_symbol,
-                          panel=panels, p_inheritance=ihh_list)
+                          panel=combi_panel)
             file_list.append(fi)  # kan niet in 1 regel
     print("complete")
-
-    print(file_list[len(file_list) - 6])
-
-    print(file_list[1569])  # 1571
+    # print(file_list)
+    print(file_list[len(file_list) - 6])  # 79755 GeneID_NCBI
+    print(file_list[len(file_list) - 1])  # examples
+    print(file_list[1569])  # 1571 ncbi_geneID = 8139
     return tuple(file_list)
 
 
@@ -83,8 +94,7 @@ def reader(file, headers):
 class FileInfo:
     gene: Gene
     p_symbol: GenepanelSymbol
-    panel: list = field(default_factory=list)
-    p_inheritance: list = field(default_factory=list)
+    panel: list = field(default_factory=list)  # includes AR, AD en afkorting
     alias: list = field(default_factory=list)
 
 
