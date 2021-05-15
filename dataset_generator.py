@@ -281,6 +281,25 @@ class DatasetEqualizer:
                 bigger_dataset.pop(remove)
         return bigger_dataset
 
+    def __filter_small_letters(self, dataset: dict) -> dict:
+        """A method which filters out all elements containing
+           only small letters.
+
+        Input = dataset to be filtered (dict).
+        Output = filtered dataset containing only elements with
+                 small letters (dict).
+        """
+        letters = dict()
+        pattern = re.compile(r"[A-Z]]")
+        for key in dataset.keys():
+            small_letters = set()
+            for element in dataset[key]:
+                if not pattern.match(element):
+                    small_letters.add(element)
+            if len(small_letters) > 0:
+                letters[key] = small_letters
+        return letters
+
     def __filter_big_letters(self, dataset: dict) -> dict:
         """A method which filters out all elements containing
            big letters.
