@@ -225,6 +225,9 @@ class DatasetEqualizer:
            provided symbols and words.
         """
         self.__determine_dataset_size()
+        lengths_smaller_dataset = self.__categorize_lengths(self.__smaller_dataset)
+        lengths_bigger_dataset = self.__categorize_lengths(self.__bigger_dataset)
+        equalized_bigger_dataset = self.__equalize_lengths(lengths_smaller_dataset, lengths_bigger_dataset)
         return 0
 
     def __determine_dataset_size(self) -> None:
@@ -260,6 +263,23 @@ class DatasetEqualizer:
             else:
                 lengths[length] += 1
         return lengths
+
+    def __equalize_lengths(self, smaller_dataset: dict, bigger_dataset: dict) -> dict:
+        """A method which equalizes the lengths categories from
+           the smaller and the bigger dataset.
+
+        Input = -lengths of the smaller dataset (dict).
+        Input = -lengths of the bigger dataset (dict).
+        Output = equalized bigger dataset (dict).
+        """
+        to_be_remove = set()
+        for element in bigger_dataset.keys():
+            if element not in smaller_dataset:
+                to_be_remove.add(element)
+        if len(to_be_remove) > 0:
+            for remove in to_be_remove:
+                bigger_dataset.pop(remove)
+        return bigger_dataset
 
     def write_dataset(self) -> None:
         """A method which writes the dataset to a file. Each line
