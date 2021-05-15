@@ -259,9 +259,9 @@ class DatasetEqualizer:
         for element in dataset:
             length = len(element)
             if length not in lengths:
-                lengths[length] = 1
+                lengths[length] = {element}
             else:
-                lengths[length] += 1
+                lengths[length].add(element)
         return lengths
 
     def __equalize_lengths(self, smaller_dataset: dict, bigger_dataset: dict) -> dict:
@@ -280,6 +280,25 @@ class DatasetEqualizer:
             for remove in to_be_remove:
                 bigger_dataset.pop(remove)
         return bigger_dataset
+
+    def __filter_big_letters(self, dataset: dict) -> dict:
+        """A method which filters out all elements containing
+           big letters.
+
+        Input = dataset to be filtered (dict).
+        Output = filtered dataset containing only elements with
+                 big letters (dict).
+        """
+        letters = dict()
+        pattern = re.compile(r"[A-Z]")
+        for key in dataset.keys():
+            big_letters = set()
+            for element in dataset[key]:
+                if pattern.match(element):
+                    big_letters.add(element)
+            if len(big_letters) > 0:
+                letters[key] = big_letters
+        return letters
 
     def write_dataset(self) -> None:
         """A method which writes the dataset to a file. Each line
