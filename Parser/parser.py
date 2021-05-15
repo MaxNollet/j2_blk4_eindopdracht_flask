@@ -30,6 +30,8 @@ def reader(file, headers):
             gene = Gene(in_genepanel=True)
             p_symbol = GenepanelSymbol()
             for key_index, value in data.items():  # beter naam voor
+                if re.search("GeneID_NCBI", value[0]):
+                    gene.ncbi_gene_id = line.strip().split("\t")[key_index]
                 if re.search("HGNC", value[0]):
                     gene.hgnc_symbol = line.strip().split("\t")[key_index]
                 if re.search("GenePanels_Symbol", value[0]):
