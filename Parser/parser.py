@@ -110,9 +110,12 @@ def reader(file, headers):
     print("complete")
     # print(file_list)
     print(file_list[len(file_list) - 6])
-    print(file_list[len(file_list) - 1])
+    # print(file_list[len(file_list) - 1])
+
     print(file_list[1569])  # 1571
+
     # "BEWEGING (AD,AR);DERM (AR);HMSN (AR);OMIM (AR;AD,AR);PCS (AR)"
+
     # "BLIND (AR);CILIO (AD,AR);NIER (AR);OMIM (AR;AD,AR);PCS (AR)"
     return tuple(file_list)
 
