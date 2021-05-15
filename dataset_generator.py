@@ -196,14 +196,16 @@ class DatasetEqualizer:
     def __init__(self, symbols: SymbolParser,
                  words: WordListReader,
                  auto_process: bool = True,
-                 equal_dataset: bool = True,
+                 equalize_dataset: bool = True,
                  output_file: str = "dataset") -> None:
         self.__symbol_parser = symbols
         self.__word_reader = words
         self.__output_file = output_file
         if auto_process:
             self.__extract_unique_variables()
-            self.write_dataset()
+            if equalize_dataset:
+                self.equalize_dataset()
+            # self.write_dataset()
 
     def __extract_unique_variables(self) -> None:
         """A method which extracts all unique symbols, aliases
@@ -216,6 +218,31 @@ class DatasetEqualizer:
         self.__symbols = symbols
         self.__aliases = aliases.difference(symbols)
         self.__words = words.difference(aliases).difference(symbols)
+        return None
+
+    def equalize_dataset(self):
+        """A method which uses other methods to equalize the
+           provided symbols and words.
+        """
+        self.__determine_dataset_size()
+        return 0
+
+    def __determine_dataset_size(self) -> None:
+        """A method which compares the two datasets and categorizes
+           the bigger and the smaller datasets. Based on this, the
+           bigger dataset will be sampled to match the size of the
+           smaller dataset.
+        """
+        self.__smaller_dataset = set()
+        self.__bigger_dataset = set()
+        size_symbols = len(self.__symbols) + len(self.__aliases)
+        size_words = len(self.__words)
+        if size_symbols >= size_words:
+            self.__smaller_dataset.update(self.__words)
+            self.__bigger_dataset.update(self.__symbols, self.__aliases)
+        else:
+            self.__smaller_dataset.update(self.__symbols, self.__aliases)
+            self.__bigger_dataset.update(self.__words)
         return None
 
     def write_dataset(self) -> None:
