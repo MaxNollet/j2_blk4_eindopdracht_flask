@@ -228,6 +228,10 @@ class DatasetEqualizer:
         lengths_smaller_dataset = self.__categorize_lengths(self.__smaller_dataset)
         lengths_bigger_dataset = self.__categorize_lengths(self.__bigger_dataset)
         equalized_bigger_dataset = self.__equalize_lengths(lengths_smaller_dataset, lengths_bigger_dataset)
+        small_letters = self.__filter(dataset=equalized_bigger_dataset, pattern=r"[A-Z]", include=False)
+        big_letters = self.__filter(dataset=equalized_bigger_dataset, pattern=r"[A-Z]", include=True)
+        no_digits = self.__filter(dataset=equalized_bigger_dataset, pattern=r"[0-9]", include=False)
+        contains_digits = self.__filter(dataset=equalized_bigger_dataset, pattern=r"[0-9]", include=True)
         return 0
 
     def __determine_dataset_size(self) -> None:
@@ -281,43 +285,31 @@ class DatasetEqualizer:
                 bigger_dataset.pop(remove)
         return bigger_dataset
 
-    def __filter_small_letters(self, dataset: dict) -> dict:
-        """A method which filters out all elements containing
-           only small letters.
+    def __filter(self, dataset: dict, pattern: str, include: bool) -> dict:
+        """A method which filters out all elements matching
+           the pattern specified.
 
-        Input = dataset to be filtered (dict).
-        Output = filtered dataset containing only elements with
-                 small letters (dict).
+        Input = -dataset to be filtered (dict).
+                -pattern to filter elements (str).
+                -indication if the element must match the
+                 pattern or not (bool).
+        Output = filtered dataset matching the pattern (dict).
         """
-        letters = dict()
-        pattern = re.compile(r"[A-Z]]")
+        filtered = dict()
+        pattern = re.compile(pattern)
         for key in dataset.keys():
-            small_letters = set()
+            elements = list()
             for element in dataset[key]:
-                if not pattern.match(element):
-                    small_letters.add(element)
-            if len(small_letters) > 0:
-                letters[key] = small_letters
-        return letters
+                if include:
+                    if pattern.search(element):
+                        elements.append(element)
+                else:
+                    if pattern.search(element) is None:
+                        elements.append(element)
+            if len(elements) > 0:
+                filtered[key] = elements
+        return filtered
 
-    def __filter_big_letters(self, dataset: dict) -> dict:
-        """A method which filters out all elements containing
-           big letters.
-
-        Input = dataset to be filtered (dict).
-        Output = filtered dataset containing only elements with
-                 big letters (dict).
-        """
-        letters = dict()
-        pattern = re.compile(r"[A-Z]")
-        for key in dataset.keys():
-            big_letters = set()
-            for element in dataset[key]:
-                if pattern.match(element):
-                    big_letters.add(element)
-            if len(big_letters) > 0:
-                letters[key] = big_letters
-        return letters
 
     def write_dataset(self) -> None:
         """A method which writes the dataset to a file. Each line
