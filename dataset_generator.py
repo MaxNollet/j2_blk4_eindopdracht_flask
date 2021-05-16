@@ -1,25 +1,42 @@
 import os
+import re
 import random
 import matplotlib.pyplot as plot
 
 
 def main():
+    # Read/parse all symbols and words from the specified files.
     symbols = SymbolParser(file_name="hgnc_complete_set.txt",
                            symbols_column_name="symbol",
                            aliases_column_name="alias_symbol")
-    # GraphGenerator((symbols.get_aliases(), symbols.get_symbols()),
-    #                ("Aliases", "Symbols"),
-    #                "Lengths of aliases and symbols from HGNC")
     words = WordListReader(file_name="words.txt")
-    print(f"Symbols: {len(symbols.get_symbols())}")
-    print(f"Aliases: {len(symbols.get_aliases())}")
-    print(f"Words: {len(words.get_words())}")
+    # Generate graphs pre-processing.
+    print("Pre-processing:")
+    print(f"  Symbols: {len(symbols.get_symbols())}")
+    print(f"  Aliases: {len(symbols.get_aliases())}")
+    print(f"  Words: {len(words.get_words())}")
+    GraphGenerator((symbols.get_aliases(), symbols.get_symbols()),
+                   ("Aliases", "Symbols"),
+                   "Lengths of aliases and symbols from HGNC (pre-processing)")
+    GraphGenerator((words.get_words(),), ("Words",),
+                   "A bunch of English words (pre-processing)")
+    # Equalize symbols and words.
     equalizer = DatasetEqualizer(symbols=symbols, words=words)
+    # Generate graphs post-processing.
+    print("Post-processing:")
+    print(f"  Symbols and aliases: {len(equalizer.get_symbols())}")
+    print(f"  Words: {len(equalizer.get_words())}")
+    GraphGenerator((equalizer.get_symbols(),), ("Symbols and aliases",),
+                   "Lengths of aliases and symbols from HGNC (post-processing)")
+    GraphGenerator((equalizer.get_words(),), ("Words",),
+                   "A bunch of English words (post-processing)")
+    print(f"Sum of symbols and words: {len(equalizer.get_symbols()) + len(equalizer.get_words())}")
+    # Write final equalized dataset to a file.
+    equalizer.write_dataset()
     return 0
 
 
 def pretty_print(categorized: dict):
-    # print(sorted(categorized.keys()))
     for key in sorted(categorized.keys()):
         print(f"{key}: {len(categorized.get(key))}")
     return None
@@ -193,19 +210,36 @@ class WordListReader:
 
 
 class DatasetEqualizer:
+    """A class which tries to equalize two datasets and is
+       able to write the final equalized dataset with
+       corresponding labels to a file.
+   """
     def __init__(self, symbols: SymbolParser,
                  words: WordListReader,
                  auto_process: bool = True,
                  equalize_dataset: bool = True,
-                 output_file: str = "dataset") -> None:
+                 output_file: str = "dataset.txt") -> None:
+        """A method which constructs the object and triggers
+           some methods automatically to start processing
+           the datasets.
+
+        Input = -symbol-parser containing symbols and aliases (SymbolParser).
+                -word-reader containing all words (WordListReader).
+                -indication to start processing the datasets automatically (bool).
+                -indication to equalize the datasets (bool0.
+                -filename where the final output needs to be written to (str).
+        """
         self.__symbol_parser = symbols
         self.__word_reader = words
         self.__output_file = output_file
+        self.__smaller_dataset = None
+        self.__bigger_dataset = None
+        self.__symbols = None
+        self.__words = None
         if auto_process:
             self.__extract_unique_variables()
             if equalize_dataset:
                 self.equalize_dataset()
-            # self.write_dataset()
 
     def __extract_unique_variables(self) -> None:
         """A method which extracts all unique symbols, aliases
@@ -215,49 +249,70 @@ class DatasetEqualizer:
         symbols = self.__symbol_parser.get_symbols()
         aliases = self.__symbol_parser.get_aliases()
         words = self.__word_reader.get_words()
-        self.__symbols = symbols
-        self.__aliases = aliases.difference(symbols)
-        self.__words = words.difference(aliases).difference(symbols)
+        self.__symbols = symbols | aliases
+        self.__words = words - symbols
         return None
 
     def equalize_dataset(self):
         """A method which uses other methods to equalize the
            provided symbols and words.
         """
-        self.__determine_dataset_size()
+        # Preparing the datasets for comparison and prepare filter patterns.
+        to_be_updated = self.__determine_dataset_size()
         lengths_smaller_dataset = self.__categorize_lengths(self.__smaller_dataset)
         lengths_bigger_dataset = self.__categorize_lengths(self.__bigger_dataset)
-        equalized_bigger_dataset = self.__equalize_lengths(lengths_smaller_dataset, lengths_bigger_dataset)
+        corrected_bigger_dataset = self.__equalize_lengths(lengths_smaller_dataset, lengths_bigger_dataset)
         pattern_letters = "[A-Z]"
         pattern_digits = "[0-9]"
         pattern_special = r"[~`!@#$%^&*()\-_+={}\[\]\|\/:;\"'<>,\.\?]"
-        small_letters = self.__filter(dataset=equalized_bigger_dataset, pattern=pattern_letters, include=False)
-        big_letters = self.__filter(dataset=equalized_bigger_dataset, pattern=pattern_letters, include=True)
-        no_digits = self.__filter(dataset=equalized_bigger_dataset, pattern=pattern_digits, include=False)
-        contains_digits = self.__filter(dataset=equalized_bigger_dataset, pattern=pattern_digits, include=True)
-        no_special_characters = self.__filter(dataset=equalized_bigger_dataset, pattern=pattern_special, include=False)
-        special_characters = self.__filter(dataset=equalized_bigger_dataset, pattern=pattern_special, include=True)
+        # Filter the bigger dataset.
+        small_letters = self.__filter(dataset=corrected_bigger_dataset, pattern=pattern_letters, include=False)
+        big_letters = self.__filter(dataset=corrected_bigger_dataset, pattern=pattern_letters, include=True)
+        no_digits = self.__filter(dataset=corrected_bigger_dataset, pattern=pattern_digits, include=False)
+        digits = self.__filter(dataset=corrected_bigger_dataset, pattern=pattern_digits, include=True)
+        normal = self.__filter(dataset=corrected_bigger_dataset, pattern=pattern_special, include=False)
+        special = self.__filter(dataset=corrected_bigger_dataset, pattern=pattern_special, include=True)
+        # Equalize the bigger dataset to the smaller dataset.
+        equalized = set()
+        for key in sorted(lengths_smaller_dataset.keys()):
+            types = dict()
+            types[0] = small_letters[key].difference(*[digits[key]], special[key])  # lowercase_no_digits_normal
+            types[1] = small_letters[key].difference(*[digits[key]], normal[key])  # lowercase_no_digits_special
+            types[2] = small_letters[key].difference(*[no_digits[key], special[key]])  # lowercase_digits_normal
+            types[3] = small_letters[key].difference(*[no_digits[key], normal[key]])  # lowercase_digits_special
+            types[4] = big_letters[key].difference(*[digits[key], special[key]])  # uppercase_no_digits_normal
+            types[5] = big_letters[key].difference(*[digits[key], normal[key]])  # uppercase_no_digits_special
+            types[6] = big_letters[key].difference(*[no_digits[key], special[key]])  # uppercase_digits_normal
+            types[7] = big_letters[key].difference(*[no_digits[key], normal[key]])  # uppercase_digits_special
+            equalized.update(self.__equalize_types(types, len(lengths_smaller_dataset[key])))
+        # Save the equalized dataset.
+        if to_be_updated == 0:
+            self.__symbols = equalized
+        else:
+            self.__words = equalized
         return 0
 
-    def __determine_dataset_size(self) -> None:
+    def __determine_dataset_size(self) -> int:
         """A method which compares the two datasets and categorizes
            the bigger and the smaller datasets. Based on this, the
            bigger dataset will be sampled to match the size of the
            smaller dataset.
+
+        Output = group to be updated when equalized.
         """
-        self.__smaller_dataset = set()
-        self.__bigger_dataset = set()
-        size_symbols = len(self.__symbols) + len(self.__aliases)
+        size_symbols = len(self.__symbols)
         size_words = len(self.__words)
         if size_symbols >= size_words:
-            self.__smaller_dataset.update(self.__words)
-            self.__bigger_dataset.update(self.__symbols, self.__aliases)
+            self.__smaller_dataset = self.__words
+            self.__bigger_dataset = self.__symbols
+            return 0
         else:
-            self.__smaller_dataset.update(self.__symbols, self.__aliases)
-            self.__bigger_dataset.update(self.__words)
-        return None
+            self.__smaller_dataset = self.__symbols
+            self.__bigger_dataset = self.__words
+            return 1
 
-    def __categorize_lengths(self, dataset: set) -> dict:
+    @classmethod
+    def __categorize_lengths(cls, dataset: set) -> dict:
         """A method which sorts all elements from a given
            dataset on the length of an element.
 
@@ -273,7 +328,8 @@ class DatasetEqualizer:
                 lengths[length].add(element)
         return lengths
 
-    def __equalize_lengths(self, smaller_dataset: dict, bigger_dataset: dict) -> dict:
+    @classmethod
+    def __equalize_lengths(cls, smaller_dataset: dict, bigger_dataset: dict) -> dict:
         """A method which equalizes the lengths categories from
            the smaller and the bigger dataset.
 
@@ -290,7 +346,8 @@ class DatasetEqualizer:
                 bigger_dataset.pop(remove)
         return bigger_dataset
 
-    def __filter(self, dataset: dict, pattern: str, include: bool) -> dict:
+    @classmethod
+    def __filter(cls, dataset: dict, pattern: str, include: bool) -> dict:
         """A method which filters out all elements matching
            the pattern specified.
 
@@ -303,43 +360,112 @@ class DatasetEqualizer:
         filtered = dict()
         pattern = re.compile(pattern)
         for key in dataset.keys():
-            elements = list()
+            elements = set()
             for element in dataset[key]:
                 if include:
                     if pattern.search(element):
-                        elements.append(element)
+                        elements.add(element)
                 else:
                     if pattern.search(element) is None:
-                        elements.append(element)
-            if len(elements) > 0:
-                filtered[key] = elements
+                        elements.add(element)
+            filtered[key] = elements
         return filtered
 
+    @classmethod
+    def __equalize_types(cls, types: dict, size: int) -> set:
+        """A method which tries to equalize the size of the
+           various types so that the frequency of each type
+           is equal in the final dataset.
+
+        Input = -types to be equalized (dist).
+                -final size of the sum of all types (int).
+        Output = equalized types (set).
+        """
+        to_be_removed = list()
+        for group in types.keys():
+            if len(types[group]) == 0:
+                to_be_removed.append(group)
+        [types.pop(key) for key in to_be_removed]
+        groups = len(types)
+        group_size = round(size / groups)
+        equalized = set()
+        for _, values in cls.__sort_dictionary(types):
+            count = len(values)
+            if count == group_size:
+                equalized.update(values)
+            elif count > group_size:
+                equalized.update((random.sample(values, group_size)))
+            else:
+                equalized.update(values)
+            groups -= 1
+            if groups > 0:
+                group_size = round((size - len(equalized)) / groups)
+        return equalized
+
+    @classmethod
+    def __sort_dictionary(cls, dictionary: dict) -> list:
+        """A method which sorts a dictionary by the size
+           of the buckets.
+
+        Input = dictionary to be sorted (dict).
+        Output = sorted dictionary (list).
+        """
+        return sorted(dictionary.items(), key=lambda element: len(element[1]))
 
     def write_dataset(self) -> None:
         """A method which writes the dataset to a file. Each line
            in the file contains one symbol or word with a
            corresponding label.
         """
-        if self.__symbols is not None and self.__symbols is not None and self.__words is not None:
+        if self.__symbols is not None and self.__words is not None:
             with open(self.__output_file, "w", encoding="UTF-8") as file:
                 for symbol in sorted(self.__symbols):
-                    file.write(f"{symbol}\tsymbol\n")
-                for alias in sorted(self.__aliases):
-                    file.write(f"{alias}\tsymbol\n")
+                    file.write(f"{symbol}\t1\n")
                 for word in sorted(self.__words):
-                    file.write(f"{word}\tword\n")
+                    file.write(f"{word}\t0\n")
         return None
 
-    @staticmethod
-    def __sort_dictionary(dictionary: dict) -> list:
-        return sorted(dictionary.items(), key=lambda element: len(element[1]))
+    def get_smaller_dataset(self) -> set:
+        """Getter for the smaller dataset.
 
-    @staticmethod
-    def __convert_to_lengths(values: set) -> list:
-        frequencies = list()
-        [frequencies.append(len(element)) for element in values]
-        return sorted(frequencies)
+        Output = smaller dataset (set).
+        """
+        if self.__smaller_dataset is not None:
+            return self.__smaller_dataset
+        else:
+            return set()
+
+    def get_bigger_dataset(self) -> set:
+        """Getter for the bigger dataset.
+
+        Output = bigger dataset (set).
+        """
+        if self.__bigger_dataset is not None:
+            return self.__bigger_dataset
+        else:
+            return set()
+
+    def get_symbols(self) -> set:
+        """Getter for the unique and potentially
+           equalized symbols.
+
+        Output = all symbols (set).
+        """
+        if self.__symbols is not None:
+            return self.__symbols
+        else:
+            return set()
+
+    def get_words(self) -> set:
+        """Getter for the unique and potentially
+           equalized words.
+
+        Output = all words (set).
+        """
+        if self.__words is not None:
+            return self.__words
+        else:
+            return set()
 
 
 class GraphGenerator:
@@ -391,14 +517,14 @@ class GraphGenerator:
     def histogram(self) -> None:
         plot.hist(x=self.__lengths, bins=self.__bins, stacked=True,
                   align="left", linewidth=0.5, edgecolor="black")
-        plot.xticks(self.__labels)
+        plot.xticks(self.__labels, rotation=90)
         plot.title(self.__title)
         plot.xlabel("Length")
         plot.ylabel("Frequency")
         plot.legend(self.__types)
-        # plot.tight_layout()
-        # plot.savefig(f"{self.__title}.svg")
-        plot.show()
+        plot.tight_layout()
+        plot.savefig(f"{self.__title}.svg")
+        # plot.show()
         plot.close()
         return None
 
