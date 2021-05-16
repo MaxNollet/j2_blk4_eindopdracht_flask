@@ -17,6 +17,12 @@ def main():
     #query_HGNC("AGPAT4")
 
 def query_validator(query):
+    """
+    Validates the query on parentheses being closed off correctly.
+    Also checks if search terms contain quotation marks.
+    :param query: String which contains the query used as search term
+    :return: 
+    """
     open_list = ["[","("]
     close_list = ["]",")"]
 
@@ -37,6 +43,12 @@ def query_validator(query):
         return False
 
 def query_pubmed(query):
+    """
+    Uses the query to look for article ids on pubmed.
+    Also checks the ids being unique. 
+    :param query: String which contains the query used as search term
+    :return:
+    """
     query_validator(query)
     if query_validator(query):
         print("The query is valid.")
@@ -57,6 +69,11 @@ def query_pubmed(query):
         print("The query isn't valid")
 
 def url_maker(idlist):
+    """
+    Creates the URL used for looking up genes on Pubtator
+    :param idlist: List that contains of all the unique ids found in query_pubmed
+    :return: 
+    """
     url = ""
     for i in idlist:
         if i != idlist[len(idlist)-1]:
@@ -67,8 +84,13 @@ def url_maker(idlist):
     print(complete_url)
     return complete_url
 
-def pubtator_output(hele_url):
-    result = requests.get(hele_url)
+def pubtator_output(complete_url):
+    """
+    Uses the URL made in url_maker to look up genes on pubtator.
+    :param complete_url: string of the url used as input for Pubtator. It contains the genes found in the articles
+    :return:
+    """
+    result = requests.get(complete_url)
     status_code = result.status_code
     if status_code == 200:
         print("Request succesful.")
