@@ -419,6 +419,7 @@ class DatasetEqualizer:
         """
         if self.__symbols is not None and self.__words is not None:
             with open(self.__output_file, "w", encoding="UTF-8") as file:
+                file.write("#Value\tLabel\n")
                 for symbol in sorted(self.__symbols):
                     file.write(f"{symbol}\t1\n")
                 for word in sorted(self.__words):
