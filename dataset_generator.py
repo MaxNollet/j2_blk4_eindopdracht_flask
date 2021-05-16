@@ -88,8 +88,8 @@ class SymbolParser:
                 column_alias = header.index(self.__aliases_column_name)
                 for line in file:
                     splitted_line = line.split("\t")
-                    self.__add_symbol(splitted_line[column_symbol])
-                    [self.__add_alias(alias) for alias in splitted_line[column_alias].split("|")]
+                    self.__add_symbol(splitted_line[column_symbol].strip("\""))
+                    [self.__add_alias(alias) for alias in splitted_line[column_alias].strip("\"").split("|")]
         else:
             raise NoFileEntered
         return None
