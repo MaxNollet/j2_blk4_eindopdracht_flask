@@ -2,8 +2,7 @@
 from dataclasses import dataclass
 
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer, String, \
-    Table, text
+from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer, String, Table, text
 from sqlalchemy.orm import relationship
 
 db = SQLAlchemy()
@@ -20,15 +19,12 @@ class Gene(Model):
     __tablename__ = 'gene'
     __table_args__ = {'schema': 'eindopdracht'}
 
-    id: int = Column(Integer, primary_key=True, server_default=text(
-        "nextval('eindopdracht.gene_id_seq'::regclass)"))
+    id: int = Column(Integer, primary_key=True, server_default=text("nextval('eindopdracht.gene_id_seq'::regclass)"))
     ncbi_gene_id: str = Column(String(25))
     hgnc_symbol: str = Column(String(25), nullable=False, unique=True)
-    in_genepanel: bool = Column(Boolean, nullable=False,
-                                server_default=text("false"))
+    in_genepanel: bool = Column(Boolean, nullable=False, server_default=text("false"))
 
-    genepanels = relationship('Genepanel',
-                              secondary='eindopdracht.genepanel_gene')
+    genepanels = relationship('Genepanel', secondary='eindopdracht.genepanel_gene')
 
 
 @dataclass
@@ -40,12 +36,10 @@ class Genepanel(Model):
     __table_args__ = {'schema': 'eindopdracht'}
 
     id: int = Column(Integer, primary_key=True,
-                     server_default=text(
-                         "nextval('eindopdracht.genepanel_id_seq'::regclass)"))
+                     server_default=text("nextval('eindopdracht.genepanel_id_seq'::regclass)"))
     abbreviation: str = Column(String(40), nullable=False, unique=True)
 
-    inheritance_types = relationship('InheritanceType',
-                                     secondary='eindopdracht.genepanel_inheritance')
+    inheritance_types = relationship('InheritanceType', secondary='eindopdracht.genepanel_inheritance')
 
 
 @dataclass
@@ -57,8 +51,7 @@ class InheritanceType(Model):
     __table_args__ = {'schema': 'eindopdracht'}
 
     id: int = Column(Integer, primary_key=True,
-                     server_default=text(
-                         "nextval('eindopdracht.inheritance_type_id_seq'::regclass)"))
+                     server_default=text("nextval('eindopdracht.inheritance_type_id_seq'::regclass)"))
     type: str = Column(String(15), nullable=False, unique=True)
 
 
@@ -70,8 +63,7 @@ class Journal(Model):
     __tablename__ = 'journal'
     __table_args__ = {'schema': 'eindopdracht'}
 
-    id: int = Column(Integer, primary_key=True, server_default=text(
-        "nextval('eindopdracht.journal_id_seq'::regclass)"))
+    id: int = Column(Integer, primary_key=True, server_default=text("nextval('eindopdracht.journal_id_seq'::regclass)"))
     name: str = Column(String(60), nullable=False)
 
 
@@ -83,8 +75,7 @@ class Alias(Model):
     __tablename__ = 'alias'
     __table_args__ = {'schema': 'eindopdracht'}
 
-    id: int = Column(Integer, primary_key=True, server_default=text(
-        "nextval('eindopdracht.alias_id_seq'::regclass)"))
+    id: int = Column(Integer, primary_key=True, server_default=text("nextval('eindopdracht.alias_id_seq'::regclass)"))
     hgnc_symbol: str = Column(String(15), nullable=False, unique=True)
     gene_id: int = Column(ForeignKey('eindopdracht.gene.id'), nullable=False)
 
@@ -99,8 +90,7 @@ class Article(Model):
     __tablename__ = 'article'
     __table_args__ = {'schema': 'eindopdracht'}
 
-    id: int = Column(Integer, primary_key=True, server_default=text(
-        "nextval('eindopdracht.article_id_seq'::regclass)"))
+    id: int = Column(Integer, primary_key=True, server_default=text("nextval('eindopdracht.article_id_seq'::regclass)"))
     title: str = Column(String(200), nullable=False)
     pubmed_id: int = Column(Integer)
     doi: str = Column(String(60), nullable=False, unique=True)
@@ -115,17 +105,14 @@ class Article(Model):
 t_genepanel_gene = Table(
     'genepanel_gene', metadata,
     Column('gene_id', ForeignKey('eindopdracht.gene.id'), nullable=False),
-    Column('genepanel_id', ForeignKey('eindopdracht.genepanel.id'),
-           nullable=False),
+    Column('genepanel_id', ForeignKey('eindopdracht.genepanel.id'), nullable=False),
     schema='eindopdracht'
 )
 
 t_genepanel_inheritance = Table(
     'genepanel_inheritance', metadata,
-    Column('genepanel_id', ForeignKey('eindopdracht.genepanel.id'),
-           nullable=False),
-    Column('inheritance_type_id',
-           ForeignKey('eindopdracht.inheritance_type.id'), nullable=False),
+    Column('genepanel_id', ForeignKey('eindopdracht.genepanel.id'), nullable=False),
+    Column('inheritance_type_id', ForeignKey('eindopdracht.inheritance_type.id'), nullable=False),
     schema='eindopdracht'
 )
 
@@ -139,8 +126,7 @@ class GenepanelSymbol(Model):
     __table_args__ = {'schema': 'eindopdracht'}
 
     id: int = Column(Integer, primary_key=True,
-                     server_default=text(
-                         "nextval('eindopdracht.genepanel_symbol_id_seq'::regclass)"))
+                     server_default=text("nextval('eindopdracht.genepanel_symbol_id_seq'::regclass)"))
     symbol: str = Column(String(15), nullable=False, unique=True)
     gene_id: int = Column(ForeignKey('eindopdracht.gene.id'), nullable=False)
 
@@ -150,7 +136,6 @@ class GenepanelSymbol(Model):
 t_article_gene = Table(
     'article_gene', metadata,
     Column('gene_id', ForeignKey('eindopdracht.gene.id'), nullable=False),
-    Column('article_id', ForeignKey('eindopdracht.article.id'),
-           nullable=False),
+    Column('article_id', ForeignKey('eindopdracht.article.id'), nullable=False),
     schema='eindopdracht'
 )
