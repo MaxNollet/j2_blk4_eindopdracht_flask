@@ -249,4 +249,5 @@ modules.xml
 
 # Genepanel files
 *.svg
-dataset.txt
+*dataset.txt
+logs/*
