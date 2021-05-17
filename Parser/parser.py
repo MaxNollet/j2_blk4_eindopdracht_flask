@@ -55,7 +55,7 @@ def reader(file, headers):
                                 # vervang de () met ; door een ,
                                 line_fix = line_fix.split(";")
                     else:
-                        # print(line.strip().split("\t")[key_index])  # eg
+                        # print(line.strip().split("\t")x[key_index])  # eg
                         line_fix = line.strip().split("\t")[key_index].split(
                             ";")
                     for li in line_fix:  # line_fix is list from split
@@ -86,7 +86,7 @@ def reader(file, headers):
     print(len(file_list))
     # print(file_list[len(file_list) - 6])  # 79755 GeneID_NCBI
     # print(file_list[len(file_list) - 1])  # examples
-    # print(file_list[1569])  # 1571 ncbi_geneID = 8139
+    print(file_list[1569])  # 1571 ncbi_geneID = 8139
     return tuple(file_list)
 
 
