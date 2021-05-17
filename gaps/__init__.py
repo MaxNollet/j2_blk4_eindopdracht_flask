@@ -16,13 +16,13 @@ def create_app():
     """
     app = Flask(__name__, instance_relative_config=True)
     if environ.get("FLASK_ENV") is None:
-        app.config.from_object("config.Production", silent=True)
+        app.config.from_object("config.Production")
     else:
         value = environ.get('FLASK_ENV').lower().capitalize()
         try:
             app.config.from_object(f"config.{value}")
         except ImportError:
-            app.config.from_object("config.Production", silent=True)
+            app.config.from_object("config.Production")
     # Initiate database and register blueprints.
     db.init_app(app)
     app.register_blueprint(blueprint_home)
