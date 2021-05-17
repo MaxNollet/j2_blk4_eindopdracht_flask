@@ -14,9 +14,9 @@ window.onload = function () {
         });
     document.getElementById("button_add_item")
         .addEventListener("click", QueryBuilder);
-    // document.getElementById("input_generated_query")
-    //     .addEventListener("change", OnQueryChange);
-    // OnQueryChange();
+    document.getElementById("input_generated_query")
+        .addEventListener("input", OnQueryChange);
+    OnQueryChange();
     document.getElementById("button_clear_file")
         .addEventListener("click", ClearFile);
 }
@@ -66,11 +66,16 @@ function Concatenate(field, term, type, query) {
     return query;
 }
 
-// function OnQueryChange() {
-//     const element_query = document.getElementById("input_generated_query");
-//     const element_add = document.getElementById("input_add_type");
-//     element_add.disabled = element_query.value.trim() === "";
-// }
+/**
+ * A function which enables/disables the dropdown
+ * button containing different types for adding a
+ * value to the query.
+ * */
+function OnQueryChange() {
+    const element_query = document.getElementById("input_generated_query");
+    const element_add = document.getElementById("input_add_type");
+    element_add.disabled = element_query.value.trim() === "";
+}
 
 /**
  * A function which clears the selected file from
