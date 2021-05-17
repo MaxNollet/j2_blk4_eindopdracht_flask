@@ -15,24 +15,24 @@ def main():
     print(f"  Symbols: {len(symbols.get_symbols())}")
     print(f"  Aliases: {len(symbols.get_aliases())}")
     print(f"  Words: {len(words.get_words())}")
-    GraphGenerator((symbols.get_aliases(), symbols.get_symbols()),
-                   ("Aliases", "Symbols"),
-                   "Lengths of aliases and symbols from HGNC (pre-processing)")
-    GraphGenerator((words.get_words(),), ("Words",),
-                   "A bunch of English words (pre-processing)")
+    # GraphGenerator((symbols.get_aliases(), symbols.get_symbols()),
+    #                ("Aliases", "Symbols"),
+    #                "Lengths of aliases and symbols from HGNC (pre-processing)")
+    # GraphGenerator((words.get_words(),), ("Words",),
+    #                "A bunch of English words (pre-processing)")
     # Equalize symbols and words.
     equalizer = DatasetEqualizer(symbols=symbols, words=words)
     # Generate graphs post-processing.
     print("Post-processing:")
     print(f"  Symbols and aliases: {len(equalizer.get_symbols())}")
     print(f"  Words: {len(equalizer.get_words())}")
-    GraphGenerator((equalizer.get_symbols(),), ("Symbols and aliases",),
-                   "Lengths of aliases and symbols from HGNC (post-processing)")
-    GraphGenerator((equalizer.get_words(),), ("Words",),
-                   "A bunch of English words (post-processing)")
+    # GraphGenerator((equalizer.get_symbols(),), ("Symbols and aliases",),
+    #                "Lengths of aliases and symbols from HGNC (post-processing)")
+    # GraphGenerator((equalizer.get_words(),), ("Words",),
+    #                "A bunch of English words (post-processing)")
     print(f"Sum of symbols and words: {len(equalizer.get_symbols()) + len(equalizer.get_words())}")
     # Write final equalized dataset to a file.
-    equalizer.write_dataset()
+    equalizer.write_training_dataset()
     return 0
 
 
@@ -226,7 +226,7 @@ class DatasetEqualizer:
         Input = -symbol-parser containing symbols and aliases (SymbolParser).
                 -word-reader containing all words (WordListReader).
                 -indication to start processing the datasets automatically (bool).
-                -indication to equalize the datasets (bool0.
+                -indication to equalize the datasets (bool).
                 -filename where the final output needs to be written to (str).
         """
         self.__symbol_parser = symbols
@@ -234,12 +234,17 @@ class DatasetEqualizer:
         self.__output_file = output_file
         self.__smaller_dataset = None
         self.__bigger_dataset = None
-        self.__symbols = None
-        self.__words = None
+        self.__symbols_training = None
+        self.__symbols_test = None
+        self.__symbols_validation = None
+        self.__words_training = None
+        self.__words_test = None
+        self.__words_validation = None
         if auto_process:
             self.__extract_unique_variables()
             if equalize_dataset:
                 self.equalize_dataset()
+                self.__distribute_variables()
 
     def __extract_unique_variables(self) -> None:
         """A method which extracts all unique symbols, aliases
@@ -249,8 +254,8 @@ class DatasetEqualizer:
         symbols = self.__symbol_parser.get_symbols()
         aliases = self.__symbol_parser.get_aliases()
         words = self.__word_reader.get_words()
-        self.__symbols = symbols | aliases
-        self.__words = words - symbols
+        self.__symbols_training = symbols | aliases
+        self.__words_training = words - symbols
         return None
 
     def equalize_dataset(self):
@@ -273,7 +278,7 @@ class DatasetEqualizer:
         normal = self.__filter(dataset=corrected_bigger_dataset, pattern=pattern_special, include=False)
         special = self.__filter(dataset=corrected_bigger_dataset, pattern=pattern_special, include=True)
         # Equalize the bigger dataset to the smaller dataset.
-        equalized = set()
+        equalized_set = set()
         for key in sorted(lengths_smaller_dataset.keys()):
             types = dict()
             types[0] = small_letters[key].difference(*[digits[key]], special[key])  # lowercase_no_digits_normal
@@ -284,12 +289,12 @@ class DatasetEqualizer:
             types[5] = big_letters[key].difference(*[digits[key], normal[key]])  # uppercase_no_digits_special
             types[6] = big_letters[key].difference(*[no_digits[key], special[key]])  # uppercase_digits_normal
             types[7] = big_letters[key].difference(*[no_digits[key], normal[key]])  # uppercase_digits_special
-            equalized.update(self.__equalize_types(types, len(lengths_smaller_dataset[key])))
+            equalized_set.update(self.__equalize_types(types, len(lengths_smaller_dataset[key])))
         # Save the equalized dataset.
         if to_be_updated == 0:
-            self.__symbols = equalized
+            self.__symbols_training = equalized_set
         else:
-            self.__words = equalized
+            self.__words_training = equalized_set
         return 0
 
     def __determine_dataset_size(self) -> int:
@@ -300,15 +305,15 @@ class DatasetEqualizer:
 
         Output = group to be updated when equalized.
         """
-        size_symbols = len(self.__symbols)
-        size_words = len(self.__words)
+        size_symbols = len(self.__symbols_training)
+        size_words = len(self.__words_training)
         if size_symbols >= size_words:
-            self.__smaller_dataset = self.__words
-            self.__bigger_dataset = self.__symbols
+            self.__smaller_dataset = self.__words_training
+            self.__bigger_dataset = self.__symbols_training
             return 0
         else:
-            self.__smaller_dataset = self.__symbols
-            self.__bigger_dataset = self.__words
+            self.__smaller_dataset = self.__symbols_training
+            self.__bigger_dataset = self.__words_training
             return 1
 
     @classmethod
@@ -371,8 +376,7 @@ class DatasetEqualizer:
             filtered[key] = elements
         return filtered
 
-    @classmethod
-    def __equalize_types(cls, types: dict, size: int) -> set:
+    def __equalize_types(self, types: dict, size: int) -> set:
         """A method which tries to equalize the size of the
            various types so that the frequency of each type
            is equal in the final dataset.
@@ -381,26 +385,37 @@ class DatasetEqualizer:
                 -final size of the sum of all types (int).
         Output = equalized types (set).
         """
-        to_be_removed = list()
-        for group in types.keys():
-            if len(types[group]) == 0:
-                to_be_removed.append(group)
-        [types.pop(key) for key in to_be_removed]
+        types = self.__remove_empty_buckets(types)
         groups = len(types)
         group_size = round(size / groups)
         equalized = set()
-        for _, values in cls.__sort_dictionary(types):
+        for _, values in self.__sort_dictionary(types):
             count = len(values)
             if count == group_size:
                 equalized.update(values)
             elif count > group_size:
-                equalized.update((random.sample(values, group_size)))
+                equalized.update(random.sample(values, group_size))
             else:
                 equalized.update(values)
             groups -= 1
             if groups > 0:
                 group_size = round((size - len(equalized)) / groups)
         return equalized
+
+    @classmethod
+    def __remove_empty_buckets(cls, dictionary: dict) -> dict:
+        """A method which removes empty buckets from a dictionary
+           and returns the cleaned dictionary.
+
+        Input = dictionary to be cleaned up (dict).
+        Output = cleaned dictionary (dict).
+        """
+        to_be_removed = list()
+        for group in dictionary.keys():
+            if len(dictionary[group]) == 0:
+                to_be_removed.append(group)
+        [dictionary.pop(key) for key in to_be_removed]
+        return dictionary
 
     @classmethod
     def __sort_dictionary(cls, dictionary: dict) -> list:
@@ -412,17 +427,32 @@ class DatasetEqualizer:
         """
         return sorted(dictionary.items(), key=lambda element: len(element[1]))
 
-    def write_dataset(self) -> None:
-        """A method which writes the dataset to a file. Each line
+    def __distribute_variables(self):
+        """A method which distributes variables over the training-
+           test- and validation-datasets.
+        """
+        count_symbols_training = len(self.__symbols_training)
+        count_words_training = len(self.__words_training)
+
+        percentage_training = 0.8
+        percentage_test = 0.1
+        percentage_validation = 0.1
+        training_set = set()
+        test_set = set()
+        validation_set = set()
+        return 0
+
+    def write_training_dataset(self) -> None:
+        """A method which writes the training dataset to a file. Each line
            in the file contains one symbol or word with a
            corresponding label.
         """
-        if self.__symbols is not None and self.__words is not None:
+        if self.__symbols_training is not None and self.__words_training is not None:
             with open(self.__output_file, "w", encoding="UTF-8") as file:
                 file.write("#Value\tLabel\n")
-                for symbol in sorted(self.__symbols):
+                for symbol in sorted(self.__symbols_training):
                     file.write(f"{symbol}\t1\n")
-                for word in sorted(self.__words):
+                for word in sorted(self.__words_training):
                     file.write(f"{word}\t0\n")
         return None
 
@@ -452,8 +482,8 @@ class DatasetEqualizer:
 
         Output = all symbols (set).
         """
-        if self.__symbols is not None:
-            return self.__symbols
+        if self.__symbols_training is not None:
+            return self.__symbols_training
         else:
             return set()
 
@@ -463,8 +493,8 @@ class DatasetEqualizer:
 
         Output = all words (set).
         """
-        if self.__words is not None:
-            return self.__words
+        if self.__words_training is not None:
+            return self.__words_training
         else:
             return set()
 
