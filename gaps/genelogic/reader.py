@@ -102,8 +102,7 @@ def main():
     # headers = ["GeneID_NCBI", "Symbol_HGNC", "Aliases"]
     headers = ["GeneID_NCBI", "Symbol_HGNC", "Aliases", "GenePanels_Symbol",
                "GenePanel"]
-    file = "/Users/lean/Documenten/School/Flask/Course8_project/" \
-           "Parser/GenPanelOverzicht_DG-3.1.0_HAN_original_tsv.txt"
+    file = "/gaps/genelogic/GenPanelOverzicht_DG-3.1.0_HAN_original_tsv.txt"
     try:
         reader(file, headers)
     except FileNotFoundError:
