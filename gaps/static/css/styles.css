@@ -1,0 +1,6 @@
+@media (min-width: 992px) {
+  #col_query_builder {
+    border-right: 1px solid lightgray;
+  }
+}
+

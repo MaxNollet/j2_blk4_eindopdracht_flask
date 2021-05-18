@@ -11,6 +11,6 @@ def homepage():
     :return Rendered template of 'homepage.html' (str).
     """
     search = request.args.get("search")
-    return render_template("homepage.html", active="home", search=search)
+    return render_template("template_query.html", active="home", search=search)
 
 # shift command r = hard refresh cache/ en zooi

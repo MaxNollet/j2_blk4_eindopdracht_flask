@@ -1,14 +1,75 @@
 {% extends "base.html" %}
 {% block title %}Home{% endblock %}
+{% block head %}
+    <script src="{{ url_for("static", filename="js/query_builder.js") }}"></script>
+{% endblock %}
 {% block content %}
-<h2>Homepage</h2>
-    <p2>Vul iets in:</p2>
-    <form method="get">
-    <input type="text" name="search">
-    <input type="submit" name="value">
+    <h2>Homepage</h2>
+    <form name="form_query" id="form_query">
+        <label for="query_field" title="Use the fields below to build a query">Query builder</label>
         <br>
-{#        <p2><input type="number" id="limit" name="limit"#}
-{#                   min="1" max="100" value=25></p2>#}
-    Zoek: {{ search }}
+        <select name="query_field" id="query_field" title="Field to search">
+            <option value="AFFL" title="Author's institutional affiliation and address">Affiliation</option>
+            <option value="ALL" title="All terms from all searchable fields" selected>All Fields</option>
+            <option value="AUTH" title="Author(s) of publication">Author</option>
+            <option value="COLN" title="Corporate Author of publication">Author - Corporate</option>
+            <option value="FAUT" title="First Author of publication">Author - First</option>
+            <option value="FULL" title="Full Author Name(s) of publication">Author - Full</option>
+            <option value="AUID" title="Author Identifier">Author - Identifier</option>
+            <option value="LAUT" title="Last Author of publication">Author - Last</option>
+            <option value="AUCL" title="Author Cluster ID">Author Cluster ID</option>
+            <option value="BOOK" title="ID of the book that contains the document">Book</option>
+            <option value="COIS" title="Conflict of Interest Statements">Conflict of Interest Statements</option>
+            <option value="DSO" title="Additional text from the summary">DSO</option>
+            <option value="CDAT" title="Date of completion">Date - Completion</option>
+            <option value="CRDT" title="Date publication first accessible through Entrez">Date - Create</option>
+            <option value="EDAT" title="Date publication first accessible through Entrez">Date - Entrez</option>
+            <option value="MHDA" title="Date publication was indexed with MeSH terms">Date - MeSH</option>
+            <option value="MDAT" title="Date of last modification">Date - Modification</option>
+            <option value="PDAT" title="Date of publication">Date - Publication</option>
+            <option value="ECNO" title="EC number for enzyme or CAS registry number">EC/RN Number</option>
+            <option value="ED" title="Section's Editor">Editor</option>
+            <option value="EPDT" title="Date of Electronic publication">Electronic Publication Date</option>
+            <option value="EID" title="Extended PMID">Extended PMID</option>
+            <option value="FILT" title="Limits the records">Filter</option>
+            <option value="GRNT" title="NIH Grant Numbers">Grant Number</option>
+            <option value="ISBN" title="ISBN">ISBN</option>
+            <option value="INVR" title="Investigator">Investigator</option>
+            <option value="FINV" title="Full name of investigator">Investigator - Full</option>
+            <option value="ISS" title="Issue number of publication">Issue</option>
+            <option value="JOUR" title="Journal abbreviation of publication">Journal</option>
+            <option value="LANG" title="Language of publication">Language</option>
+            <option value="LID" title="ELocation ID">Location ID</option>
+            <option value="MAJR" title="MeSH terms of major importance to publication">MeSH Major Topic</option>
+            <option value="SUBH" title="Additional specificity for MeSH term">MeSH Subheading</option>
+            <option value="MESH" title="Medical Subject Headings assigned to publication">MeSH Terms</option>
+            <option value="OTRM" title="Other terms associated with publication">Other Term</option>
+            <option value="PAGE" title="Page number(s) of publication">Pagination</option>
+            <option value="PAPX" title="MeSH pharmacological action pre-explosions">Pharmacological Action</option>
+            <option value="CNTY" title="Country of publication">Place of Publication</option>
+            <option value="PPDT" title="Date of print publication">Print Publication Date</option>
+            <option value="PTYP" title="Type of publication (e.g., review)">Publication Type</option>
+            <option value="PUBN" title="Publisher's name">Publisher</option>
+            <option value="PID" title="Publisher ID">Publisher ID</option>
+            <option value="SI" title="Cross-reference from publication to other databases">Secondary Source ID</option>
+            <option value="PS" title="Personal Name as Subject">Subject - Personal Name</option>
+            <option value="SUBS" title="CAS chemical name or MEDLINE Substance Name">Supplementary Concept</option>
+            <option value="WORD" title="Free text associated with publication">Text Word</option>
+            <option value="TITL" title="Words in title of publication">Title</option>
+            <option value="TIAB" title="Free text associated with Abstract/Title">Title/Abstract</option>
+            <option value="TT" title="Words in transliterated title of publication">Transliterated Title</option>
+            <option value="UID" title="Unique number assigned to publication">UID</option>
+            <option value="VOL" title="Volume number of publication">Volume</option>
+        </select>
+        <input name="query_search_term" id="query_search_term" type="text" placeholder="e.g. alzheimer"
+               title="Value to search">
+        <select name="query_add_type" id="query_add_type" title="Type of addition to the query">
+            <option value="AND">AND</option>
+            <option value="OR">OR</option>
+            <option value="NOT">NOT</option>
+        </select>
+        <input name="add_search_item" id="add_search_item" type="button" value="Add to query" title="Add to query">
+        <br>
+        <textarea name="query_generated" id="query_generated" cols="70" rows="10"></textarea>
     </form>
 {% endblock %}

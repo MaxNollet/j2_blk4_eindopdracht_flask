@@ -1,9 +1,12 @@
-<mxfile host="app.diagrams.net" modified="2021-04-30T20:25:07.030Z" agent="5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36 Edg/90.0.818.49" etag="qmyeOeT4bA8Qz8F-44X9" version="14.6.9" type="github">
+<mxfile host="app.diagrams.net" modified="2021-05-12T15:12:00.804Z" agent="5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 Edg/90.0.818.56" etag="F123fSU3ug25U8_md1st" version="14.6.11" type="github">
   <diagram id="1hknxLrhpwc-yV2FEyyy" name="Page-1">
-    <mxGraphModel dx="712" dy="397" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="4681" pageHeight="3300" math="0" shadow="0">
+    <mxGraphModel dx="1185" dy="662" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="4681" pageHeight="3300" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
+        <mxCell id="To9p0tpYOEMSc6cLuSkY-24" value="" style="shape=folder;fontStyle=1;spacingTop=10;tabWidth=90;tabHeight=20;tabPosition=left;html=1;" parent="1" vertex="1">
+          <mxGeometry x="475" y="220" width="995" height="420" as="geometry" />
+        </mxCell>
         <mxCell id="To9p0tpYOEMSc6cLuSkY-48" value="" style="group" parent="1" vertex="1" connectable="0">
           <mxGeometry x="430" y="700" width="710" height="290" as="geometry" />
         </mxCell>
@@ -67,14 +70,55 @@
             <mxPoint x="540" y="90" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="To9p0tpYOEMSc6cLuSkY-56" value="" style="group" parent="1" vertex="1" connectable="0">
-          <mxGeometry x="475" y="220" width="620" height="420" as="geometry" />
+        <mxCell id="To9p0tpYOEMSc6cLuSkY-19" value="Opbouw van dictionary [query_pubmed]:&lt;br&gt;&lt;i&gt;dict(pmid: Article)&lt;/i&gt;&lt;br&gt;&lt;br&gt;Opbouw van dictionary [query_pubtator]:&lt;br&gt;&lt;i&gt;dict(pmid: dict(identifier: Gene))&lt;br&gt;&lt;br&gt;Opbouw van dictionary [&lt;/i&gt;&lt;span style=&quot;text-align: left&quot;&gt;retrieve_aliases&lt;/span&gt;&lt;i&gt;]:&lt;br&gt;dict(identifier: tuple(Alias))&lt;br&gt;&lt;/i&gt;" style="shape=note2;boundedLbl=1;whiteSpace=wrap;html=1;size=25;verticalAlign=top;align=center;" parent="1" vertex="1">
+          <mxGeometry x="200" y="350" width="300" height="180" as="geometry" />
         </mxCell>
-        <mxCell id="To9p0tpYOEMSc6cLuSkY-24" value="" style="shape=folder;fontStyle=1;spacingTop=10;tabWidth=90;tabHeight=20;tabPosition=left;html=1;" parent="To9p0tpYOEMSc6cLuSkY-56" vertex="1">
-          <mxGeometry width="620" height="420" as="geometry" />
+        <mxCell id="To9p0tpYOEMSc6cLuSkY-58" value="Use" style="endArrow=open;endSize=12;dashed=1;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="To9p0tpYOEMSc6cLuSkY-53" target="To9p0tpYOEMSc6cLuSkY-26" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="800" y="610" as="sourcePoint" />
+            <mxPoint x="960" y="610" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="830" y="587" />
+              <mxPoint x="830" y="660" />
+              <mxPoint x="635" y="660" />
+            </Array>
+          </mxGeometry>
         </mxCell>
-        <mxCell id="To9p0tpYOEMSc6cLuSkY-13" value="GeneSearcher" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;" parent="To9p0tpYOEMSc6cLuSkY-56" vertex="1">
-          <mxGeometry x="40" y="60" width="300" height="320" as="geometry" />
+        <mxCell id="To9p0tpYOEMSc6cLuSkY-59" value="Use" style="endArrow=open;endSize=12;dashed=1;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" parent="1" source="To9p0tpYOEMSc6cLuSkY-22" target="To9p0tpYOEMSc6cLuSkY-35" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="780" y="740" as="sourcePoint" />
+            <mxPoint x="940" y="740" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="850" y="561" />
+              <mxPoint x="850" y="660" />
+              <mxPoint x="913" y="660" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="To9p0tpYOEMSc6cLuSkY-60" value="Use" style="endArrow=open;endSize=12;dashed=1;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.75;entryY=0;entryDx=0;entryDy=0;" parent="1" source="To9p0tpYOEMSc6cLuSkY-5" target="To9p0tpYOEMSc6cLuSkY-26" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="870" y="640" as="sourcePoint" />
+            <mxPoint x="1030" y="640" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1440" y="560" />
+              <mxPoint x="1070" y="700" />
+              <mxPoint x="718" y="700" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="To9p0tpYOEMSc6cLuSkY-61" value="Use" style="endArrow=open;endSize=12;dashed=1;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.75;entryY=0;entryDx=0;entryDy=0;" parent="1" source="To9p0tpYOEMSc6cLuSkY-4" target="To9p0tpYOEMSc6cLuSkY-35" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="950" y="670" as="sourcePoint" />
+            <mxPoint x="1110" y="670" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1590" y="550" />
+              <mxPoint x="1090" y="740" />
+              <mxPoint x="1038" y="740" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="To9p0tpYOEMSc6cLuSkY-13" value="GeneSearcher" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;" parent="1" vertex="1">
+          <mxGeometry x="515" y="280" width="300" height="320" as="geometry" />
         </mxCell>
         <mxCell id="To9p0tpYOEMSc6cLuSkY-49" value="- query: str" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="To9p0tpYOEMSc6cLuSkY-13" vertex="1">
           <mxGeometry y="26" width="300" height="26" as="geometry" />
@@ -112,14 +156,29 @@
         <mxCell id="To9p0tpYOEMSc6cLuSkY-53" value="+ save_results(): bool" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="To9p0tpYOEMSc6cLuSkY-13" vertex="1">
           <mxGeometry y="294" width="300" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="To9p0tpYOEMSc6cLuSkY-47" value="gene_logic" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1" parent="To9p0tpYOEMSc6cLuSkY-56" vertex="1">
-          <mxGeometry width="90" height="20" as="geometry" />
+        <mxCell id="To9p0tpYOEMSc6cLuSkY-47" value="gene_logic" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="475" y="220" width="90" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="To9p0tpYOEMSc6cLuSkY-55" value="" style="group" parent="To9p0tpYOEMSc6cLuSkY-56" vertex="1" connectable="0">
-          <mxGeometry x="380" y="118.5" width="200" height="203" as="geometry" />
+        <mxCell id="f4hqCsv1BsYvIkJxRCnJ-1" value="GenepanelResult" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;" vertex="1" parent="1">
+          <mxGeometry x="870" y="280" width="230" height="138" as="geometry" />
         </mxCell>
-        <mxCell id="To9p0tpYOEMSc6cLuSkY-1" value="GenePanelParser" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;" parent="To9p0tpYOEMSc6cLuSkY-55" vertex="1">
-          <mxGeometry y="117" width="200" height="86" as="geometry" />
+        <mxCell id="f4hqCsv1BsYvIkJxRCnJ-2" value="+ gene: Gene" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="f4hqCsv1BsYvIkJxRCnJ-1">
+          <mxGeometry y="26" width="230" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="f4hqCsv1BsYvIkJxRCnJ-9" value="+ aliases: tuple(Alias)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="f4hqCsv1BsYvIkJxRCnJ-1">
+          <mxGeometry y="52" width="230" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="f4hqCsv1BsYvIkJxRCnJ-10" value="+ genepanels: tuple(Genepanel)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="f4hqCsv1BsYvIkJxRCnJ-1">
+          <mxGeometry y="78" width="230" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="f4hqCsv1BsYvIkJxRCnJ-11" value="+ genepanel_symbol: GenepanelSymbol" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="f4hqCsv1BsYvIkJxRCnJ-1">
+          <mxGeometry y="104" width="230" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="f4hqCsv1BsYvIkJxRCnJ-3" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;" vertex="1" parent="f4hqCsv1BsYvIkJxRCnJ-1">
+          <mxGeometry y="130" width="230" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="To9p0tpYOEMSc6cLuSkY-1" value="GenePanelParser" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;" parent="1" vertex="1">
+          <mxGeometry x="1250" y="397" width="200" height="86" as="geometry" />
         </mxCell>
         <mxCell id="To9p0tpYOEMSc6cLuSkY-3" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;" parent="To9p0tpYOEMSc6cLuSkY-1" vertex="1">
           <mxGeometry y="26" width="200" height="8" as="geometry" />
@@ -130,55 +189,20 @@
         <mxCell id="To9p0tpYOEMSc6cLuSkY-5" value="+ file_reader(str): tuple" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontStyle=4" parent="To9p0tpYOEMSc6cLuSkY-1" vertex="1">
           <mxGeometry y="60" width="200" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="To9p0tpYOEMSc6cLuSkY-23" value="&lt;span style=&quot;text-align: left&quot;&gt;Class koppelen aan file-upload-button op de website om zo de database te kunnen vullen.&lt;/span&gt;" style="shape=note2;boundedLbl=1;whiteSpace=wrap;html=1;size=25;verticalAlign=top;align=center;" parent="To9p0tpYOEMSc6cLuSkY-55" vertex="1">
-          <mxGeometry x="10" width="180" height="100" as="geometry" />
+        <mxCell id="To9p0tpYOEMSc6cLuSkY-23" value="&lt;span style=&quot;text-align: left&quot;&gt;Class koppelen aan file-upload-button op de website om zo de database te kunnen vullen.&lt;/span&gt;" style="shape=note2;boundedLbl=1;whiteSpace=wrap;html=1;size=25;verticalAlign=top;align=center;" parent="1" vertex="1">
+          <mxGeometry x="1260" y="280" width="180" height="100" as="geometry" />
         </mxCell>
-        <mxCell id="To9p0tpYOEMSc6cLuSkY-19" value="Opbouw van dictionary [query_pubmed]:&lt;br&gt;&lt;i&gt;dict(pmid: Article)&lt;/i&gt;&lt;br&gt;&lt;br&gt;Opbouw van dictionary [query_pubtator]:&lt;br&gt;&lt;i&gt;dict(pmid: dict(identifier: Gene))&lt;br&gt;&lt;br&gt;Opbouw van dictionary [&lt;/i&gt;&lt;span style=&quot;text-align: left&quot;&gt;retrieve_aliases&lt;/span&gt;&lt;i&gt;]:&lt;br&gt;dict(identifier: tuple(Alias))&lt;br&gt;&lt;/i&gt;" style="shape=note2;boundedLbl=1;whiteSpace=wrap;html=1;size=25;verticalAlign=top;align=center;" parent="1" vertex="1">
-          <mxGeometry x="200" y="350" width="300" height="180" as="geometry" />
+        <mxCell id="f4hqCsv1BsYvIkJxRCnJ-5" value="QueryResult" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;" vertex="1" parent="1">
+          <mxGeometry x="870" y="460" width="230" height="86" as="geometry" />
         </mxCell>
-        <mxCell id="To9p0tpYOEMSc6cLuSkY-58" value="Use" style="endArrow=open;endSize=12;dashed=1;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="To9p0tpYOEMSc6cLuSkY-53" target="To9p0tpYOEMSc6cLuSkY-26" edge="1">
-          <mxGeometry width="160" relative="1" as="geometry">
-            <mxPoint x="800" y="610" as="sourcePoint" />
-            <mxPoint x="960" y="610" as="targetPoint" />
-            <Array as="points">
-              <mxPoint x="830" y="587" />
-              <mxPoint x="830" y="660" />
-              <mxPoint x="635" y="660" />
-            </Array>
-          </mxGeometry>
+        <mxCell id="f4hqCsv1BsYvIkJxRCnJ-6" value="- journal: Journal" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="f4hqCsv1BsYvIkJxRCnJ-5">
+          <mxGeometry y="26" width="230" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="To9p0tpYOEMSc6cLuSkY-59" value="Use" style="endArrow=open;endSize=12;dashed=1;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" parent="1" source="To9p0tpYOEMSc6cLuSkY-22" target="To9p0tpYOEMSc6cLuSkY-35" edge="1">
-          <mxGeometry width="160" relative="1" as="geometry">
-            <mxPoint x="780" y="740" as="sourcePoint" />
-            <mxPoint x="940" y="740" as="targetPoint" />
-            <Array as="points">
-              <mxPoint x="850" y="561" />
-              <mxPoint x="850" y="660" />
-              <mxPoint x="913" y="660" />
-            </Array>
-          </mxGeometry>
+        <mxCell id="f4hqCsv1BsYvIkJxRCnJ-7" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;" vertex="1" parent="f4hqCsv1BsYvIkJxRCnJ-5">
+          <mxGeometry y="52" width="230" height="8" as="geometry" />
         </mxCell>
-        <mxCell id="To9p0tpYOEMSc6cLuSkY-60" value="Use" style="endArrow=open;endSize=12;dashed=1;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.75;entryY=0;entryDx=0;entryDy=0;" parent="1" source="To9p0tpYOEMSc6cLuSkY-5" target="To9p0tpYOEMSc6cLuSkY-26" edge="1">
-          <mxGeometry width="160" relative="1" as="geometry">
-            <mxPoint x="870" y="640" as="sourcePoint" />
-            <mxPoint x="1030" y="640" as="targetPoint" />
-            <Array as="points">
-              <mxPoint x="1070" y="529" />
-              <mxPoint x="1070" y="700" />
-              <mxPoint x="718" y="700" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="To9p0tpYOEMSc6cLuSkY-61" value="Use" style="endArrow=open;endSize=12;dashed=1;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.75;entryY=0;entryDx=0;entryDy=0;" parent="1" source="To9p0tpYOEMSc6cLuSkY-4" target="To9p0tpYOEMSc6cLuSkY-35" edge="1">
-          <mxGeometry width="160" relative="1" as="geometry">
-            <mxPoint x="950" y="670" as="sourcePoint" />
-            <mxPoint x="1110" y="670" as="targetPoint" />
-            <Array as="points">
-              <mxPoint x="1090" y="503" />
-              <mxPoint x="1090" y="740" />
-              <mxPoint x="1038" y="740" />
-            </Array>
-          </mxGeometry>
+        <mxCell id="f4hqCsv1BsYvIkJxRCnJ-8" value="+ method(type): type" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="f4hqCsv1BsYvIkJxRCnJ-5">
+          <mxGeometry y="60" width="230" height="26" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
