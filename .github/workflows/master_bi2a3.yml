@@ -31,6 +31,8 @@ jobs:
       run: pip install -r requirements.txt
       
     # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
+    # Important: specify environment variables from secrets here to
+    # grant access to these secrets.
     - name: Run tests with PyTests
       env:
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
