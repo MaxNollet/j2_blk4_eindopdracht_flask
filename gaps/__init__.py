@@ -18,7 +18,7 @@ def create_app(testing=False):
     app = Flask(__name__, instance_relative_config=True)
     if not testing:
         if environ.get("FLASK_ENV") is None:
-            app.config.from_object("config.Production", silent=True)
+            app.config.from_object("config.Production")
         else:
             value = environ.get('FLASK_ENV').lower().capitalize()
             try:
