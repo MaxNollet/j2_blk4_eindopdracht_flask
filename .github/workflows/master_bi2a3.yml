@@ -32,6 +32,9 @@ jobs:
       
     # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
     - name: Run tests with PyTests
+      env:
+        SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        SQLALCHEMY_DATABASE_URI: ${{ secrets.SQLALCHEMY_DATABASE_URI }}
       run: pytest
     
     - name: Upload artifact for deployment jobs
