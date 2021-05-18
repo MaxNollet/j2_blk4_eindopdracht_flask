@@ -20,8 +20,8 @@ class Gene(Model):
     __table_args__ = {'schema': 'eindopdracht'}
 
     id: int = Column(Integer, primary_key=True, server_default=text("nextval('eindopdracht.gene_id_seq'::regclass)"))
-    ncbi_gene_id: str = Column(String(25))
-    hgnc_symbol: str = Column(String(25), nullable=False, unique=True)
+    ncbi_gene_id: int = Column(Integer)
+    hgnc_symbol: str = Column(String(30), nullable=False, unique=True)
     in_genepanel: bool = Column(Boolean, nullable=False, server_default=text("false"))
 
     genepanels = relationship('Genepanel', secondary='eindopdracht.genepanel_gene')
@@ -76,7 +76,7 @@ class Alias(Model):
     __table_args__ = {'schema': 'eindopdracht'}
 
     id: int = Column(Integer, primary_key=True, server_default=text("nextval('eindopdracht.alias_id_seq'::regclass)"))
-    hgnc_symbol: str = Column(String(15), nullable=False, unique=True)
+    hgnc_symbol: str = Column(String(30), nullable=False, unique=True)
     gene_id: int = Column(ForeignKey('eindopdracht.gene.id'), nullable=False)
 
     gene = relationship('Gene')
@@ -127,7 +127,7 @@ class GenepanelSymbol(Model):
 
     id: int = Column(Integer, primary_key=True,
                      server_default=text("nextval('eindopdracht.genepanel_symbol_id_seq'::regclass)"))
-    symbol: str = Column(String(15), nullable=False, unique=True)
+    symbol: str = Column(String(30), nullable=False, unique=True)
     gene_id: int = Column(ForeignKey('eindopdracht.gene.id'), nullable=False)
 
     gene = relationship('Gene')
