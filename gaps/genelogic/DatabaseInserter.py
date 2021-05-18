@@ -23,7 +23,7 @@ import psycopg2
 #
 #     print(postgre)
 #
-#     engine = create_engine("postgresql://maxn:blaat1234@bio-inf.han.nl:5432/maxn", echo=True)
+#     
 #     Session = sessionmaker(bind=engine)
 #     print("Creating session")
 #     session = Session()
@@ -65,8 +65,6 @@ class Alchemy:
 def main():
     # insertGene()
     # createEngine()
-    # engine = create_engine(
-    #     "postgresql://maxn:blaat1234@bio-inf.han.nl:5432/maxn", echo=True)
     # print("Creating session")
     # Session = sessionmaker(bind=engine)
     # session = Session()
