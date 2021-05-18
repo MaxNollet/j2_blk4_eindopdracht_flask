@@ -48,7 +48,7 @@ class Alchemy:
 
     def create__engine(self):
         self.engine = create_engine(
-            "postgresql://maxn:blaat1234@bio-inf.han.nl:5432/maxn", echo=True)
+           
 
     def create__session(self):
         print("Creating session")
