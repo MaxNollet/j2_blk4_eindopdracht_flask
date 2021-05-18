@@ -5,6 +5,7 @@
  * @author Max Nollet
  * */
 window.onload = function () {
+    // Listener for input search term.
     document.getElementById("input_search_term")
         .addEventListener("keypress", function (event) {
             if (event.key === "Enter") {
@@ -12,13 +13,19 @@ window.onload = function () {
                 document.getElementById("button_add_item").click();
             }
         });
+    // Listener for button to add the search term to the query.
     document.getElementById("button_add_item")
         .addEventListener("click", QueryBuilder);
+    // Listener for changes in the query-field.
     document.getElementById("input_generated_query")
         .addEventListener("input", OnQueryChange);
     OnQueryChange();
+    // Listener for button to clear the chosen file.
     document.getElementById("button_clear_file")
         .addEventListener("click", ClearFile);
+    // Listener for checkbox to open results in a new tab.
+    document.getElementById("check_new_tab")
+        .addEventListener("click", OpenNewTab);
 }
 
 /**
@@ -70,6 +77,8 @@ function Concatenate(field, term, type, query) {
  * A function which enables/disables the dropdown
  * button containing different types for adding a
  * value to the query.
+ *
+ * @author Max Nollet
  * */
 function OnQueryChange() {
     const element_query = document.getElementById("input_generated_query");
@@ -81,10 +90,28 @@ function OnQueryChange() {
  * A function which clears the selected file from
  * the file-chooser in the interface if a file has
  * been chosen by the user.
+ *
+ * @author Max Nollet
  * */
 function ClearFile() {
     const file_chooser = document.getElementById("input_load_symbols");
     if (file_chooser.value.trim() !== "") {
         file_chooser.value = "";
+    }
+}
+
+/**
+ * A function which changes the target-attribute of
+ * the input form. Switches between 'default' and
+ * '_blank'.
+ *
+ * @author Max Nollet
+ * */
+function OpenNewTab() {
+    const element_form = document.getElementById("input_form");
+    if (document.getElementById("check_new_tab").checked) {
+        element_form.setAttribute("target", "_blank");
+    } else {
+        element_form.removeAttribute("target");
     }
 }
