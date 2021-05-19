@@ -1,7 +1,10 @@
 Flask>=1.1.2
-python-dotenv>=0.17.1
 Flask-SQLAlchemy>=2.5.1
 SQLAlchemy>=1.4.14
-pytest>=6.2.4;
+python-dotenv>=0.17.1
 psycopg2>=2.8.6; platform_system == "Windows" or platform_system == "Linux"
 psycopg2-binary>=2.8.6; platform_system == "Darwin" # Mac
+selenium>=3.141.0
+pytest>=6.2.4
+pytest-flask>=1.2.0
+pytest-selenium>=2.0.1

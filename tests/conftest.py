@@ -1,23 +1,27 @@
-import pytest
 import os
-import sys
+import socket
+import subprocess
 
-current_dir = os.path.abspath(os.path.dirname(__file__))
-parent_dir = os.path.dirname(current_dir)
-sys.path.append(parent_dir)
-
-from gaps import create_app
-from gaps.models import db
+import pytest
 
 
-@pytest.fixture
-def client():
-    """A function which prepares the application for
-       testing and returns a testing client.
+@pytest.fixture(scope="session")
+def flask_port():
+    # Ask OS for a free port.
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(("", 0))
+        addr = s.getsockname()
+        port = addr[1]
+        return port
 
-    :return Testing client (Flask).
-    """
-    app = create_app(testing=True)
-    with app.app_context():
-        db.create_all()
-    yield app.test_client()
+
+@pytest.fixture(scope="session", autouse=True)
+def live_server(flask_port):
+    env = os.environ.copy()
+    env["FLASK_APP"] = "gaps"
+    # server = subprocess.Popen(['flask', 'run', '--port', str(flask_port)], env=env)
+    server = subprocess.Popen(['flask', 'run', '--port', "5000"], env=env)
+    try:
+        yield server
+    finally:
+        server.terminate()
