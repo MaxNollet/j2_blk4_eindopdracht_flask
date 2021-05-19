@@ -12,5 +12,4 @@ def homepage():
     """
     search = request.args.get("search")
     return render_template("template_query.html", active="home", search=search)
-
 # shift command r = hard refresh cache/ en zooi

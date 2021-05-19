@@ -1,8 +1,10 @@
 # insert_genepanel(tuple(str)): bool
 import os
+from gaps.genelogic import reader
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from gaps.models import Gene
+from gaps.models import *
+
 import psycopg2
 
 
@@ -41,37 +43,91 @@ import psycopg2
 #     print(row.Gene, row.ncbi_gene_id)
 class Alchemy:
 
-    def __init__(self, engine, session):
-        self.engine = engine
-        self.session = session
-        self.test()
+    def __init__(self):
+        self.engine = None
+        self.session = None
 
-    def create__engine(self):
-        self.engine = create_engine(
-            "postgresql://maxn:blaat1234@bio-inf.han.nl:5432/maxn", echo=True)
+    def __create__engine(self, db):
+        self.engine = create_engine(db, echo=True)
 
-    def create__session(self):
+    def __create__session(self):
         print("Creating session")
         Session = sessionmaker(bind=self.engine)
         self.session = Session()
 
     def test(self):
-        gene = Gene(id=None, ncbi_gene_id='8139', hgnc_symbol='GAAAN',
+        self.__create__engine(
+            "postgresql://maxn:blaat1234@bio-inf.han.nl:5432/maxn")
+        self.__create__session()
+        gene = Gene(id=None, ncbi_gene_id='8139', hgnc_symbol='GAPS',
                     in_genepanel=True)
         self.session.add(gene)
         self.session.commit()
 
 
-def main():
-    # insertGene()
-    # createEngine()
-    # engine = create_engine(
-    #     "postgresql://maxn:blaat1234@bio-inf.han.nl:5432/maxn", echo=True)
-    # print("Creating session")
-    # Session = sessionmaker(bind=engine)
-    # session = Session()
-    # Alchemy(engine, session)
-    Alchemy(engine, session)
+def updateGenpanel(db):
+    print("test")
+    path = "/Users/lean/Documenten/School/Flask/Course8_project/gaps/genelogic/GenPanelOverzicht_DG-3.1.0_HAN_original_tsv.txt"
+    if os.path.exists(path):
+        data = reader.get_reader(path)
+        # print(len(data))
+        # gene = Gene(id=None, ncbi_gene_id='8139', hgnc_symbol='GAAPS',
+        #             in_genepanel=True)
+        # db.session.add(gene)
+        # db.session.commit()
+        for line in data:
+            print("iets")
+            g = line.gene
+            db.session.add(g)
+            db.session.commit()
+            p = line.p_symbol
+            db.session.add(p)
+            if len(line.alias) >= 1:
+                for i in line.alias:
+                    db.session.add(i)
+            if len(line.panel) >= 1:
+                for j in line.panel:
+                    for k in j:
+                        db.session.add(k)
+            db.session.commit()
+        print("Done")
+    else:
+        print("No file!")
+
+# def main():
+#     path = "/Users/lean/Documenten/School/Flask/Course8_project/gaps/genelogic/GenPanelOverzicht_DG-3.1.0_HAN_original_tsv.txt"
+# #
+#     data = reader.get_reader(path)
+#     print(data[0])
+#     for line in data:
+#         print(line.gene)
+#         t = line.gene
+#
+#         print(line.p_symbol)
+#         if len(line.alias) >= 1:
+#             for i in line.alias:
+#                 print("***", i)
+#         if len(line.panel) >= 1:
+#             for j in line.panel:
+#                 for k in j:
+#                     print("=-=", k)
 
 
-main()
+#     # insertGene()
+#     # createEngine()
+#     # engine = create_engine(
+#     #     "postgresql://maxn:blaat1234@bio-inf.han.nl:5432/maxn", echo=True)
+#     # print("Creating session")
+#     # Session = sessionmaker(bind=engine)
+#     # session = Session()
+#     # Alchemy(engine, session)
+#     # t = Alchemy()
+#     # t.updateGenpanel()
+#     gene = Gene(id=None, ncbi_gene_id='8139', hgnc_symbol='GAPS',
+#                     in_genepanel=True)
+#     db.session.add(gene)
+#     SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI")
+#     print(SQLALCHEMY_DATABASE_URI)
+
+
+# main()

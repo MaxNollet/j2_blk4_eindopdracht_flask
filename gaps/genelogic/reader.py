@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from gaps.models import Gene, Alias, Genepanel, GenepanelSymbol, \
     InheritanceType
 import re
+import os
 
 
 def reader(file, headers):
@@ -87,7 +88,7 @@ def reader(file, headers):
     # print(file_list[len(file_list) - 6])  # 79755 GeneID_NCBI
     # print(file_list[len(file_list) - 1])  # examples
     print(file_list[1569])  # 1571 ncbi_geneID = 8139
-    return tuple(file_list)
+    return list(file_list)
 
 
 @dataclass
@@ -98,15 +99,29 @@ class FileInfo:
     alias: list = field(default_factory=list)
 
 
-def main():
-    # headers = ["GeneID_NCBI", "Symbol_HGNC", "Aliases"]
-    headers = ["GeneID_NCBI", "Symbol_HGNC", "Aliases", "GenePanels_Symbol",
-               "GenePanel"]
-    file = "/gaps/genelogic/GenPanelOverzicht_DG-3.1.0_HAN_original_tsv.txt"
+def get_reader(file):
     try:
-        reader(file, headers)
+        if os.path.exists(file):
+
+            headers = ["GeneID_NCBI", "Symbol_HGNC", "Aliases",
+                       "GenePanels_Symbol",
+                       "GenePanel"]
+            # file = "/Users/lean/Documenten/School/Flask/Course8_project/gaps/genelogic/GenPanelOverzicht_DG-3.1.0_HAN_original_tsv.txt"
+            return reader(file, headers)
+        else:
+            print("Kan bestand niet vinden")
     except FileNotFoundError:
         print("File not found! ->", file)
 
-
-main()
+# def main():
+#     # headers = ["GeneID_NCBI", "Symbol_HGNC", "Aliases"]
+#     headers = ["GeneID_NCBI", "Symbol_HGNC", "Aliases", "GenePanels_Symbol",
+#                "GenePanel"]
+#     file = "/gaps/genelogic/GenPanelOverzicht_DG-3.1.0_HAN_original_tsv.txt"
+#     try:
+#         reader(file, headers)
+#     except FileNotFoundError:
+#         print("File not found! ->", file)
+#
+#
+# main()
