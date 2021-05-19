@@ -12,22 +12,21 @@
 
 <body id="body">
     <header id="header">
-        <nav class="navbar navbar-light navbar-expand-md" id="navigation_top" style="background: linear-gradient(112deg, var(--bs-cyan) -17%, var(--bs-blue));">
-            <div class="container-fluid"><a class="navbar-brand" id="app_name" href="#" style="color: var(--bs-white);font-weight: bold;">Gene App Scraper</a><button data-bs-toggle="collapse" class="navbar-toggler navbar-dark" data-bs-target="#navcol-1" id="hamburger_button"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
-                <div class="collapse navbar-collapse" id="navcol-1">
-                    <ul class="navbar-nav">
-                        <li class="nav-item" id="navbar_query"><a class="nav-link active" id="link_query" href="#" style="color: var(--bs-white);">New query</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#" style="color: var(--bs-white);">Update genepanel</a></li>
-                        <li class="nav-item"></li>
-                        <li class="nav-item"><a class="nav-link" href="#" style="color: var(--bs-white);">Help</a></li>
+        <nav class="navbar navbar-dark navbar-expand-md" id="navigation_top" style="background: linear-gradient(112deg, var(--bs-cyan) -17%, var(--bs-blue));">
+            <div class="container-fluid"><a class="navbar-brand" id="app_name" href="{{ url_for("blueprint_home.homepage") }}" style="color: var(--bs-white);font-weight: bold;">Gene App Scraper</a><button data-bs-toggle="collapse" class="navbar-toggler navbar-dark" data-bs-target="#navigation_items_collapse" id="hamburger_button" style="padding-right: 6px;padding-left: 6px;"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon" id="hamburger_icon"></span></button>
+                <div class="collapse navbar-collapse" id="navigation_items_collapse">
+                    <ul class="navbar-nav" id="navigation_items">
+                        <li class="nav-item" id="navigation_query"><a class="nav-link active" id="link_query" style="color: var(--bs-white);" href="{{ url_for("blueprint_home.homepage") }}">Query builder</a></li>
+                        <li class="nav-item" id="navigation_genepanel"><a class="nav-link" id="link_genepanel" href="#" style="color: var(--bs-white);">Update genepanel</a></li>
+                        <li class="nav-item" id="navigation_help"><a class="nav-link" id="link_help" href="#" style="color: var(--bs-white);">Help</a></li>
                     </ul>
                 </div>
             </div>
         </nav>
     </header>
-    <main>
-        {% block content %}{% endblock %}
-    </main>
+    <main id="main" style="padding-bottom: 6rem;padding-top: 3rem;"><div>
+    {% block content %}{% endblock %}
+</div></main>
     <script src="{{ url_for("static", filename="bootstrap/js/bootstrap.min.js") }}"></script>
 </body>
 

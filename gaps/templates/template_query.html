@@ -1,13 +1,23 @@
 {% extends "base_template.html" %}
 
-{% block title %}Build a query{% endblock %}
+{% block title %}GAPS query builder{% endblock %}
 
 {% block head %}
     <script src="{{ url_for("static", filename="js/query_builder.js") }}"></script>
 {% endblock %}
 
 {% block content %}
-<div class="container" id="page_query_builder">
+    <div class="container" id="page_query_builder">
+        <div class="row gy-2" style="padding-bottom: 3em;">
+            <div class="col-12">
+                <h1 class="display-2">Query_builder</h1>
+            </div>
+            <div class="col-lg-9">
+                <p>Welcome to the query builder! Your quest for finding new genes starts here. Follow the three simple steps below to specify what you are looking for and press '<em>Search genes</em>' to start searching for new genes.</p>
+                <p>For detailed information about every step in the query builder and a step-by-step-guide, please refer to '<em>How to use the query builder</em>' in the help-section.</p>
+            </div>
+        </div>
+        <div class="alert alert-info alert-dismissible" role="alert" hidden=""><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button><span><strong>Alert</strong> text.</span></div>
         <form id="input_form" class="gy-5">
             <div class="row gy-5 gx-5" id="row_query_symbols">
                 <div class="col-lg-7 d-flex flex-column" id="col_query_builder">
@@ -99,12 +109,17 @@
                         <div class="col text-nowrap" id="row_date_before"><label class="form-label" id="label_date_before" for="input_date_before">Search articles published before</label><input class="form-control" id="input_date_before" type="date"></div>
                     </div>
                 </div>
-                <div class="col" id="col_submit">
-                    <div class="row">
-                        <div class="col-auto d-flex align-items-center">
-                            <div class="form-check form-switch"><input type="checkbox" id="check_new_tab" class="form-check-input"><label class="form-label form-check-label my-0" for="check_new_tab">Open search in new tab</label></div>
+                <div class="col" id="col_submit_options">
+                    <div class="row gy-3" id="row_submit_options">
+                        <div class="col-auto d-flex align-items-center" id="col_new_tab">
+                            <div id="div_new_tab" class="form-check form-switch"><input type="checkbox" id="check_new_tab" class="form-check-input"><label class="form-label text-nowrap form-check-label my-0" id="label_new_tab" for="check_new_tab">Open search in new tab</label></div>
                         </div>
-                        <div class="col"><button class="btn btn-primary text-nowrap" type="submit">Run query</button></div>
+                        <div class="col-sm-auto" id="col_submit_clear">
+                            <div class="row gy-2" id="row_submit_clear">
+                                <div class="col d-grid" id="col_submit"><button class="btn btn-primary text-nowrap flex-nowrap" id="button_submit" type="submit">Search genes</button></div>
+                                <div class="col d-grid" id="col_clear"><button class="btn btn-outline-danger text-nowrap" id="button_clear" type="reset">Clear all input</button></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
