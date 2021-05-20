@@ -115,3 +115,13 @@ class TestQueryBuilder:
         input_term.send_keys("Frikandel speciaal")
         button_add.click()
         assert input_query.get_attribute("value") == "Frikandel speciaal[ALL]"
+
+
+class TestJavaScript:
+    """A class which groups tests related to JavaScript-
+       functions. These tests help ensure all functions
+       related to JavaScript are working as intended.
+    """
+
+    def test_clear_file(self, selenium: webDriver):
+        pass
