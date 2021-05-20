@@ -20,11 +20,11 @@ class Gene(Model):
     __table_args__ = {'schema': 'eindopdracht'}
 
     id: int = Column(Integer, primary_key=True, server_default=text("nextval('eindopdracht.gene_id_seq'::regclass)"))
-    ncbi_gene_id: str = Column(String(25))
-    hgnc_symbol: str = Column(String(25), nullable=False, unique=True)
+    ncbi_gene_id: str = Column(Integer)
+    hgnc_symbol: str = Column(String(30), nullable=False, unique=True)
     in_genepanel: bool = Column(Boolean, nullable=False, server_default=text("false"))
 
-    genepanels = relationship('Genepanel', secondary='eindopdracht.genepanel_gene')
+    genepanels: list = relationship('Genepanel', secondary='eindopdracht.genepanel_gene')
 
 
 @dataclass
@@ -39,7 +39,7 @@ class Genepanel(Model):
                      server_default=text("nextval('eindopdracht.genepanel_id_seq'::regclass)"))
     abbreviation: str = Column(String(40), nullable=False, unique=True)
 
-    inheritance_types = relationship('InheritanceType', secondary='eindopdracht.genepanel_inheritance')
+    inheritance_types: list = relationship('InheritanceType', secondary='eindopdracht.genepanel_inheritance')
 
 
 @dataclass
@@ -76,10 +76,9 @@ class Alias(Model):
     __table_args__ = {'schema': 'eindopdracht'}
 
     id: int = Column(Integer, primary_key=True, server_default=text("nextval('eindopdracht.alias_id_seq'::regclass)"))
-    hgnc_symbol: str = Column(String(15), nullable=False, unique=True)
-    gene_id: int = Column(ForeignKey('eindopdracht.gene.id'), nullable=False)
+    hgnc_symbol: str = Column(String(30), nullable=False, unique=True)
 
-    gene = relationship('Gene')
+    genes: list = relationship('Gene', secondary='eindopdracht.gene_alias')
 
 
 @dataclass
@@ -98,9 +97,16 @@ class Article(Model):
     abstract: str = Column(String(3000), nullable=False)
     journal_id: int = Column(ForeignKey('eindopdracht.journal.id'))
 
-    journal = relationship('Journal')
-    genes = relationship('Gene', secondary='eindopdracht.article_gene')
+    journal: Journal = relationship('Journal')
+    genes: list = relationship('Gene', secondary='eindopdracht.article_gene')
 
+
+t_gene_alias = Table(
+    'gene_alias', metadata,
+    Column('gene_id', ForeignKey('eindopdracht.gene.id'), nullable=False),
+    Column('alias_id', ForeignKey('eindopdracht.alias.id'), nullable=False),
+    schema='eindopdracht'
+)
 
 t_genepanel_gene = Table(
     'genepanel_gene', metadata,
@@ -127,10 +133,10 @@ class GenepanelSymbol(Model):
 
     id: int = Column(Integer, primary_key=True,
                      server_default=text("nextval('eindopdracht.genepanel_symbol_id_seq'::regclass)"))
-    symbol: str = Column(String(15), nullable=False, unique=True)
+    symbol: str = Column(String(30), nullable=False, unique=True)
     gene_id: int = Column(ForeignKey('eindopdracht.gene.id'), nullable=False)
 
-    gene = relationship('Gene')
+    gene: Gene = relationship('Gene')
 
 
 t_article_gene = Table(
