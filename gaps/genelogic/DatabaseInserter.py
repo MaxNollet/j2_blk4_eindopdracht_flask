@@ -65,14 +65,22 @@ class Alchemy:
         self.session.commit()
 
 
-def updateGenpanel(db):
-    print("test")
-    path = "/Users/lean/Documenten/School/Flask/Course8_project/gaps/genelogic/GenPanelOverzicht_DG-3.1.0_HAN_original_tsv.txt"
+def updateGenpanel():
+    # Pad opvragen waar dit bestand staat waar we nu in zitten,
+    # vervolgens naam van tsv-bestand eraan toevoegen.
+    path = os.path.join(os.path.dirname(__file__), "GenPanelOverzicht_DG-3.1.0_HAN_original_tsv.txt")
+    # path = "/Users/lean/Documenten/School/Flask/Course8_project/gaps/genelogic/GenPanelOverzicht_DG-3.1.0_HAN_original_tsv.txt"
     if os.path.exists(path):
         data = reader.get_reader(path)
         # print(len(data))
         gene = Gene(id=None, ncbi_gene_id='8139', hgnc_symbol='GAAPS',
                     in_genepanel=True)
+        # db importeer je al met 'from gaps.models import *'.
+        # Note: het werkte eerst niet omdat je deze functie deed aanroepen in
+        # __init__.py terwijl de app nog niet volledig was opgestart, ook
+        # was de database nog niet geïnitialiseerd toen je de aanroep deed.
+        # Oplossing: deze methode in /query van blueprint_query aanroepen
+        # nadat de app volledig is opgestart en de database is geïnitialiseerd.
         db.session.add(gene)
         db.session.commit()
         # for line in data:

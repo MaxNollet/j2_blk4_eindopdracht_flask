@@ -4,8 +4,8 @@ from flask import Flask
 
 from gaps.blueprint_home import blueprint_home
 from gaps.blueprint_query import blueprint_query
-from gaps.models import db, Gene
 from gaps.genelogic import reader, DatabaseInserter
+from gaps.models import db
 
 
 def create_app(testing=False):
@@ -29,8 +29,6 @@ def create_app(testing=False):
     else:
         app.config.from_object("config.Testing")
     # Initiate database and register blueprints.
-    DatabaseInserter.updateGenpanel(db)
-    # print(db)
     db.init_app(app)
 
     app.register_blueprint(blueprint_home)
