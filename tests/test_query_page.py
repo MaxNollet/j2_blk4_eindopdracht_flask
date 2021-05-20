@@ -3,11 +3,10 @@ from typing import Union
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.ui import WebDriverWait
-
-from gaps.models import Gene
 
 webDriver = Union[
     webdriver.Firefox,
@@ -129,16 +128,41 @@ class TestJavaScript:
        related to JavaScript are working as intended.
     """
 
+    def test_add_term_on_enter(self, selenium: webDriver):
+        """Test the addition of a term to the query using the ENTER-key."""
+        selenium.get("http://127.0.0.1:5000/")
+        input_search_term = selenium.find_element_by_id("input_search_term")
+        input_generated_query = selenium.find_element_by_id("input_generated_query")
+        input_add_type = selenium.find_element_by_id("input_add_type")
+        input_search_term.send_keys("Mexicano", Keys.ENTER)
+        assert input_search_term.get_attribute("value") == ""
+        assert input_generated_query.get_attribute("value") != ""
+        assert input_add_type.is_enabled() is True
+
     def test_clear_file(self, selenium: webDriver):
+        """Test the clear-button to remove the specified file."""
         selenium.get("http://127.0.0.1:5000/")
         input_load_symbols = selenium.find_element_by_id("input_load_symbols")
         button_clear_file = selenium.find_element_by_id("button_clear_file")
-        filename = str(path.abspath(__file__))
-        input_load_symbols.send_keys(filename)
-        print(filename)
-        print(input_load_symbols.get_attribute("value"))
-        element = WebDriverWait(selenium, 10).until(
-            expected_conditions.element_to_be_clickable((By.ID, "button_clear_file"))
+        file_path = path.abspath(path.join(path.dirname(__file__), "..", "requirements.txt"))
+        input_load_symbols.send_keys(file_path)
+        assert input_load_symbols.get_attribute("value").split("\\")[-1] == file_path.split("\\")[-1]
+        WebDriverWait(selenium, 10).until(
+            expected_conditions.element_to_be_clickable((By.ID, "input_load_symbols"))
         )
-        button_clear_file.click()
+        selenium.execute_script("arguments[0].click();", button_clear_file)
         assert input_load_symbols.get_attribute("value") == ""
+
+    def test_open_new_tab(self, selenium: webDriver):
+        """Test the open-in-new-tab-button."""
+        selenium.get("http://127.0.0.1:5000/")
+        check_new_tab = selenium.find_element_by_id("check_new_tab")
+        input_form = selenium.find_element_by_id("input_form")
+        assert check_new_tab.is_selected() is False
+        assert input_form.get_attribute("target") == ""
+        selenium.execute_script("arguments[0].click();", check_new_tab)
+        assert check_new_tab.is_selected() is True
+        assert input_form.get_attribute("target") == "_blank"
+        selenium.execute_script("arguments[0].click();", check_new_tab)
+        assert check_new_tab.is_selected() is False
+        assert input_form.get_attribute("target") == ""
