@@ -101,25 +101,98 @@ class TestQueryBuilder:
        query builder keeps working as intended.
     """
 
-    def test_first_addition_no_spaces_button(self, selenium: webDriver):
+    def test_first_addition_no_spaces(self, selenium: webDriver):
         """Test the addition of a term to the query without spaces."""
         selenium.get("http://127.0.0.1:5000/")
         input_term = selenium.find_element_by_id("input_search_term")
         input_query = selenium.find_element_by_id("input_generated_query")
         button_add = selenium.find_element_by_id("button_add_item")
-        input_term.send_keys("Alzheimer")
+        term = "Pikanto"
+        input_term.send_keys(term)
         button_add.click()
-        assert input_query.get_attribute("value") == "Alzheimer[ALL]"
+        assert input_term.get_attribute("value") == ""
+        assert input_query.get_attribute("value") == f"{term}[ALL]"
 
-    def test_first_addition_with_spaces_button(self, selenium: webDriver):
+    def test_first_addition_with_spaces(self, selenium: webDriver):
         """Test the addition of a term to the query with spaces."""
         selenium.get("http://127.0.0.1:5000/")
         input_term = selenium.find_element_by_id("input_search_term")
         input_query = selenium.find_element_by_id("input_generated_query")
         button_add = selenium.find_element_by_id("button_add_item")
-        input_term.send_keys("Frikandel speciaal")
+        term = "Frikandel speciaal"
+        input_term.send_keys(term)
         button_add.click()
-        assert input_query.get_attribute("value") == "Frikandel speciaal[ALL]"
+        assert input_query.get_attribute("value") == f"{term}[ALL]"
+
+    def test_second_addition_no_spaces(self, selenium: webDriver):
+        """Test the addition of two terms with no spaces."""
+        selenium.get("http://127.0.0.1:5000/")
+        input_term = selenium.find_element_by_id("input_search_term")
+        input_query = selenium.find_element_by_id("input_generated_query")
+        button_add = selenium.find_element_by_id("button_add_item")
+        term1 = "Kroket"
+        term2 = "Frikandel"
+        input_term.send_keys(term1)
+        button_add.click()
+        input_term.send_keys(term2)
+        button_add.click()
+        assert input_term.get_attribute("value") == ""
+        assert input_query.get_attribute("value") == f"({term1}[ALL]) AND ({term2}[ALL])"
+
+    def test_second_addition_with_spaces(self, selenium: webDriver):
+        """Test the addition of two terms with spaces."""
+        selenium.get("http://127.0.0.1:5000/")
+        input_term = selenium.find_element_by_id("input_search_term")
+        input_query = selenium.find_element_by_id("input_generated_query")
+        button_add = selenium.find_element_by_id("button_add_item")
+        term1 = "Frikandel speciaal"
+        term2 = "Patatje oorlog"
+        input_term.send_keys(term1)
+        button_add.click()
+        input_term.send_keys(term2)
+        button_add.click()
+        assert input_term.get_attribute("value") == ""
+        assert input_query.get_attribute("value") == f"({term1}[ALL]) AND ({term2}[ALL])"
+
+    def test_and_or_not(self, selenium: webDriver):
+        """Test the addition of several items with different types of additions."""
+        selenium.get("http://127.0.0.1:5000/")
+        input_term = selenium.find_element_by_id("input_search_term")
+        input_query = selenium.find_element_by_id("input_generated_query")
+        input_add_type = Select(selenium.find_element_by_id("input_add_type"))
+        term1 = "Viandel"
+        term2 = "Bitterbal"
+        term3 = "kipcorn"
+        term4 = "Kaassoufflé"
+        input_term.send_keys(term1, Keys.ENTER, term2, Keys.ENTER)
+        input_add_type.select_by_value("OR")
+        input_term.send_keys(term3, Keys.ENTER)
+        input_add_type.select_by_value("NOT")
+        input_term.send_keys(term4, Keys.ENTER)
+        print(input_query.get_attribute("value"))
+        assert input_term.get_attribute("value") == ""
+        assert input_query.get_attribute(
+            "value") == f"((({term1}[ALL]) AND ({term2}[ALL])) OR ({term3}[ALL])) NOT ({term4}[ALL])"
+
+    def test_different_fields(self, selenium: webDriver):
+        """Test the addition of multiple terms for different fields."""
+        selenium.get("http://127.0.0.1:5000/")
+        input_field = Select(selenium.find_element_by_id("input_field"))
+        input_term = selenium.find_element_by_id("input_search_term")
+        input_query = selenium.find_element_by_id("input_generated_query")
+        input_add_type = Select(selenium.find_element_by_id("input_add_type"))
+        fields = ("ALL", "BOOK", "ED", "PDAT", "JOUR", "SUBS")
+        terms = ("Kipcorn", "Van-alles-wat", "Gehaktbal", "Gehaktbal speciaal", "Nasibal", "Bamischijf")
+        additions = ("AND", "OR", "OR", "NOT", "NOT")
+        input_field.select_by_value(fields[0])
+        input_term.send_keys(terms[0], Keys.ENTER)
+        for field, term, addition in zip(fields[1:], terms[1:], additions):
+            input_field.select_by_value(field)
+            input_add_type.select_by_value(addition)
+            input_term.send_keys(term, Keys.ENTER)
+        check = "(((((Kipcorn[ALL]) AND (Van-alles-wat[BOOK])) OR (Gehaktbal[ED])) OR (Gehaktbal speciaal[PDAT]))" \
+                " NOT (Nasibal[JOUR])) NOT (Bamischijf[SUBS])"
+        assert input_query.get_attribute("value") == check
 
 
 class TestJavaScript:
