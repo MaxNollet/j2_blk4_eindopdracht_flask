@@ -84,23 +84,48 @@ def updateGenpanel():
         # Oplossing: deze methode in /query van blueprint_query aanroepen
         # nadat de app volledig is opgestart en de database is geïnitialiseerd.
         # db.session.add(gene)
-        db.session.delete(gene)  # hij loopt hier vast
-        db.session.commit()  # https://flask-sqlalchemy.palletsprojects.com/en/2.x/queries/
+        # db.session.delete(gene)  # hij loopt hier vast
+        # db.session.commit()  # https://flask-sqlalchemy.palletsprojects.com/en/2.x/queries/
 
         for line in data:
             print("iets")
             g = line.gene
+            print(g)
             db.session.add(g)
             db.session.commit()
+            gene_id = g.id
+            # db.session.commit()
             p = line.p_symbol
+            p = GenepanelSymbol(symbol=p.symbol, gene_id=gene_id)
+            # p.gene = gene_id
+            print(gene_id, p)
+
             db.session.add(p)
+            db.session.commit()
             if len(line.alias) >= 1:
                 for i in line.alias:
+                    print(i)
+
+                    i = Alias(hgnc_symbol=i.hgnc_symbol, gene_id=gene_id)
                     db.session.add(i)
+                    db.session.commit()
             if len(line.panel) >= 1:
                 for j in line.panel:
                     for k in j:
-                        db.session.add(k)
+                        print(isinstance(k,
+                                         InheritanceType))  # K = Inheritance en GenePanel
+                        # if k.
+                        if isinstance(k,
+                                      InheritanceType):  # kijkt of het het juiste object is
+                            # >> > peter = User.query.filter_by(
+                            #     username='peter').first()
+                            # moet unique zijn
+                            duplicate = InheritanceType.query.filter_by(
+                                type=k.type).first()
+                            if duplicate is None:  # zodat er geen dubbele in komen
+                                # de tussen tabelen moetne nog
+                                db.session.add(k)
+                                db.session.commit()
             db.session.commit()
         print("Done")
     else:
