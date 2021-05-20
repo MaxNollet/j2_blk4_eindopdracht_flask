@@ -1,4 +1,5 @@
 # insert_genepanel(tuple(str)): bool
+import bdb
 import os
 from gaps.genelogic import reader
 from sqlalchemy import create_engine
@@ -73,6 +74,7 @@ def updateGenpanel():
     if os.path.exists(path):
         data = reader.get_reader(path)
         # print(len(data))
+
         gene = Gene(id=None, ncbi_gene_id='8139', hgnc_symbol='GAAPS',
                     in_genepanel=True)
         # db importeer je al met 'from gaps.models import *'.
@@ -81,23 +83,25 @@ def updateGenpanel():
         # was de database nog niet geïnitialiseerd toen je de aanroep deed.
         # Oplossing: deze methode in /query van blueprint_query aanroepen
         # nadat de app volledig is opgestart en de database is geïnitialiseerd.
-        db.session.add(gene)
-        db.session.commit()
-        # for line in data:
-        #     print("iets")
-        #     g = line.gene
-        #     db.session.add(g)
-        #     db.session.commit()
-        #     p = line.p_symbol
-        #     db.session.add(p)
-        #     if len(line.alias) >= 1:
-        #         for i in line.alias:
-        #             db.session.add(i)
-        #     if len(line.panel) >= 1:
-        #         for j in line.panel:
-        #             for k in j:
-        #                 db.session.add(k)
-        #     db.session.commit()
+        # db.session.add(gene)
+        db.session.delete(gene)  # hij loopt hier vast
+        db.session.commit()  # https://flask-sqlalchemy.palletsprojects.com/en/2.x/queries/
+
+        for line in data:
+            print("iets")
+            g = line.gene
+            db.session.add(g)
+            db.session.commit()
+            p = line.p_symbol
+            db.session.add(p)
+            if len(line.alias) >= 1:
+                for i in line.alias:
+                    db.session.add(i)
+            if len(line.panel) >= 1:
+                for j in line.panel:
+                    for k in j:
+                        db.session.add(k)
+            db.session.commit()
         print("Done")
     else:
         print("No file!")

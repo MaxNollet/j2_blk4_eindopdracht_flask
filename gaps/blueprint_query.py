@@ -13,6 +13,7 @@ def query():
     :return Rendered template of 'query.html' (str).
     """
     DatabaseInserter.updateGenpanel()
+    print("ok")
     return render_template("query.html", active="query_input")
 
 # shift command r = hard refresh cache/ en zooi
