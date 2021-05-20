@@ -1,7 +1,13 @@
+from os import path
 from typing import Union
 
 from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.select import Select
+from selenium.webdriver.support.ui import WebDriverWait
+
+from gaps.models import Gene
 
 webDriver = Union[
     webdriver.Firefox,
@@ -20,7 +26,7 @@ class TestDefaults:
        interface.
     """
 
-    def test_defaults_query_generator(self, selenium: webDriver, base_url):
+    def test_defaults_query_generator(self, selenium: webDriver):
         """Test the default values for the query generator."""
         selenium.get("http://127.0.0.1:5000/")
         input_field = selenium.find_element_by_id("input_field")
@@ -124,4 +130,15 @@ class TestJavaScript:
     """
 
     def test_clear_file(self, selenium: webDriver):
-        pass
+        selenium.get("http://127.0.0.1:5000/")
+        input_load_symbols = selenium.find_element_by_id("input_load_symbols")
+        button_clear_file = selenium.find_element_by_id("button_clear_file")
+        filename = str(path.abspath(__file__))
+        input_load_symbols.send_keys(filename)
+        print(filename)
+        print(input_load_symbols.get_attribute("value"))
+        element = WebDriverWait(selenium, 10).until(
+            expected_conditions.element_to_be_clickable((By.ID, "button_clear_file"))
+        )
+        button_clear_file.click()
+        assert input_load_symbols.get_attribute("value") == ""
