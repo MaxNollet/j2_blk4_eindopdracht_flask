@@ -1,3 +1,4 @@
+import ntpath
 from os import path
 from typing import Union
 
@@ -219,7 +220,7 @@ class TestJavaScript:
         button_clear_file = selenium.find_element_by_id("button_clear_file")
         file_path = path.abspath(path.join(path.dirname(__file__), "..", "requirements.txt"))
         input_load_symbols.send_keys(file_path)
-        assert path.basename(input_load_symbols.get_attribute("value")) == path.basename(file_path)
+        assert ntpath.basename(input_load_symbols.get_attribute("value")) == ntpath.basename(file_path)
         WebDriverWait(selenium, 10).until(
             expected_conditions.element_to_be_clickable((By.ID, "input_load_symbols"))
         )
@@ -338,7 +339,7 @@ class TestEntireForm:
         input_load_symbols.send_keys(file)
         WebDriverWait(selenium, 10).until(
             expected_conditions.text_to_be_present_in_element_value((By.ID, "input_load_symbols"),
-                                                                    path.basename(file))
+                                                                    ntpath.basename(file))
         )
         selenium.execute_script("arguments[0].click()", button_clear_file)
 
