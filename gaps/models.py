@@ -1,8 +1,10 @@
 # coding: utf-8
+import uuid
 from dataclasses import dataclass
 
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer, String, Table, text
+from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer, String, Table, Text, text
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 db = SQLAlchemy()
@@ -24,7 +26,8 @@ class Gene(Model):
     hgnc_symbol: str = Column(String(30), nullable=False, unique=True)
     in_genepanel: bool = Column(Boolean, nullable=False, server_default=text("false"))
 
-    genepanels = relationship('Genepanel', secondary='eindopdracht.genepanel_gene')
+    queries: list = relationship('Query', secondary='eindopdracht.query_gene')
+    genepanels: list = relationship('Genepanel', secondary='eindopdracht.genepanel_gene')
 
 
 @dataclass
@@ -39,7 +42,7 @@ class Genepanel(Model):
                      server_default=text("nextval('eindopdracht.genepanel_id_seq'::regclass)"))
     abbreviation: str = Column(String(40), nullable=False, unique=True)
 
-    inheritance_types = relationship('InheritanceType', secondary='eindopdracht.genepanel_inheritance')
+    inheritance_types: list = relationship('InheritanceType', secondary='eindopdracht.genepanel_inheritance')
 
 
 @dataclass
@@ -68,6 +71,31 @@ class Journal(Model):
 
 
 @dataclass
+class Option(Model):
+    """A class which maps to the table 'option'
+       in the database.
+    """
+    __tablename__ = 'options'
+    __table_args__ = {'schema': 'eindopdracht'}
+
+    id: int = Column(Integer, primary_key=True, server_default=text("nextval('eindopdracht.options_id_seq'::regclass)"))
+    date_after: Date = Column(Date, nullable=False)
+    date_before: Date = Column(Date, nullable=False)
+
+
+@dataclass
+class Symbol(Model):
+    """A class which maps to the table 'symbol'
+       in the database.
+    """
+    __tablename__ = 'symbol'
+    __table_args__ = {'schema': 'eindopdracht'}
+
+    id: int = Column(Integer, primary_key=True, server_default=text("nextval('eindopdracht.symbol_id_seq'::regclass)"))
+    symbol: str = Column(String(80), nullable=False, unique=True)
+
+
+@dataclass
 class Alias(Model):
     """A class which maps to the table 'alias'
        in the database.
@@ -77,9 +105,8 @@ class Alias(Model):
 
     id: int = Column(Integer, primary_key=True, server_default=text("nextval('eindopdracht.alias_id_seq'::regclass)"))
     hgnc_symbol: str = Column(String(30), nullable=False, unique=True)
-    gene_id: int = Column(ForeignKey('eindopdracht.gene.id'), nullable=False)
 
-    gene = relationship('Gene')
+    genes: list = relationship('Gene', secondary='eindopdracht.gene_alias')
 
 
 @dataclass
@@ -98,9 +125,16 @@ class Article(Model):
     abstract: str = Column(String(3000), nullable=False)
     journal_id: int = Column(ForeignKey('eindopdracht.journal.id'))
 
-    journal = relationship('Journal')
-    genes = relationship('Gene', secondary='eindopdracht.article_gene')
+    journal: Journal = relationship('Journal')
+    genes: list = relationship('Gene', secondary='eindopdracht.article_gene')
 
+
+t_gene_alias = Table(
+    'gene_alias', metadata,
+    Column('gene_id', ForeignKey('eindopdracht.gene.id'), nullable=False),
+    Column('alias_id', ForeignKey('eindopdracht.alias.id'), nullable=False),
+    schema='eindopdracht'
+)
 
 t_genepanel_gene = Table(
     'genepanel_gene', metadata,
@@ -130,12 +164,42 @@ class GenepanelSymbol(Model):
     symbol: str = Column(String(30), nullable=False, unique=True)
     gene_id: int = Column(ForeignKey('eindopdracht.gene.id'), nullable=False)
 
-    gene = relationship('Gene')
+    gene: Gene = relationship('Gene')
+
+
+@dataclass
+class Query(Model):
+    """A class which maps to the table 'query'
+       in the database.
+    """
+    __tablename__ = 'query'
+    __table_args__ = {'schema': 'eindopdracht'}
+
+    id: uuid.uuid4 = Column(UUID, primary_key=True, default=uuid.uuid4)
+    query: str = Column(Text, nullable=False)
+    options_id: int = Column(ForeignKey('eindopdracht.options.id'))
+
+    options: Option = relationship('Option')
+    symbols: list = relationship('Symbol', secondary='eindopdracht.query_symbol')
 
 
 t_article_gene = Table(
     'article_gene', metadata,
     Column('gene_id', ForeignKey('eindopdracht.gene.id'), nullable=False),
     Column('article_id', ForeignKey('eindopdracht.article.id'), nullable=False),
+    schema='eindopdracht'
+)
+
+t_query_gene = Table(
+    'query_gene', metadata,
+    Column('query_id', ForeignKey('eindopdracht.query.id'), nullable=False),
+    Column('gene_id', ForeignKey('eindopdracht.gene.id'), nullable=False),
+    schema='eindopdracht'
+)
+
+t_query_symbol = Table(
+    'query_symbol', metadata,
+    Column('query_id', ForeignKey('eindopdracht.query.id'), nullable=False),
+    Column('symbol_id', ForeignKey('eindopdracht.symbol.id'), nullable=False),
     schema='eindopdracht'
 )
