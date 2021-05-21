@@ -1,23 +1,41 @@
-import pytest
 import os
-import sys
+import socket
+import subprocess
 
-current_dir = os.path.abspath(os.path.dirname(__file__))
-parent_dir = os.path.dirname(current_dir)
-sys.path.append(parent_dir)
+import pytest
 
-from gaps import create_app
-from gaps.models import db
+
+def pytest_addoption(parser):
+    group = parser.getgroup('selenium', 'selenium')
+    group.addoption('--headless',
+                    action='store_true',
+                    help='enable headless mode for supported browsers.')
 
 
 @pytest.fixture
-def client():
-    """A function which prepares the application for
-       testing and returns a testing client.
+def chrome_options(chrome_options, pytestconfig):
+    if pytestconfig.getoption('headless'):
+        chrome_options.add_argument('headless')
+    return chrome_options
 
-    :return Testing client (Flask).
-    """
-    app = create_app(testing=True)
-    with app.app_context():
-        db.create_all()
-    yield app.test_client()
+
+@pytest.fixture(scope="session")
+def flask_port():
+    # Ask OS for a free port.
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(("", 0))
+        addr = s.getsockname()
+        port = addr[1]
+        return port
+
+
+@pytest.fixture(scope="session", autouse=True)
+def live_server(flask_port):
+    env = os.environ.copy()
+    env["FLASK_APP"] = "gaps"
+    # server = subprocess.Popen(['flask', 'run', '--port', str(flask_port)], env=env)
+    server = subprocess.Popen(['flask', 'run', '--port', "5000"], env=env)
+    try:
+        yield server
+    finally:
+        server.terminate()

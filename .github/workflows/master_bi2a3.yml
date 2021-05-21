@@ -37,7 +37,7 @@ jobs:
       env:
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
         SQLALCHEMY_DATABASE_URI: ${{ secrets.SQLALCHEMY_DATABASE_URI }}
-      run: pytest
+      run: pytest --driver chrome --headless
     
     - name: Upload artifact for deployment jobs
       uses: actions/upload-artifact@v2
