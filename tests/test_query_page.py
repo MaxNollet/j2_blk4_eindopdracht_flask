@@ -109,7 +109,7 @@ class TestQueryBuilder:
         button_add = selenium.find_element_by_id("button_add_item")
         term = "Pikanto"
         input_term.send_keys(term)
-        button_add.click()
+        selenium.execute_script("arguments[0].click();", button_add)
         assert input_term.get_attribute("value") == ""
         assert input_query.get_attribute("value") == f"{term}[ALL]"
 
@@ -121,7 +121,7 @@ class TestQueryBuilder:
         button_add = selenium.find_element_by_id("button_add_item")
         term = "Frikandel speciaal"
         input_term.send_keys(term)
-        button_add.click()
+        selenium.execute_script("arguments[0].click();", button_add)
         assert input_query.get_attribute("value") == f"{term}[ALL]"
 
     def test_second_addition_no_spaces(self, selenium: webDriver):
@@ -133,9 +133,9 @@ class TestQueryBuilder:
         term1 = "Kroket"
         term2 = "Frikandel"
         input_term.send_keys(term1)
-        button_add.click()
+        selenium.execute_script("arguments[0].click(0);", button_add)
         input_term.send_keys(term2)
-        button_add.click()
+        selenium.execute_script("arguments[0].click(0);", button_add)
         assert input_term.get_attribute("value") == ""
         assert input_query.get_attribute("value") == f"({term1}[ALL]) AND ({term2}[ALL])"
 
@@ -148,9 +148,9 @@ class TestQueryBuilder:
         term1 = "Frikandel speciaal"
         term2 = "Patatje oorlog"
         input_term.send_keys(term1)
-        button_add.click()
+        selenium.execute_script("arguments[0].click(0);", button_add)
         input_term.send_keys(term2)
-        button_add.click()
+        selenium.execute_script("arguments[0].click(0);", button_add)
         assert input_term.get_attribute("value") == ""
         assert input_query.get_attribute("value") == f"({term1}[ALL]) AND ({term2}[ALL])"
 
@@ -219,7 +219,7 @@ class TestJavaScript:
         button_clear_file = selenium.find_element_by_id("button_clear_file")
         file_path = path.abspath(path.join(path.dirname(__file__), "..", "requirements.txt"))
         input_load_symbols.send_keys(file_path)
-        assert input_load_symbols.get_attribute("value").split("\\")[-1] == file_path.split("\\")[-1]
+        assert path.basename(input_load_symbols.get_attribute("value")) == path.basename(file_path)
         WebDriverWait(selenium, 10).until(
             expected_conditions.element_to_be_clickable((By.ID, "input_load_symbols"))
         )
@@ -258,8 +258,8 @@ class TestEntireForm:
         self.specify_genes_exclude(selenium)
         self.specify_genes_include(selenium)
         self.optional_options(selenium)
-        selenium.execute_script("arguments[0].click()", check_new_tab)
-        selenium.execute_script("arguments[0].click()", button_clear)
+        selenium.execute_script("arguments[0].click();", check_new_tab)
+        selenium.execute_script("arguments[0].click();", button_clear)
         # Real run.
         query = self.build_query(selenium)
         self.assert_query_builder(selenium, query)
@@ -288,12 +288,12 @@ class TestEntireForm:
         additions = ("AND", "AND", "OR", "AND", "NOT", "NOT", "AND", "OR", "OR", "AND", "NOT")
         input_field.select_by_value(fields[0])
         input_search_term.send_keys(terms[0])
-        button_add_item.click()
+        selenium.execute_script("arguments[0].click();", button_add_item)
         for field, term, addition in zip(fields[1:], terms[1:], additions):
             input_field.select_by_value(field)
             input_add_type.select_by_value(addition)
             input_search_term.send_keys(term)
-            button_add_item.click()
+            selenium.execute_script("arguments[0].click();", button_add_item)
         query = "(((((((((((Inkscape[AFFL]) AND (GIMP[ALL])) AND (Autodesk 3ds Max[AUTH])) OR (Autodesk Maya[DSO]))" \
                 " AND (Autodesk SketchBook[CRDT])) NOT (HitFilm[EID])) NOT (SceneBuilder[FILT])) AND" \
                 " (Bootstrap Studio[ISBN])) OR (Jetbrains IntelliJ IDEA[MESH])) OR (Jetbrains PyCharm[PTYP])) AND" \
@@ -338,7 +338,7 @@ class TestEntireForm:
         input_load_symbols.send_keys(file)
         WebDriverWait(selenium, 10).until(
             expected_conditions.text_to_be_present_in_element_value((By.ID, "input_load_symbols"),
-                                                                    __file__.split("\\")[-1])
+                                                                    path.basename(file))
         )
         selenium.execute_script("arguments[0].click()", button_clear_file)
 
