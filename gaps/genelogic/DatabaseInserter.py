@@ -107,9 +107,12 @@ def updateGenpanel():
                     print(i)
 
                     i = Alias(hgnc_symbol=i.hgnc_symbol, gene_id=gene_id)
+                    # genes moet nu gevuld worden
                     db.session.add(i)
                     db.session.commit()
             if len(line.panel) >= 1:
+                # https://www.tutorialspoint.com/sqlalchemy/sqlalchemy_orm_many_to_many_relationships.htm
+                # https://flask-sqlalchemy.palletsprojects.com/en/2.x/queries/
                 for j in line.panel:
                     for k in j:
                         print(isinstance(k,
