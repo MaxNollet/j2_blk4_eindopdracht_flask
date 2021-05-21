@@ -250,6 +250,7 @@ class TestEntireForm:
         """Test the entire form."""
         selenium.maximize_window()
         selenium.get("http://127.0.0.1:5000/")
+        selenium.execute_script("window.scrollTo(0,document.body.scrollHeight)")
         check_new_tab = selenium.find_element_by_id("check_new_tab")
         button_clear = selenium.find_element_by_id("button_clear")
         # Dry-run.
