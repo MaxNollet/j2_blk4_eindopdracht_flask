@@ -5,6 +5,20 @@ import subprocess
 import pytest
 
 
+def pytest_addoption(parser):
+    group = parser.getgroup('selenium', 'selenium')
+    group.addoption('--headless',
+                    action='store_true',
+                    help='enable headless mode for supported browsers.')
+
+
+@pytest.fixture
+def chrome_options(chrome_options, pytestconfig):
+    if pytestconfig.getoption('headless'):
+        chrome_options.add_argument('headless')
+    return chrome_options
+
+
 @pytest.fixture(scope="session")
 def flask_port():
     # Ask OS for a free port.
