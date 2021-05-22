@@ -8,17 +8,17 @@
 
 {% block content %}
     <div class="container" id="page_query_builder">
-        <div class="row gy-2" style="padding-bottom: 3em;">
-            <div class="col-12">
-                <h1 class="display-2">Query_builder</h1>
+        <div class="row gy-2" id="informative_text" style="padding-bottom: 3em;">
+            <div class="col-12" id="col_header">
+                <h1 class="display-2" id="header">Query_builder</h1>
             </div>
-            <div class="col-lg-9">
-                <p>Welcome to the query builder! Your quest for finding new genes starts here. Follow the three simple steps below to specify what you are looking for and press '<em>Search genes</em>' to start searching for new genes.</p>
-                <p>For detailed information about every step in the query builder and a step-by-step-guide, please refer to '<em>How to use the query builder</em>' in the help-section.</p>
+            <div class="col-lg-9" id="col_text">
+                <p id="paragraph_welcome">Welcome to the query builder! Your quest for finding new genes starts here. Follow the three simple steps below to specify what you are looking for and press '<em>Search genes</em>' to start searching for new genes.</p>
+                <p id="paragraph_help">For detailed information about every step in the query builder and a step-by-step-guide, please refer to '<em>How to use the query builder</em>' in the help-section.</p>
             </div>
         </div>
-        <div class="alert alert-info alert-dismissible" role="alert" hidden=""><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button><span><strong>Alert</strong> text.</span></div>
-        <form id="input_form" class="gy-5">
+        <div class="alert alert-info alert-dismissible" role="alert" id="alert" hidden=""><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button><span id="alert_message"><strong>Alert</strong> text.</span></div>
+        <form id="input_form" class="gy-5" method="post" enctype="multipart/form-data">
             <div class="row gy-5 gx-5" id="row_query_symbols">
                 <div class="col-lg-7 d-flex flex-column" id="col_query_builder">
                     <h2 id="header_query_builder" style="font-weight: 400;color: var(--bs-gray-dark);">1. Build a query</h2>
