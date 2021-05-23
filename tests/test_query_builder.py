@@ -170,7 +170,6 @@ class TestQueryBuilder:
         input_term.send_keys(term3, Keys.ENTER)
         input_add_type.select_by_value("NOT")
         input_term.send_keys(term4, Keys.ENTER)
-        print(input_query.get_attribute("value"))
         assert input_term.get_attribute("value") == ""
         assert input_query.get_attribute(
             "value") == f"((({term1}[ALL]) AND ({term2}[ALL])) OR ({term3}[ALL])) NOT ({term4}[ALL])"
