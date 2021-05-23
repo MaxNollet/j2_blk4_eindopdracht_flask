@@ -90,8 +90,12 @@ def updateGenpanel():
         for line in data:
             print("iets")
             g = line.gene
+            gene_tabel = Gene(ncbi_gene_id=line.gene.ncbi_gene_id,
+                              hgnc_symbol=line.gene.hgnc_symbol,
+                              in_genepanel=line.gene.in_genepanel)
             print(g)
             db.session.add(g)
+            db.session.add(gene_tabel)
             db.session.commit()
             gene_id = g.id
             # db.session.commit()
@@ -106,7 +110,8 @@ def updateGenpanel():
                 for i in line.alias:
                     print(i)
 
-                    i = Alias(hgnc_symbol=i.hgnc_symbol, gene_id=gene_id)
+                    i = Alias(hgnc_symbol=i.hgnc_symbol)
+                    # Alias.id.append(gene_id)
                     # genes moet nu gevuld worden
                     db.session.add(i)
                     db.session.commit()
@@ -115,8 +120,8 @@ def updateGenpanel():
                 # https://flask-sqlalchemy.palletsprojects.com/en/2.x/queries/
                 for j in line.panel:
                     for k in j:
-                        print(isinstance(k,
-                                         InheritanceType))  # K = Inheritance en GenePanel
+                        # print(isinstance(k,
+                        #                  InheritanceType))  # K = Inheritance en GenePanel
                         # if k.
                         if isinstance(k,
                                       InheritanceType):  # kijkt of het het juiste object is
@@ -126,6 +131,8 @@ def updateGenpanel():
                             duplicate = InheritanceType.query.filter_by(
                                 type=k.type).first()
                             if duplicate is None:  # zodat er geen dubbele in komen
+                                print("=-=-=", k)
+                                gene.genepanels.append(k)
                                 # de tussen tabelen moetne nog
                                 db.session.add(k)
                                 db.session.commit()
