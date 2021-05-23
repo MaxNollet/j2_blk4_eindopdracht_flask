@@ -32,7 +32,14 @@
   color: var(--bs-gray-dark);
 }
 
-.active {
+.nav-link {
+  border-top-style: solid;
   border-bottom-style: solid;
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+}
+
+.active {
+  border-bottom-color: initial;
 }
 
