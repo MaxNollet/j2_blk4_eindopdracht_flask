@@ -75,8 +75,33 @@ class ElementSelecter:
 
     @staticmethod
     def select_button_clear_file(selenium: webDriver):
-        """select element 'button_clear_file'."""
+        """Select element 'button_clear_file'."""
         return selenium.find_element_by_id("button_clear_file")
+
+    @staticmethod
+    def select_input_date_after(selenium: webDriver):
+        """Select element 'input_date_after'."""
+        return selenium.find_element_by_id("input_date_after")
+
+    @staticmethod
+    def select_input_date_before(selenium: webDriver):
+        """Select element 'input_date_before'."""
+        return selenium.find_element_by_id("input_date_before")
+
+    @staticmethod
+    def select_check_new_tab(selenium: webDriver):
+        """Select element 'check_new_tab'."""
+        return selenium.find_element_by_id("check_new_tab")
+
+    @staticmethod
+    def select_button_submit(selenium: webDriver):
+        """Select element 'button_submit'."""
+        return selenium.find_element_by_id("button_submit")
+
+    @staticmethod
+    def select_button_clear(selenium: webDriver):
+        """Select element 'button_clear'."""
+        return selenium.find_element_by_id("button_clear")
 
 
 class TestDefaultsQueryGenerator(ElementSelecter):
@@ -249,32 +274,65 @@ class TestDefaultsGeneSymbols(ElementSelecter):
         assert self.select_button_clear_file(selenium).text == "Clear"
 
 
-class TestDefaults:
-    """A class which groups tests related to checking
-       default values and settings for elements in the
-       interface.
+class TestDefaultsOptionalOptions(ElementSelecter):
+    """A class which groups tests that check the defaults
+       for the optional options in step 3 in the interface.
     """
 
-    def test_defaults_optional_options(self, selenium: webDriver):
-        """Test the default values for optional options and submit-buttons."""
-        selenium.get("http://127.0.0.1:5000/query_builder")
-        input_date_after = selenium.find_element_by_id("input_date_after")
-        input_date_before = selenium.find_element_by_id("input_date_before")
-        check_new_tab = selenium.find_element_by_id("check_new_tab")
-        button_submit = selenium.find_element_by_id("button_submit")
-        button_clear = selenium.find_element_by_id("button_clear")
-        # Assert defaults for date-inputs.
-        assert input_date_after.is_enabled() is True
-        assert input_date_after.get_attribute("value") == ""
-        assert input_date_before.is_enabled() is True
-        assert input_date_before.get_attribute("value") == ""
-        # Assert defaults for check open in new tab, submit- and rest-buttons.
-        assert check_new_tab.is_enabled() is True
-        assert check_new_tab.is_selected() is False
-        assert button_submit.is_enabled() is True
-        assert button_submit.get_attribute("type") == "submit"
-        assert button_clear.is_enabled() is True
-        assert button_clear.get_attribute("type") == "reset"
+    # input_date_after
+    def test_input_date_after_enabled(self, selenium: webDriver):
+        """Test input_date_after if enabled."""
+        selenium.get(self.base_url)
+        assert self.select_input_date_after(selenium).is_enabled() is True
+
+    def test_input_date_after_default(self, selenium: webDriver):
+        """Test input_date_after default value."""
+        selenium.get(self.base_url)
+        assert self.select_input_date_after(selenium).get_attribute("value") == ""
+
+    # input_date_before
+    def test_input_date_before_enabled(self, selenium: webDriver):
+        """Test input_date_before if enabled."""
+        selenium.get(self.base_url)
+        assert self.select_input_date_before(selenium).is_enabled() is True
+
+    def test_input_date_before_default(self, selenium: webDriver):
+        """Test input_date_before default value."""
+        selenium.get(self.base_url)
+        assert self.select_input_date_before(selenium).get_attribute("value") == ""
+
+    # check_new_tab
+    def test_check_new_tab_enabled(self, selenium: webDriver):
+        """Test check_new_tab if enabled."""
+        selenium.get(self.base_url)
+        assert self.select_check_new_tab(selenium).is_enabled() is True
+
+    def test_check_new_tab_selected(self, selenium: webDriver):
+        """Test check_new_tab if selected."""
+        selenium.get(self.base_url)
+        assert self.select_check_new_tab(selenium).is_selected() is False
+
+    # button_submit
+    def test_button_submit_enabled(self, selenium: webDriver):
+        """Test button_submit if enabled."""
+        selenium.get(self.base_url)
+        assert self.select_button_submit(selenium).is_enabled() is True
+
+    def test_button_submit_type(self, selenium: webDriver):
+        """Test button_submit if correct type."""
+        selenium.get(self.base_url)
+        assert self.select_button_submit(selenium).get_attribute("type") == "submit"
+
+    # button_clear
+    def test_button_clear_enabled(self, selenium: webDriver):
+        """Test button_clear is enabled."""
+        selenium.get(self.base_url)
+        assert self.select_button_clear(selenium).is_enabled() is True
+
+    def test_button_clear_type(self, selenium: webDriver):
+        """Test button_clear if correct type."""
+        selenium.get(self.base_url)
+        assert self.select_button_clear(selenium).get_attribute("type") == "reset"
 
 
 class TestQueryBuilder:
