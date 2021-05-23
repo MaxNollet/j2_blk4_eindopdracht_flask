@@ -53,8 +53,38 @@ class ElementSelecter:
         """Select element 'input_generated_query'."""
         return selenium.find_element_by_id("input_generated_query")
 
+    @staticmethod
+    def select_radio_include_symbols(selenium: webDriver):
+        """Select element 'radio_include_symbols'."""
+        return selenium.find_element_by_id("radio_include_symbols")
+
+    @staticmethod
+    def select_radio_exclude_symbols(selenium: webDriver):
+        """Select element 'radio_exclude_symbols'."""
+        return selenium.find_element_by_id("radio_exclude_symbols")
+
+    @staticmethod
+    def select_input_symbols(selenium: webDriver):
+        """Select element 'input_symbols'."""
+        return selenium.find_element_by_id("input_symbols")
+
+    @staticmethod
+    def select_input_load_symbols(selenium: webDriver):
+        """Select element 'input_load_symbols'."""
+        return selenium.find_element_by_id("input_load_symbols")
+
+    @staticmethod
+    def select_button_clear_file(selenium: webDriver):
+        """select element 'button_clear_file'."""
+        return selenium.find_element_by_id("button_clear_file")
+
 
 class TestDefaultsQueryGenerator(ElementSelecter):
+    """A class which groups tests that check the defaults
+       for the query builder in step 1 in the interface.
+    """
+
+    # input_field
     def test_input_field_enabled(self, selenium: webDriver):
         """Test input_field if enabled."""
         selenium.get(self.base_url)
@@ -90,6 +120,7 @@ class TestDefaultsQueryGenerator(ElementSelecter):
         selenium.get(self.base_url)
         assert Select(self.select_input_field(selenium)).first_selected_option.text == "All Fields"
 
+    # input_search_term
     def test_input_search_term_enabled(self, selenium: webDriver):
         """Test input_search_term if enabled."""
         selenium.get(self.base_url)
@@ -100,6 +131,7 @@ class TestDefaultsQueryGenerator(ElementSelecter):
         selenium.get(self.base_url)
         assert self.select_input_search_term(selenium).get_attribute("value") == ""
 
+    # input_add_type
     def test_input_add_type_enabled(self, selenium: webDriver):
         """Test input_add_type if enabled."""
         selenium.get(self.base_url)
@@ -123,6 +155,7 @@ class TestDefaultsQueryGenerator(ElementSelecter):
         selenium.get(self.base_url)
         assert Select(self.select_input_add_type(selenium)).first_selected_option.text == "AND"
 
+    # button_add_item
     def test_button_add_item_enabled(self, selenium: webDriver):
         """Test button_add_item if enabled."""
         selenium.get(self.base_url)
@@ -133,6 +166,7 @@ class TestDefaultsQueryGenerator(ElementSelecter):
         selenium.get(self.base_url)
         assert self.select_button_add_item(selenium).text == "Add"
 
+    # input_generated_query
     def test_input_generated_query_enabled(self, selenium: webDriver):
         """Test input_generated_query if enabled."""
         selenium.get(self.base_url)
@@ -144,35 +178,82 @@ class TestDefaultsQueryGenerator(ElementSelecter):
         assert self.select_input_generated_query(selenium).get_attribute("value") == ""
 
 
+class TestDefaultsGeneSymbols(ElementSelecter):
+    """A class which groups tests that check the defaults
+       for the gene symbols section in step 2 in the interface.
+    """
+
+    # radio_include_symbols
+    def test_radio_include_symbols_enabled(self, selenium: webDriver):
+        """Test radio_include_symbols if enabled."""
+        selenium.get(self.base_url)
+        assert self.select_radio_include_symbols(selenium).is_enabled() is True
+
+    def test_radio_include_symbols_selected(self, selenium: webDriver):
+        """Test radio_include_symbols if selected."""
+        selenium.get(self.base_url)
+        assert self.select_radio_include_symbols(selenium).is_selected() is True
+
+    def test_radio_include_symbols_value(self, selenium: webDriver):
+        """Test radio_include_symbols value."""
+        selenium.get(self.base_url)
+        assert self.select_radio_include_symbols(selenium).get_attribute("value") == "true"
+
+    # radio_exclude_symbols
+    def test_radio_exclude_symbols_enabled(self, selenium: webDriver):
+        """Test radio_exclude_symbols if enabled."""
+        selenium.get(self.base_url)
+        assert self.select_radio_exclude_symbols(selenium).is_enabled() is True
+
+    def test_radio_exclude_symbols_selected(self, selenium: webDriver):
+        """Test radio_exclude_symbols if selected."""
+        selenium.get(self.base_url)
+        assert self.select_radio_exclude_symbols(selenium).is_selected() is False
+
+    def test_radio_exclude_symbols_value(self, selenium: webDriver):
+        """Test radio_exclude_symbols value."""
+        selenium.get(self.base_url)
+        assert self.select_radio_exclude_symbols(selenium).get_attribute("value") == "false"
+
+    # input_symbols
+    def test_input_symbols_enabled(self, selenium: webDriver):
+        """Test input_symbols is enabled."""
+        selenium.get(self.base_url)
+        assert self.select_input_symbols(selenium).is_enabled() is True
+
+    def test_input_symbols_default(self, selenium: webDriver):
+        """Test input_symbols default value."""
+        selenium.get(self.base_url)
+        assert self.select_input_symbols(selenium).get_attribute("value") == ""
+
+    # input_load_symbols
+    def test_input_load_symbols_enabled(self, selenium: webDriver):
+        """Test input_load_symbols if enabled."""
+        selenium.get(self.base_url)
+        assert self.select_input_load_symbols(selenium).is_enabled() is True
+
+    def test_input_load_symbols_default(self, selenium: webDriver):
+        """Test input_load_symbols default value."""
+        selenium.get(self.base_url)
+        assert self.select_input_load_symbols(selenium).get_attribute("value") == ""
+
+    # button_clear_file
+    def test_button_clear_file_enabled(self, selenium: webDriver):
+        """Test button_clear_file is enabled."""
+        selenium.get(self.base_url)
+        assert self.select_button_clear_file(selenium).is_enabled() is True
+
+    def test_button_clear_file_text(self, selenium: webDriver):
+        """Test button_clear_file if text is correct."""
+        selenium.get(self.base_url)
+        assert self.select_button_clear_file(selenium).text == "Clear"
+
+
 class TestDefaults:
     """A class which groups tests related to checking
        default values and settings for elements in the
        interface.
     """
-
-    def test_defaults_gene_symbols(self, selenium: webDriver):
-        """Test the default values for specifying genes."""
-        selenium.get("http://127.0.0.1:5000/query_builder")
-        radio_include_symbols = selenium.find_element_by_id("radio_include_symbols")
-        radio_exclude_symbols = selenium.find_element_by_id("radio_exclude_symbols")
-        input_symbols = selenium.find_element_by_id("input_symbols")
-        input_load_symbols = selenium.find_element_by_id("input_load_symbols")
-        button_clear_file = selenium.find_element_by_id("button_clear_file")
-        # Assert defaults for radio-buttons.
-        assert radio_include_symbols.is_enabled() is True
-        assert radio_include_symbols.is_selected() is True
-        assert radio_include_symbols.get_attribute("value") == "true"
-        assert radio_exclude_symbols.is_enabled() is True
-        assert radio_exclude_symbols.is_selected() is False
-        assert radio_exclude_symbols.get_attribute("value") == "false"
-        # Assert defaults for gene symbol input.
-        assert input_symbols.is_enabled() is True
-        assert input_symbols.get_attribute("value") == ""
-        # Assert defaults for file chooser.
-        assert input_load_symbols.is_enabled() is True
-        assert input_load_symbols.get_attribute("value") == ""
-        # Assert defaults for clear-button.
-        assert button_clear_file.is_enabled() is True
 
     def test_defaults_optional_options(self, selenium: webDriver):
         """Test the default values for optional options and submit-buttons."""
