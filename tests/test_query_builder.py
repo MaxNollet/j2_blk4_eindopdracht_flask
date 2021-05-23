@@ -20,35 +20,135 @@ webDriver = Union[
 ]
 
 
+class ElementSelecter:
+    """A class that groups methods which select various
+       elements on the query_builder-page.
+
+    base_url = URL of the page containing the elements (str).
+    """
+    base_url = "http://127.0.0.1:5000/query_builder"
+
+    @staticmethod
+    def select_input_field(selenium: webDriver):
+        """Select element 'input_field'."""
+        return selenium.find_element_by_id("input_field")
+
+    @staticmethod
+    def select_input_search_term(selenium: webDriver):
+        """Select element 'input_search_term'."""
+        return selenium.find_element_by_id("input_search_term")
+
+    @staticmethod
+    def select_input_add_type(selenium: webDriver):
+        """Select element 'input_add_type'."""
+        return selenium.find_element_by_id("input_add_type")
+
+    @staticmethod
+    def select_button_add_item(selenium: webDriver):
+        """Select element 'button_add_item'."""
+        return selenium.find_element_by_id("button_add_item")
+
+    @staticmethod
+    def select_input_generated_query(selenium: webDriver):
+        """Select element 'input_generated_query'."""
+        return selenium.find_element_by_id("input_generated_query")
+
+
+class TestDefaultsQueryGenerator(ElementSelecter):
+    def test_input_field_enabled(self, selenium: webDriver):
+        """Test input_field if enabled."""
+        selenium.get(self.base_url)
+        assert self.select_input_field(selenium).is_enabled() is True
+
+    def test_input_field_texts(self, selenium: webDriver):
+        """Test input_field if all text-values are correct."""
+        selenium.get(self.base_url)
+        texts = ("All Fields", "UID", "Filter", "Title", "Text Word", "MeSH Terms", "MeSH Major Topic", "Author",
+                 "Journal", "Affiliation", "EC/RN Number", "Supplementary Concept", "Date - Publication",
+                 "Date - Entrez", "Volume", "Pagination", "Publication Type", "Language", "Issue", "MeSH Subheading",
+                 "Secondary Source ID", "Date - MeSH", "Title/Abstract", "Other Term", "Investigator",
+                 "Author - Corporate", "Place of Publication", "Pharmacological Action", "Grant Number",
+                 "Date - Modification", "Date - Completion", "Publisher ID", "Author - First", "Author - Full",
+                 "Investigator - Full", "Transliterated Title", "Author - Last", "Print Publication Date",
+                 "Electronic Publication Date", "Location ID", "Date - Create", "Book", "Editor", "ISBN", "Publisher",
+                 "Author Cluster ID", "Extended PMID", "DSO", "Author - Identifier", "Subject - Personal Name",
+                 "Conflict of Interest Statements")
+        assert all(option.text in texts for option in Select(self.select_input_field(selenium)).options)
+
+    def test_input_field_values(self, selenium: webDriver):
+        """Test input_field if all values are correct"""
+        selenium.get(self.base_url)
+        values = ("ALL", "UID", "FILT", "TITL", "WORD", "MESH", "MAJR", "AUTH", "JOUR", "AFFL", "ECNO", "SUBS", "PDAT",
+                  "EDAT", "VOL", "PAGE", "PTYP", "LANG", "ISS", "SUBH", "SI", "MHDA", "TIAB", "OTRM", "INVR", "COLN",
+                  "CNTY", "PAPX", "GRNT", "MDAT", "CDAT", "PID", "FAUT", "FULL", "FINV", "TT", "LAUT", "PPDT", "EPDT",
+                  "LID", "CRDT", "BOOK", "ED", "ISBN", "PUBN", "AUCL", "EID", "DSO", "AUID", "PS", "COIS")
+        assert all(option.get_attribute("value") in values for option
+                   in Select(self.select_input_field(selenium)).options)
+
+    def test_input_field_default(self, selenium: webDriver):
+        """Test input_field default value."""
+        selenium.get(self.base_url)
+        assert Select(self.select_input_field(selenium)).first_selected_option.text == "All Fields"
+
+    def test_input_search_term_enabled(self, selenium: webDriver):
+        """Test input_search_term if enabled."""
+        selenium.get(self.base_url)
+        assert self.select_input_search_term(selenium).is_enabled() is True
+
+    def test_input_search_term_default(self, selenium: webDriver):
+        """Test input_search_term default value."""
+        selenium.get(self.base_url)
+        assert self.select_input_search_term(selenium).get_attribute("value") == ""
+
+    def test_input_add_type_enabled(self, selenium: webDriver):
+        """Test input_add_type if enabled."""
+        selenium.get(self.base_url)
+        assert self.select_input_add_type(selenium).is_enabled() is False
+
+    def test_input_add_type_texts(self, selenium: webDriver):
+        """Test input_add_type if all text-values are correct."""
+        selenium.get(self.base_url)
+        texts = ("AND", "OR", "NOT")
+        assert all(option.text in texts for option in Select(self.select_input_add_type(selenium)).options)
+
+    def test_input_add_type_values(self, selenium: webDriver):
+        """Test input_add_type if all values are correct."""
+        selenium.get(self.base_url)
+        options = ("AND", "OR", "NOT")
+        assert all(option.get_attribute("value") in options for option
+                   in Select(self.select_input_add_type(selenium)).options)
+
+    def test_input_add_type_default(self, selenium: webDriver):
+        """Test input_add_type default value."""
+        selenium.get(self.base_url)
+        assert Select(self.select_input_add_type(selenium)).first_selected_option.text == "AND"
+
+    def test_button_add_item_enabled(self, selenium: webDriver):
+        """Test button_add_item if enabled."""
+        selenium.get(self.base_url)
+        assert self.select_button_add_item(selenium).is_enabled() is True
+
+    def test_button_add_item_text(self, selenium: webDriver):
+        """Test button_add_item if text is correct"""
+        selenium.get(self.base_url)
+        assert self.select_button_add_item(selenium).text == "Add"
+
+    def test_input_generated_query_enabled(self, selenium: webDriver):
+        """Test input_generated_query if enabled."""
+        selenium.get(self.base_url)
+        assert self.select_input_generated_query(selenium).is_enabled() is True
+
+    def test_input_generated_query_default(self, selenium: webDriver):
+        """Test input_generated_query default value."""
+        selenium.get(self.base_url)
+        assert self.select_input_generated_query(selenium).get_attribute("value") == ""
+
+
 class TestDefaults:
     """A class which groups tests related to checking
        default values and settings for elements in the
        interface.
     """
-
-    def test_defaults_query_generator(self, selenium: webDriver):
-        """Test the default values for the query generator."""
-        selenium.get("http://127.0.0.1:5000/query_builder")
-        input_field = selenium.find_element_by_id("input_field")
-        input_search_term = selenium.find_element_by_id("input_search_term")
-        input_add_type = selenium.find_element_by_id("input_add_type")
-        input_generated_query = selenium.find_element_by_id("input_generated_query")
-        select_input_field = Select(input_field)
-        select_input_add_type = Select(input_add_type)
-        # Assert defaults for input_field.
-        assert input_field.is_enabled() is True
-        assert select_input_field.first_selected_option.text == "All Fields"
-        assert len(select_input_field.options) == 51
-        # Asserts defaults for input_search_term.
-        assert input_search_term.is_enabled() is True
-        assert input_search_term.get_attribute("value") == ""
-        # Assert defaults for input_add_type.
-        assert input_add_type.is_enabled() is False
-        assert select_input_add_type.first_selected_option.text == "AND"
-        assert len(select_input_add_type.options) == 3
-        # Assert defaults for input_generated_query.
-        assert input_generated_query.is_enabled() is True
-        assert input_generated_query.get_attribute("value") == ""
 
     def test_defaults_gene_symbols(self, selenium: webDriver):
         """Test the default values for specifying genes."""
