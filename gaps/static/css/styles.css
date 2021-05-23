@@ -6,4 +6,33 @@
 
 #hamburger_button {
   border-width: 0;
+  padding-right: 6px;
+  padding-left: 6px;
 }
+
+#navigation_top {
+  background: linear-gradient(112deg, var(--bs-cyan) -17%, var(--bs-blue));
+}
+
+#app_name {
+  font-weight: bold;
+}
+
+#main {
+  padding-bottom: 6rem;
+  padding-top: 3rem;
+}
+
+.padding_below_section {
+  padding-bottom: 3em;
+}
+
+.section_header {
+  font-weight: 400;
+  color: var(--bs-gray-dark);
+}
+
+.active {
+  border-bottom-style: solid;
+}
+

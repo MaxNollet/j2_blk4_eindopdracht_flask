@@ -2,8 +2,8 @@ from os import environ
 
 from flask import Flask
 
-from gaps.blueprint_home import blueprint_home
-from gaps.blueprint_query import blueprint_query
+from gaps.blueprint_homepage import blueprint_homepage
+from gaps.blueprint_query_builder import blueprint_query_builder
 from gaps.models import db
 
 
@@ -29,6 +29,6 @@ def create_app(testing=False):
         app.config.from_object("config.Testing")
     # Initiate database and register blueprints.
     db.init_app(app)
-    app.register_blueprint(blueprint_home)
-    app.register_blueprint(blueprint_query)
+    app.register_blueprint(blueprint_homepage)
+    app.register_blueprint(blueprint_query_builder)
     return app
