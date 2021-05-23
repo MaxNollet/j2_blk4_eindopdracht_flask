@@ -138,23 +138,47 @@ def updateGenpanel():
                 # https://www.tutorialspoint.com/sqlalchemy/sqlalchemy_orm_many_to_many_relationships.htm
                 # https://flask-sqlalchemy.palletsprojects.com/en/2.x/queries/
                 for j in line.panel:
+                    testen = []
                     for k in j:
+                        print(testen, k, " testen, k")
                         # print(isinstance(k,
                         #                  InheritanceType))  # K = Inheritance en GenePanel
                         # if k.
+                        if isinstance(k, Genepanel):
+                            for test in testen:  # test = [InheritanceType(id=None, type='AD')]
+                                print(k, "Genepanel")
+                                duplicate = k.query.filter_by(
+                                    abbreviation=k.abbreviation).first()
+                                print(duplicate, " duplicate")
+                                if duplicate is None:
+                                    dp = test.query.filter_by(
+                                        type=test.type).first()
+                                    if dp is None:
+                                        k.inheritance_types.append(test)
+                                        db.session.add(k)
+                                        db.session.commit()
+                                    else:
+                                        print("else dp")
+                                        k.inheritance_types.append(dp.id)
+                                else:
+                                    print("else check duplicate")
+                                    k.inheritance_types.append(duplicate.id)
+                            testen = []
                         if isinstance(k,
                                       InheritanceType):  # kijkt of het het juiste object is
+                            # ih = k
+                            testen.append(k)
                             # >> > peter = User.query.filter_by(
                             #     username='peter').first()
                             # moet unique zijn
-                            duplicate = InheritanceType.query.filter_by(
-                                type=k.type).first()
-                            if duplicate is None:  # zodat er geen dubbele in komen
-                                print("=-=-=", k)
-                                line.gene.genepanels.append(k)
-                                # de tussen tabelen moetne nog
-                                db.session.add(k)
-                                db.session.commit()
+                            # duplicate = InheritanceType.query.filter_by(
+                            #     type=k.type).first()
+                            # if duplicate is None:  # zodat er geen dubbele in komen
+                            #     print("=-=-=", k)
+                            #     line.gene.genepanels.append(k)
+                            #     # de tussen tabelen moetne nog
+                            #     db.session.add(k)
+                            #     db.session.commit()
             db.session.commit()
         print("Done")
     else:
