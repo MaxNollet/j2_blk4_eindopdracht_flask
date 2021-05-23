@@ -10,6 +10,6 @@ def query_builder():
 
     :return Rendered template of 'query.html' (str).
     """
-    return render_template("template_query_builder.html")
+    return render_template("template_query_builder.html", active_nav="query")
 
 # shift command r = hard refresh cache/ en zooi

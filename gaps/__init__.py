@@ -4,6 +4,7 @@ from flask import Flask
 
 from gaps.blueprint_homepage import blueprint_homepage
 from gaps.blueprint_query_builder import blueprint_query_builder
+from gaps.blueprint_update_genepanel import blueprint_update_genepanel
 from gaps.models import db
 
 
@@ -31,4 +32,5 @@ def create_app(testing=False):
     db.init_app(app)
     app.register_blueprint(blueprint_homepage)
     app.register_blueprint(blueprint_query_builder)
+    app.register_blueprint(blueprint_update_genepanel)
     return app
