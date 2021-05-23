@@ -39,8 +39,8 @@ def reader(file, headers):
                     aliases = []
                     for alias in line.strip().split("\t")[key_index].split(
                             "|"):
-                        al = Alias(hgnc_symbol=alias, genes=[gene])
-                        # al = Alias(hgnc_symbol=alias) oud
+                        # al = Alias(hgnc_symbol=alias, genes=[gene])
+                        al = Alias(hgnc_symbol=alias)  # ouder
                         aliases.append(al)
                 if "GenePanel" == value[0]:
                     combi_panel = []  # combi [OMIM],[ AR, AD]] example
@@ -79,12 +79,12 @@ def reader(file, headers):
                         t = re.sub(f"(?<=\().+?(?=\))", "", li)
                         k = t.replace(" ()", "").replace("\"", "").split(";")
                         # k = ['OMIM'] for example
-                        # een_genpanel.append(Genepanel(abbreviation=k[0]))
-                        test = Genepanel(abbreviation=k[0],
-                                         inheritance_types=een_genpanel)
-                        # combi_panel.append(een_genpanel)
-                        combi_panel.append(test)
-                        gene.genepanels = combi_panel
+                        een_genpanel.append(Genepanel(abbreviation=k[0]))
+                        # test = Genepanel(abbreviation=k[0],
+                        #                  inheritance_types=een_genpanel)
+                        combi_panel.append(een_genpanel)
+                        # combi_panel.append(test)
+                        # gene.genepanels = combi_panel
             fi = FileInfo(gene=gene, alias=aliases, p_symbol=p_symbol,
                           panel=combi_panel)
             file_list.append(fi)  # kan niet in 1 regel

@@ -75,8 +75,8 @@ def updateGenpanel():
         data = reader.get_reader(path)
         # print(len(data))
 
-        gene = Gene(id=None, ncbi_gene_id='8139', hgnc_symbol='GAAPS',
-                    in_genepanel=True)
+        # gene = Gene(id=None, ncbi_gene_id='8139', hgnc_symbol='GAAPS',
+        #             in_genepanel=True)
         # db importeer je al met 'from gaps.models import *'.
         # Note: het werkte eerst niet omdat je deze functie deed aanroepen in
         # __init__.py terwijl de app nog niet volledig was opgestart, ook
@@ -88,32 +88,51 @@ def updateGenpanel():
         # db.session.commit()  # https://flask-sqlalchemy.palletsprojects.com/en/2.x/queries/
 
         for line in data:
-            print("iets")
-            g = line.gene
-            gene_tabel = Gene(ncbi_gene_id=line.gene.ncbi_gene_id,
-                              hgnc_symbol=line.gene.hgnc_symbol,
-                              in_genepanel=line.gene.in_genepanel)
-            print(g)
-            db.session.add(g)
-            db.session.add(gene_tabel)
-            db.session.commit()
-            gene_id = g.id
+            # print("iets")
+            # g = line.gene
+            # gene_tabel = Gene(ncbi_gene_id=line.gene.ncbi_gene_id,
+            #                   hgnc_symbol=line.gene.hgnc_symbol,
+            #                   in_genepanel=line.gene.in_genepanel)
+            # print(gene_tabel)
+            # # db.session.add(g)
+            # db.session.add(gene_tabel)
             # db.session.commit()
-            p = line.p_symbol
-            p = GenepanelSymbol(symbol=p.symbol, gene_id=gene_id)
-            # p.gene = gene_id
-            print(gene_id, p)
-
-            db.session.add(p)
-            db.session.commit()
+            # # gene_id = g.id
+            # current_gene = Gene.query.filter_by(ncbi_gene_id=line.gene.ncbi_gene_id).first()
+            # print(current_gene.id, " werkt dit?")
+            # # db.session.commit()
+            # p = line.p_symbol       # Genepanel Symbol
+            # p = GenepanelSymbol(symbol=p.symbol, gene_id=current_gene.id)
+            # # p.gene = gene_id
+            # # print(gene_id, p)
+            # db.session.add(p)
+            # db.session.commit()
             if len(line.alias) >= 1:
-                for i in line.alias:
-                    print(i)
+                for i in line.alias:  # loop over de meerdere aliases
+                    print(i, " ja")
+                    # t = Alias()
+                    # t.genes.append(i)
+                    # kaas = Alias(hgnc_symbol=i.hgnc_symbol)
+                    # db.session.add(kaas)
+                    # db.session.commit() # je kan niet het id ophalen
+                    # want hij zit nog niet in de db (None dus), maar
+                    # als je het Alias er inzit waardoor er een id bij
+                    # komt is het Key (hgnc_symbol)=(A2MD) already exists.?!
+                    # i.genes.append(line.gene.id)
+                    # db.session.commit()
+                    # p = i.genes.append(line.gene.id)  probeersel
+                    # i.genes.append(line.gene.id) # sqlalchemy.exc.IntegrityError: (psycopg2.errors.UniqueViolation) duplicate key value violates unique constraint "alias_symbol_unique"
+                    # DETAIL:  Key (hgnc_symbol)=(A2MD) already exists.
+                    #                     i.genes.append(current_gene.id)     ((c is not None) and instance_state(c) or None, c)
+                    # AttributeError: 'int' object has no attribute '_sa_instance_state'
 
-                    i = Alias(hgnc_symbol=i.hgnc_symbol)
+                    i.genes.append(line.gene)
+                    # https://stackoverflow.com/questions/25668092/flask-sqlalchemy-many-to-many-insert-data
+                    db.session.add(i)
+                    db.session.commit()
                     # Alias.id.append(gene_id)
                     # genes moet nu gevuld worden
-                    db.session.add(i)
+                    # db.session.add(t)
                     db.session.commit()
             if len(line.panel) >= 1:
                 # https://www.tutorialspoint.com/sqlalchemy/sqlalchemy_orm_many_to_many_relationships.htm
@@ -132,7 +151,7 @@ def updateGenpanel():
                                 type=k.type).first()
                             if duplicate is None:  # zodat er geen dubbele in komen
                                 print("=-=-=", k)
-                                gene.genepanels.append(k)
+                                line.gene.genepanels.append(k)
                                 # de tussen tabelen moetne nog
                                 db.session.add(k)
                                 db.session.commit()
