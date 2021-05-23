@@ -30,4 +30,9 @@ window.onload = function () {
         .addEventListener("click", function () {
             OpenNewTab(this.id, "input_form");
         });
+    // Listener for reset of the form to reset open in new tab.
+    document.getElementById("input_form")
+        .addEventListener("reset", function () {
+            OpenNewTab(this.id, "input_form");
+        });
 }

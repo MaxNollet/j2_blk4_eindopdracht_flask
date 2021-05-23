@@ -88,7 +88,7 @@
                         </div>
                     </div>
                     <div class="row d-flex flex-grow-1" id="row_generated_query">
-                        <div class="col d-flex flex-column gy-3" id="col_generated_query"><label class="form-label" id="label_generated_query" for="input_generated_query">Query</label><textarea class="form-control d-flex flex-grow-1 textarea_minimal_height font-monospace" id="input_generated_query" spellcheck="false" autocomplete="off" placeholder="No query found" style="min-height: 93px;"></textarea><small class="form-text" id="help_query">Or, write/paste your own query</small></div>
+                        <div class="col d-flex flex-column gy-3" id="col_generated_query"><label class="form-label" id="label_generated_query" for="input_generated_query">Query</label><textarea class="form-control d-flex flex-grow-1 textarea_minimal_height font-monospace" id="input_generated_query" spellcheck="false" autocomplete="off" placeholder="No query found" style="min-height: 93px;" name="input_generated_query"></textarea><small class="form-text" id="help_query">Or, write/paste your own query</small></div>
                     </div>
                 </div>
                 <div class="col-lg-5" id="col_specify_symbols">
@@ -98,17 +98,17 @@
                             <div class="form-check" id="radio_label_include_symbols"><input class="form-check-input" type="radio" id="radio_include_symbols" name="radio_include_exclude" value="true" checked=""><label class="form-check-label" id="label_include_label" for="radio_include_symbols">Include gene symbols</label></div>
                             <div class="form-check" id="radio_label_exclude_symbols"><input class="form-check-input" type="radio" id="radio_exclude_symbols" name="radio_include_exclude" value="false"><label class="form-check-label" id="label_exclude_symbols" for="radio_exclude_symbols">Exclude gene symbols</label></div>
                         </div>
-                        <div class="col-lg-12" id="col_display_symbols"><label class="form-label" id="label_symbols" for="input_symbols">Gene symbols to include/exclude</label><textarea class="form-control textarea_minimal_height font-monospace" id="input_symbols" autocomplete="off" spellcheck="false" placeholder="No gene symbols specified" style="min-height: 93px;"></textarea><small class="form-text" id="help_multiple_symbols">Separate gene symbols with a comma-sign (,)</small></div>
+                        <div class="col-lg-12" id="col_display_symbols"><label class="form-label" id="label_symbols" for="input_symbols">Gene symbols to include/exclude</label><textarea class="form-control textarea_minimal_height font-monospace" id="input_symbols" autocomplete="off" spellcheck="false" placeholder="No gene symbols specified" style="min-height: 93px;" name="input_symbols"></textarea><small class="form-text" id="help_multiple_symbols">Separate gene symbols with a comma-sign (,)</small></div>
                         <div class="col" id="col_load_symbols"><label class="form-label" id="label_load_symbols" for="input_load_symbols">Or, load gene symbols from a file</label>
-                            <div class="input-group" id="input_group_clear_file"><input class="form-control" type="file" id="input_load_symbols"><button class="btn btn-outline-primary" id="button_clear_file" type="button">Clear</button></div><small class="form-text">File may contain only one gene symbol per line</small>
+                            <div class="input-group" id="input_group_clear_file"><input class="form-control" type="file" id="input_load_symbols" name="input_load_symbols"><button class="btn btn-outline-primary" id="button_clear_file" type="button">Clear</button></div><small class="form-text">File may contain only one gene symbol per line</small>
                         </div>
                     </div>
                 </div>
                 <div class="col-12" id="col_options">
                     <h2 id="header_options" class="section_header">3. Optional options</h2>
                     <div class="row gy-3" id="row_date_options">
-                        <div class="col text-nowrap" id="row_date_after"><label class="form-label" id="label_date_after" for="input_date_after">Search articles published after</label><input class="form-control" id="input_date_after" type="date"></div>
-                        <div class="col text-nowrap" id="row_date_before"><label class="form-label" id="label_date_before" for="input_date_before">Search articles published before</label><input class="form-control" id="input_date_before" type="date"></div>
+                        <div class="col text-nowrap" id="row_date_after"><label class="form-label" id="label_date_after" for="input_date_after">Search articles published after</label><input class="form-control" id="input_date_after" type="date" name="input_date_after"></div>
+                        <div class="col text-nowrap" id="row_date_before"><label class="form-label" id="label_date_before" for="input_date_before">Search articles published before</label><input class="form-control" id="input_date_before" type="date" name="input_date_before"></div>
                     </div>
                 </div>
                 <div class="col" id="col_submit_options">

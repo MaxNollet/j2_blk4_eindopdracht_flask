@@ -28,7 +28,7 @@ class TestDefaults:
 
     def test_defaults_query_generator(self, selenium: webDriver):
         """Test the default values for the query generator."""
-        selenium.get("http://127.0.0.1:5000/")
+        selenium.get("http://127.0.0.1:5000/query_builder")
         input_field = selenium.find_element_by_id("input_field")
         input_search_term = selenium.find_element_by_id("input_search_term")
         input_add_type = selenium.find_element_by_id("input_add_type")
@@ -52,7 +52,7 @@ class TestDefaults:
 
     def test_defaults_gene_symbols(self, selenium: webDriver):
         """Test the default values for specifying genes."""
-        selenium.get("http://127.0.0.1:5000/")
+        selenium.get("http://127.0.0.1:5000/query_builder")
         radio_include_symbols = selenium.find_element_by_id("radio_include_symbols")
         radio_exclude_symbols = selenium.find_element_by_id("radio_exclude_symbols")
         input_symbols = selenium.find_element_by_id("input_symbols")
@@ -76,7 +76,7 @@ class TestDefaults:
 
     def test_defaults_optional_options(self, selenium: webDriver):
         """Test the default values for optional options and submit-buttons."""
-        selenium.get("http://127.0.0.1:5000/")
+        selenium.get("http://127.0.0.1:5000/query_builder")
         input_date_after = selenium.find_element_by_id("input_date_after")
         input_date_before = selenium.find_element_by_id("input_date_before")
         check_new_tab = selenium.find_element_by_id("check_new_tab")
@@ -104,7 +104,7 @@ class TestQueryBuilder:
 
     def test_first_addition_no_spaces(self, selenium: webDriver):
         """Test the addition of a term to the query without spaces."""
-        selenium.get("http://127.0.0.1:5000/")
+        selenium.get("http://127.0.0.1:5000/query_builder")
         input_term = selenium.find_element_by_id("input_search_term")
         input_query = selenium.find_element_by_id("input_generated_query")
         button_add = selenium.find_element_by_id("button_add_item")
@@ -116,7 +116,7 @@ class TestQueryBuilder:
 
     def test_first_addition_with_spaces(self, selenium: webDriver):
         """Test the addition of a term to the query with spaces."""
-        selenium.get("http://127.0.0.1:5000/")
+        selenium.get("http://127.0.0.1:5000/query_builder")
         input_term = selenium.find_element_by_id("input_search_term")
         input_query = selenium.find_element_by_id("input_generated_query")
         button_add = selenium.find_element_by_id("button_add_item")
@@ -127,7 +127,7 @@ class TestQueryBuilder:
 
     def test_second_addition_no_spaces(self, selenium: webDriver):
         """Test the addition of two terms with no spaces."""
-        selenium.get("http://127.0.0.1:5000/")
+        selenium.get("http://127.0.0.1:5000/query_builder")
         input_term = selenium.find_element_by_id("input_search_term")
         input_query = selenium.find_element_by_id("input_generated_query")
         button_add = selenium.find_element_by_id("button_add_item")
@@ -142,7 +142,7 @@ class TestQueryBuilder:
 
     def test_second_addition_with_spaces(self, selenium: webDriver):
         """Test the addition of two terms with spaces."""
-        selenium.get("http://127.0.0.1:5000/")
+        selenium.get("http://127.0.0.1:5000/query_builder")
         input_term = selenium.find_element_by_id("input_search_term")
         input_query = selenium.find_element_by_id("input_generated_query")
         button_add = selenium.find_element_by_id("button_add_item")
@@ -157,7 +157,7 @@ class TestQueryBuilder:
 
     def test_and_or_not(self, selenium: webDriver):
         """Test the addition of several items with different types of additions."""
-        selenium.get("http://127.0.0.1:5000/")
+        selenium.get("http://127.0.0.1:5000/query_builder")
         input_term = selenium.find_element_by_id("input_search_term")
         input_query = selenium.find_element_by_id("input_generated_query")
         input_add_type = Select(selenium.find_element_by_id("input_add_type"))
@@ -177,7 +177,7 @@ class TestQueryBuilder:
 
     def test_different_fields(self, selenium: webDriver):
         """Test the addition of multiple terms for different fields."""
-        selenium.get("http://127.0.0.1:5000/")
+        selenium.get("http://127.0.0.1:5000/query_builder")
         input_field = Select(selenium.find_element_by_id("input_field"))
         input_term = selenium.find_element_by_id("input_search_term")
         input_query = selenium.find_element_by_id("input_generated_query")
@@ -204,7 +204,7 @@ class TestJavaScript:
 
     def test_add_term_on_enter(self, selenium: webDriver):
         """Test the addition of a term to the query using the ENTER-key."""
-        selenium.get("http://127.0.0.1:5000/")
+        selenium.get("http://127.0.0.1:5000/query_builder")
         input_search_term = selenium.find_element_by_id("input_search_term")
         input_generated_query = selenium.find_element_by_id("input_generated_query")
         input_add_type = selenium.find_element_by_id("input_add_type")
@@ -215,7 +215,7 @@ class TestJavaScript:
 
     def test_clear_file(self, selenium: webDriver):
         """Test the clear-button to remove the specified file."""
-        selenium.get("http://127.0.0.1:5000/")
+        selenium.get("http://127.0.0.1:5000/query_builder")
         input_load_symbols = selenium.find_element_by_id("input_load_symbols")
         button_clear_file = selenium.find_element_by_id("button_clear_file")
         file_path = path.abspath(path.join(path.dirname(__file__), "..", "requirements.txt"))
@@ -229,7 +229,7 @@ class TestJavaScript:
 
     def test_open_new_tab(self, selenium: webDriver):
         """Test the open-in-new-tab-button."""
-        selenium.get("http://127.0.0.1:5000/")
+        selenium.get("http://127.0.0.1:5000/query_builder")
         check_new_tab = selenium.find_element_by_id("check_new_tab")
         input_form = selenium.find_element_by_id("input_form")
         assert check_new_tab.is_selected() is False
@@ -241,6 +241,16 @@ class TestJavaScript:
         assert check_new_tab.is_selected() is False
         assert input_form.get_attribute("target") == ""
 
+    def test_open_new_tab_reset(self, selenium: webDriver):
+        """Test the open-in-new-tab-button with a complete form reset."""
+        selenium.get("http://127.0.0.1:5000/query_builder")
+        check_new_tab = selenium.find_element_by_id("check_new_tab")
+        button_clear = selenium.find_element_by_id("button_clear")
+        input_form = selenium.find_element_by_id("input_form")
+        selenium.execute_script("arguments[0].click();", check_new_tab)
+        selenium.execute_script("arguments[0].click();", button_clear)
+        assert input_form.get_attribute("target") == ""
+
 
 class TestEntireForm:
     """A class which groups methods required for testing the
@@ -250,7 +260,7 @@ class TestEntireForm:
     def test_entire_form(self, selenium: webDriver):
         """Test the entire form."""
         selenium.maximize_window()
-        selenium.get("http://127.0.0.1:5000/")
+        selenium.get("http://127.0.0.1:5000/query_builder")
         selenium.execute_script("window.scrollTo(0,document.body.scrollHeight)")
         check_new_tab = selenium.find_element_by_id("check_new_tab")
         button_clear = selenium.find_element_by_id("button_clear")
