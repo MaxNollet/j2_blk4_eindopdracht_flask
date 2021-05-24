@@ -1,7 +1,11 @@
-from Bio import Entrez
+from os import environ
+
 import requests
-import pyhgnc
-from gaps.gene_searcher.Article import Article
+from Bio import Entrez
+
+from gaps.models import Article
+
+Entrez.email = environ.get("EMAIL_ENTREZ")
 
 
 def main():
@@ -164,6 +168,7 @@ def article(id_list):
         article_doi = record[0]["ArticleIds"]["doi"]
         article_pubmed_id = article_id
         handle.close()
+        print(article_doi)
 
         # For finding the abstract
         handle = Entrez.efetch(db="pubmed", id=article_id, rettype="text", retmode="abstract")
