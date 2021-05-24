@@ -31,6 +31,7 @@ def create_app(testing=False):
         app.config.from_object("config.Testing")
     # Initiate database and register blueprints.
     db.init_app(app)
+
     app.register_blueprint(blueprint_homepage)
     app.register_blueprint(blueprint_query_builder)
     app.register_blueprint(blueprint_update_genepanel)
