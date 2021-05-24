@@ -104,6 +104,11 @@ class ElementSelector:
         """Select element 'button_clear'."""
         return selenium.find_element_by_id("button_clear")
 
+    @staticmethod
+    def select_input_form(selenium: webDriver):
+        """Select element 'input_form'."""
+        return selenium.find_element_by_id("input_form")
+
 
 class HelperFunctions:
     """A class that groups functions which help execute
@@ -438,6 +443,7 @@ class TestQueryBuilder(ElementSelector, HelperFunctions):
         input_generated_query = self.select_input_generated_query(selenium)
         assert input_generated_query.get_attribute("value") == f"({terms[0]}[ALL]) OR ({terms[1]}[ALL])"
 
+    # Miscellaneous tests.
     def test_and_or_not(self, selenium: webDriver):
         """Test the addition of several items with different types of additions."""
         selenium.get(self.base_url)
@@ -477,59 +483,56 @@ class TestQueryBuilder(ElementSelector, HelperFunctions):
         input_generated_query = self.select_input_generated_query(selenium)
         assert input_generated_query.get_attribute("value") == check
 
-class TestJavaScript:
+
+class TestJavaScript(ElementSelector, HelperFunctions):
     """A class which groups tests related to JavaScript-
        functions. These tests help ensure all functions
        related to JavaScript are working as intended.
     """
 
-    def test_add_term_on_enter(self, selenium: webDriver):
-        """Test the addition of a term to the query using the ENTER-key."""
-        selenium.get("http://127.0.0.1:5000/query_builder")
-        input_search_term = selenium.find_element_by_id("input_search_term")
-        input_generated_query = selenium.find_element_by_id("input_generated_query")
-        input_add_type = selenium.find_element_by_id("input_add_type")
-        input_search_term.send_keys("Mexicano", Keys.ENTER)
-        assert input_search_term.get_attribute("value") == ""
-        assert input_generated_query.get_attribute("value") != ""
-        assert input_add_type.is_enabled() is True
+    def test_file_upload(self, selenium: webDriver):
+        """Test for uploading files."""
+        selenium.get(self.base_url)
+        input_load_symbols = selenium.find_element_by_id("input_load_symbols")
+        file_path = path.abspath(path.join(path.dirname(__file__), "..", "requirements.txt"))
+        input_load_symbols.send_keys(file_path)
+        assert ntpath.basename(input_load_symbols.get_attribute("value")) == ntpath.basename(file_path)
 
-    def test_clear_file(self, selenium: webDriver):
+    def test_file_clear(self, selenium: webDriver):
         """Test the clear-button to remove the specified file."""
-        selenium.get("http://127.0.0.1:5000/query_builder")
+        selenium.get(self.base_url)
         input_load_symbols = selenium.find_element_by_id("input_load_symbols")
         button_clear_file = selenium.find_element_by_id("button_clear_file")
         file_path = path.abspath(path.join(path.dirname(__file__), "..", "requirements.txt"))
         input_load_symbols.send_keys(file_path)
-        assert ntpath.basename(input_load_symbols.get_attribute("value")) == ntpath.basename(file_path)
-        WebDriverWait(selenium, 10).until(
-            expected_conditions.element_to_be_clickable((By.ID, "input_load_symbols"))
-        )
-        selenium.execute_script("arguments[0].click();", button_clear_file)
+        self.click_element(selenium, button_clear_file)
         assert input_load_symbols.get_attribute("value") == ""
 
-    def test_open_new_tab(self, selenium: webDriver):
-        """Test the open-in-new-tab-button."""
-        selenium.get("http://127.0.0.1:5000/query_builder")
-        check_new_tab = selenium.find_element_by_id("check_new_tab")
-        input_form = selenium.find_element_by_id("input_form")
-        assert check_new_tab.is_selected() is False
-        assert input_form.get_attribute("target") == ""
-        selenium.execute_script("arguments[0].click();", check_new_tab)
-        assert check_new_tab.is_selected() is True
+    def test_open_new_tab_select(self, selenium: webDriver):
+        """Test the open-in-new-tab-button when selected."""
+        selenium.get(self.base_url)
+        check_new_tab = self.select_check_new_tab(selenium)
+        input_form = self.select_input_form(selenium)
+        self.click_element(selenium, check_new_tab)
         assert input_form.get_attribute("target") == "_blank"
-        selenium.execute_script("arguments[0].click();", check_new_tab)
-        assert check_new_tab.is_selected() is False
+
+    def test_open_new_tab_deselect(self, selenium: webDriver):
+        """Test the open-in-new-tab-button when deselected."""
+        selenium.get(self.base_url)
+        check_new_tab = self.select_check_new_tab(selenium)
+        input_form = self.select_input_form(selenium)
+        self.click_element(selenium, check_new_tab)
+        self.click_element(selenium, check_new_tab)
         assert input_form.get_attribute("target") == ""
 
     def test_open_new_tab_reset(self, selenium: webDriver):
         """Test the open-in-new-tab-button with a complete form reset."""
-        selenium.get("http://127.0.0.1:5000/query_builder")
-        check_new_tab = selenium.find_element_by_id("check_new_tab")
-        button_clear = selenium.find_element_by_id("button_clear")
-        input_form = selenium.find_element_by_id("input_form")
-        selenium.execute_script("arguments[0].click();", check_new_tab)
-        selenium.execute_script("arguments[0].click();", button_clear)
+        selenium.get(self.base_url)
+        check_new_tab = self.select_check_new_tab(selenium)
+        input_form = self.select_input_form(selenium)
+        button_clear = self.select_button_clear(selenium)
+        self.click_element(selenium, check_new_tab)
+        self.click_element(selenium, button_clear)
         assert input_form.get_attribute("target") == ""
 
 
