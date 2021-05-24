@@ -536,151 +536,66 @@ class TestJavaScript(ElementSelector, HelperFunctions):
         assert input_form.get_attribute("target") == ""
 
 
-class TestEntireForm:
-    """A class which groups methods required for testing the
-       entire form at once.
+class TestEntireForm(ElementSelector, HelperFunctions):
+    """A class which groups methods for testing several
+       elements in the form.
     """
 
-    def test_entire_form(self, selenium: webDriver):
-        """Test the entire form."""
-        selenium.maximize_window()
-        selenium.get("http://127.0.0.1:5000/query_builder")
-        selenium.execute_script("window.scrollTo(0,document.body.scrollHeight)")
-        check_new_tab = selenium.find_element_by_id("check_new_tab")
-        button_clear = selenium.find_element_by_id("button_clear")
-        # Dry-run.
-        self.build_query(selenium)
-        self.specify_genes_exclude(selenium)
-        self.specify_genes_include(selenium)
-        self.optional_options(selenium)
-        selenium.execute_script("arguments[0].click();", check_new_tab)
-        selenium.execute_script("arguments[0].click();", button_clear)
-        # Real run.
-        query = self.build_query(selenium)
-        self.assert_query_builder(selenium, query)
-        self.specify_genes_exclude(selenium)
-        self.assert_filename(selenium)
-        symbols = self.specify_genes_include(selenium)
-        self.assert_symbols(selenium, symbols)
-        self.optional_options(selenium)
+    def test_radio_group_include_selected(self, selenium: webDriver):
+        """Test the radio-button 'include' when selected."""
+        selenium.get(self.base_url)
+        radio_include_symbols = self.select_radio_include_symbols(selenium)
+        radio_exclude_symbols = self.select_radio_exclude_symbols(selenium)
+        self.click_element(selenium, radio_include_symbols)
+        self.click_element(selenium, radio_exclude_symbols)
+        self.click_element(selenium, radio_include_symbols)
+        assert radio_include_symbols.is_selected() is True
 
-    @classmethod
-    def build_query(cls, selenium: webDriver):
-        """A method which build a query using the query
-           builder in the form with various fields, terms
-           and addition types.
+    def test_radio_group_include_deselect(self, selenium: webDriver):
+        """Test the radio-button 'include' when not selected."""
+        selenium.get(self.base_url)
+        radio_include_symbols = self.select_radio_include_symbols(selenium)
+        radio_exclude_symbols = self.select_radio_exclude_symbols(selenium)
+        self.click_element(selenium, radio_include_symbols)
+        self.click_element(selenium, radio_exclude_symbols)
+        self.click_element(selenium, radio_include_symbols)
+        assert radio_exclude_symbols.is_selected() is False
 
-        Input = selenium webdriver (WebDriver).
-        """
-        input_field = Select(selenium.find_element_by_id("input_field"))
-        input_search_term = selenium.find_element_by_id("input_search_term")
-        input_add_type = Select(selenium.find_element_by_id("input_add_type"))
-        button_add_item = selenium.find_element_by_id("button_add_item")
-        fields = ("AFFL", "ALL", "AUTH", "DSO", "CRDT", "EID", "FILT", "ISBN", "MESH", "PTYP", "WORD", "UID")
-        terms = ("Inkscape", "GIMP", "Autodesk 3ds Max", "Autodesk Maya", "Autodesk SketchBook", "HitFilm",
-                 "SceneBuilder", "Bootstrap Studio", "Jetbrains IntelliJ IDEA", "Jetbrains PyCharm",
-                 "Microsoft Visual Studio", "Windows Terminal")
-        additions = ("AND", "AND", "OR", "AND", "NOT", "NOT", "AND", "OR", "OR", "AND", "NOT")
-        input_field.select_by_value(fields[0])
-        input_search_term.send_keys(terms[0])
-        selenium.execute_script("arguments[0].click();", button_add_item)
-        for field, term, addition in zip(fields[1:], terms[1:], additions):
-            input_field.select_by_value(field)
-            input_add_type.select_by_value(addition)
-            input_search_term.send_keys(term)
-            selenium.execute_script("arguments[0].click();", button_add_item)
-        query = "(((((((((((Inkscape[AFFL]) AND (GIMP[ALL])) AND (Autodesk 3ds Max[AUTH])) OR (Autodesk Maya[DSO]))" \
-                " AND (Autodesk SketchBook[CRDT])) NOT (HitFilm[EID])) NOT (SceneBuilder[FILT])) AND" \
-                " (Bootstrap Studio[ISBN])) OR (Jetbrains IntelliJ IDEA[MESH])) OR (Jetbrains PyCharm[PTYP])) AND" \
-                " (Microsoft Visual Studio[WORD])) NOT (Windows Terminal[UID])"
-        return query
+    def test_radio_group_exclude_selected(self, selenium: webDriver):
+        """Test the radio-button 'exclude' when selected."""
+        selenium.get(self.base_url)
+        radio_include_symbols = self.select_radio_include_symbols(selenium)
+        radio_exclude_symbols = self.select_radio_exclude_symbols(selenium)
+        self.click_element(selenium, radio_exclude_symbols)
+        self.click_element(selenium, radio_include_symbols)
+        self.click_element(selenium, radio_exclude_symbols)
+        assert radio_exclude_symbols.is_selected() is True
 
-    @classmethod
-    def specify_genes_include(cls, selenium: webDriver):
-        """A method which enters various genes to be included
-           into the search.
+    def test_radio_group_exclude_deselected(self, selenium: webDriver):
+        """Test the radio-button 'exclude' when not selected."""
+        selenium.get(self.base_url)
+        radio_include_symbols = self.select_radio_include_symbols(selenium)
+        radio_exclude_symbols = self.select_radio_exclude_symbols(selenium)
+        self.click_element(selenium, radio_exclude_symbols)
+        self.click_element(selenium, radio_include_symbols)
+        self.click_element(selenium, radio_exclude_symbols)
+        assert radio_include_symbols.is_selected() is False
 
-        Input = selenium webdriver (WebDriver).
-        """
-        radio_include_symbols = selenium.find_element_by_id("radio_include_symbols")
-        radio_exclude_symbols = selenium.find_element_by_id("radio_exclude_symbols")
-        input_symbols = selenium.find_element_by_id("input_symbols")
+    def test_include_genes(self, selenium: webDriver):
+        """Test the input of gene symbols."""
+        selenium.get(self.base_url)
+        radio_include_symbols = self.select_radio_include_symbols(selenium)
+        radio_exclude_symbols = self.select_radio_exclude_symbols(selenium)
+        input_symbols = self.select_input_symbols(selenium)
         symbols = ("ABCA12", "KPPP1", "A4GALT", "EST140535", "EST349056", "ABCC1", "MRP8", "ABCG5", "CALJA", "CEPU-1",
                    "POMP", "RNF168", "MYMY2", "ORP1", "DBA19", "RPS15A")
-        selenium.execute_script("arguments[0].click();", radio_include_symbols)
-        selenium.execute_script("arguments[0].click();", radio_exclude_symbols)
-        selenium.execute_script("arguments[0].click();", radio_include_symbols)
-        for symbol in symbols[:-1]:
-            input_symbols.send_keys(symbol, ", ")
-        input_symbols.send_keys(symbols[-1])
-        return ", ".join(symbols)
-
-    @classmethod
-    def specify_genes_exclude(cls, selenium: webDriver):
-        """A method which uploads a file to exclude
-           from the search.
-
-        Input = selenium webdriver (WebDriver).
-        """
-        radio_include_symbols = selenium.find_element_by_id("radio_include_symbols")
-        radio_exclude_symbols = selenium.find_element_by_id("radio_exclude_symbols")
-        input_load_symbols = selenium.find_element_by_id("input_load_symbols")
-        button_clear_file = selenium.find_element_by_id("button_clear_file")
-        selenium.execute_script("arguments[0].click();", radio_exclude_symbols)
-        selenium.execute_script("arguments[0].click();", radio_include_symbols)
-        selenium.execute_script("arguments[0].click();", radio_exclude_symbols)
-        file = path.abspath(__file__)
-        input_load_symbols.send_keys(file)
-        WebDriverWait(selenium, 10).until(
-            expected_conditions.text_to_be_present_in_element_value((By.ID, "input_load_symbols"),
-                                                                    ntpath.basename(file))
-        )
-        selenium.execute_script("arguments[0].click()", button_clear_file)
-
-    @classmethod
-    def optional_options(cls, selenium: webDriver):
-        """A method which sets optional options.
-        Input = selenium webdriver (WebDriver).
-        """
-        input_date_after = selenium.find_element_by_id("input_date_after")
-        input_date_before = selenium.find_element_by_id("input_date_before")
-        date1 = "24052000"
-        date2 = "20052021"
-        input_date_after.send_keys(date1)
-        input_date_before.send_keys(date2)
-        return [date1, date2]
-
-    @classmethod
-    def assert_query_builder(cls, selenium: webDriver, query):
-        """Assert that every element in the query builder is ok."""
-        assert selenium.find_element_by_id("input_search_term").is_enabled() is True
-        assert selenium.find_element_by_id("input_add_type").is_enabled() is True
-        assert selenium.find_element_by_id("input_generated_query").get_attribute("value") == query
-
-    @classmethod
-    def assert_symbols(cls, selenium: webDriver, symbols):
-        """Assert that symbols are inserted and that the right
-           options are selected.
-        """
-        radio_include_symbols = selenium.find_element_by_id("radio_include_symbols")
-        radio_exclude_symbols = selenium.find_element_by_id("radio_exclude_symbols")
-        input_symbols = selenium.find_element_by_id("input_symbols")
-        input_load_symbols = selenium.find_element_by_id("input_load_symbols")
-        assert radio_include_symbols.is_selected() is True
-        assert radio_exclude_symbols.is_selected() is False
-        assert input_symbols.get_attribute("value") == symbols
-        assert input_load_symbols.get_attribute("value") == ""
-
-    @classmethod
-    def assert_filename(cls, selenium: webDriver):
-        """Assert that the file-upload is ok and that the right
-           option are selected.
-        """
-        radio_include_symbols = selenium.find_element_by_id("radio_include_symbols")
-        radio_exclude_symbols = selenium.find_element_by_id("radio_exclude_symbols")
-        input_symbols = selenium.find_element_by_id("input_symbols")
-        input_load_symbols = selenium.find_element_by_id("input_load_symbols")
-        assert radio_include_symbols.is_selected() is False
-        assert radio_exclude_symbols.is_selected() is True
-        assert input_symbols.get_attribute("value") == ""
-        assert input_load_symbols.get_attribute("value") == ""
+        self.click_element(selenium, radio_include_symbols)
+        self.click_element(selenium, radio_exclude_symbols)
+        self.click_element(selenium, radio_include_symbols)
+        counter = 0
+        for symbol in symbols:
+            counter += 1
+            input_symbols.send_keys(symbol)
+            if counter < len(symbols):
+                input_symbols.send_keys(", ")
+        assert input_symbols.get_attribute("value") == ", ".join(symbols)
