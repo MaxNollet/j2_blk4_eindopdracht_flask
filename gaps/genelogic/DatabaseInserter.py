@@ -158,11 +158,14 @@ def updateGenpanel():
                                         db.session.add(k)
                                         db.session.commit()
                                     else:
-                                        print("else dp")
-                                        k.inheritance_types.append(dp.id)
+                                        k.inheritance_types.append(test.id)
+                                        db.session.add(k)
+                                        db.session.commit()
                                 else:
-                                    print("else check duplicate")
+                                    print("else check")
                                     k.inheritance_types.append(duplicate.id)
+                                    db.session.add(k)
+                                    db.session.commit()
                             testen = []
                         if isinstance(k,
                                       InheritanceType):  # kijkt of het het juiste object is
