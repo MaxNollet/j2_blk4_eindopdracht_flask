@@ -11,13 +11,16 @@ def main():
     [tiab] OR dominant [tiab] OR \" X-linked\" [tiab]) AND (\"intellectual\" [tiab] OR \"mental retardation\" [tiab] OR \"cognitive\" \
     [tiab] OR \"developmental\" [tiab] OR \"neurodevelopmental\" [tiab]) AND “last 2 years”[dp] AND KDM3B)"
 
+    print(Entrez.email)
     query = "((\"2021\"[Date - Publication] : \"3000\"[Date - Publication])) AND (CDH8[Text Word])"
 
     idlist = query_pubmed(query)
     hele_url = url_maker(idlist)
     pubtator_output(hele_url)
-    #query_HGNC("AGPAT4")
+    # query_HGNC("AGPAT4")
+    # alias_search_hgnc()
     article(idlist)
+
 
 def query_validator(query):
     """
@@ -26,8 +29,8 @@ def query_validator(query):
     :param query: String which contains the query used as search term
     :return: 
     """
-    open_list = ["[","("]
-    close_list = ["]",")"]
+    open_list = ["[", "("]
+    close_list = ["]", ")"]
 
     stack = []
     for i in query:
@@ -36,7 +39,7 @@ def query_validator(query):
         elif i in close_list:
             pos = close_list.index(i)
             if ((len(stack) > 0) and
-                    (open_list[pos] == stack[len(stack)-1])):
+                    (open_list[pos] == stack[len(stack) - 1])):
                 stack.pop()
             else:
                 return False
@@ -52,24 +55,55 @@ def query_pubmed(query):
     :param query: String which contains the query used as search term
     :return:
     """
-    query_validator(query)
-    if query_validator(query):
-        print("The query is valid.")
-        Entrez.email = "femke.nijman@outlook.com"
-        searchhandle = Entrez.esearch(db="pubmed", term=query)
-        search_results = Entrez.read(searchhandle)
 
-        idlist = search_results["IdList"]
-        if(len(set(idlist)) == len(idlist)):
-            list_unique = True
-            print("List does not contain duplicates.")
-        else:
-            list_unique = False
-            print("List does not contain duplicates")
-        print(idlist)
-        return idlist
-    else:
-        print("The query isn't valid")
+    search_results = Entrez.read(
+        Entrez.esearch(
+            db="pubmed",
+            term=query,
+            usehistory="y"
+        )
+    )
+    count = int(search_results["Count"])
+    print("Found %i results" % count)
+
+    articles = list()
+    batch_size = 10
+    for start in range(0, count, batch_size):
+        handle = Entrez.efetch(db="pubmed",
+                               rettype="medline",
+                               retmode="xml",
+                               retstart=start,
+                               retmax=batch_size,
+                               webenv=search_results["WebEnv"],
+                               query_key=search_results["QueryKey"],
+                               )
+        records = Entrez.read(handle)
+        for record in records["PubmedArticle"]:
+            title = record["MedlineCitation"]["Article"]["ArticleTitle"]
+            pubmed_id = record["MedlineCitation"]["PMID"]
+            doi = record["MedlineCitation"]["Article"]["ELocationID"][0]
+            publication_date = None
+            abstract = record["MedlineCitation"]["Article"]["Abstract"]["AbstractText"][0]
+            journal_name = record["MedlineCitation"]["Article"]["Journal"]["Title"]
+
+    # query_validator(query)
+    # if query_validator(query):
+    #     print("The query is valid.")
+    #     searchhandle = Entrez.esearch(db="pubmed", term=query)
+    #     search_results = Entrez.read(searchhandle)
+    #
+    #     idlist = search_results["IdList"]
+    #     if len(set(idlist)) == len(idlist):
+    #         list_unique = True
+    #         print("List does not contain duplicates.")
+    #     else:
+    #         list_unique = False
+    #         print("List does not contain duplicates")
+    #     print(idlist)
+    #     return idlist
+    # else:
+    #     print("The query isn't valid")
+
 
 def url_maker(idlist):
     """
@@ -79,7 +113,7 @@ def url_maker(idlist):
     """
     url = ""
     for i in idlist:
-        if i != idlist[len(idlist)-1]:
+        if i != idlist[len(idlist) - 1]:
             url += i + ","
         else:
             url += i
@@ -99,7 +133,7 @@ def pubtator_output(complete_url):
         print("Request succesful.")
     else:
         print("Request not succesful.")
-    #print(result.text)
+    # print(result.text)
 
     gene_name = []
     ncbi_id = []
@@ -108,36 +142,39 @@ def pubtator_output(complete_url):
             if i.split("\t")[4] == "Gene":
                 gene_name.append(i.split("\t")[3])
                 ncbi_id.append(i.split("\t")[5])
-    #print(gene_name)
-    #print(ncbi_id)
+    # print(gene_name)
+    # print(ncbi_id)
+
 
 def article(id_list):
-    Entrez.email = "Your.Name.Here@example.org"
-    for id in id_list:
-        #For finding title, publication date, doi and pubmed ID
+    for article_id in id_list:
+        # For finding title, publication date, doi and pubmed ID
         Entrez.email = "Your.Name.Here@example.org"
-        handle = Entrez.esummary(db="pubmed", id=id)
+        handle = Entrez.esummary(db="pubmed", id=article_id)
         record = Entrez.read(handle)
-        #print(record)
+        # print(record)
         article_publication_date = record[0]["EPubDate"]
         article_title = record[0]["Title"]
         article_doi = record[0]["ArticleIds"]["doi"]
-        article_pubmed_id = id
+        article_pubmed_id = article_id
         handle.close()
 
-        #For finding the abstract
-        handle = Entrez.efetch(db="pubmed", id=id, rettype="text", retmode="abstract")
+        # For finding the abstract
+        handle = Entrez.efetch(db="pubmed", id=article_id, rettype="text", retmode="abstract")
         article_abstract = handle
         handle.close()
-        Article1 = Article(article_title, article_pubmed_id, article_doi, article_publication_date, article_abstract)
-        print(Article1.get_title())
+        Article1 = Article(title=article_title, pubmed_id=article_pubmed_id, doi=article_doi,
+                           publication_date=article_publication_date, abstract=article_abstract)
+        print(Article1.title)
 
 
 
-#def query_HGNC(gene):
-    #pyhgnc.set_mysql_connection(host='localhost', user='pyhgnc_user', passwd='pyhgnc_passwd', db='pyhgnc')
-    #query = pyhgnc.query()
-    #result = query.alias_symbol(alias_symbol=gene)[0]
-    #print(result.hgnc)
+# def query_HGNC(gene):
+# pyhgnc.set_mysql_connection(host='localhost', user='pyhgnc_user', passwd='pyhgnc_passwd', db='pyhgnc')
+# query = pyhgnc.query()
+# result = query.alias_symbol(alias_symbol=gene)[0]
+# print(result.hgnc)
 
-main()
+
+if __name__ == "__main__":
+    main()

@@ -2,6 +2,8 @@ from flask import Blueprint, request, jsonify
 from typing import Tuple, Dict
 from werkzeug.utils import secure_filename
 
+from gaps.gene_searcher.GeneSearcher_code import main
+
 blueprint_api = Blueprint("blueprint_api", __name__)
 
 
@@ -16,6 +18,7 @@ def query_builder_submit():
 
     :return JSON-response containing valid values (JSON).
     """
+    # main()
     secure_filenames = VerifyFormParameters.get_valid_filenames("input_load_symbols")
     valid_parameters = VerifyFormParameters.get_valid_parameters()
     response = {"input": {"files": secure_filenames, "parameters": valid_parameters}}
