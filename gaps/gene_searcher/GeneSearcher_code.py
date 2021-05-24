@@ -48,6 +48,7 @@ def query_validator(query):
     else:
         return False
 
+
 def query_pubmed(query):
     """
     Uses the query to look for article ids on pubmed.
@@ -118,8 +119,13 @@ def url_maker(idlist):
         else:
             url += i
     complete_url = "https://www.ncbi.nlm.nih.gov/research/pubtator-api/publications/export/pubtator?pmids=" + url + "&concepts=gene"
+    # complete_url = "https://www.ncbi.nlm.nih.gov/research/pubtator-api/publications/export/biocxml?pmids={}&concepts=gene".format(url)
     print(complete_url)
+    # https://www.ncbi.nlm.nih.gov/research/pubtator-api/publications/export/biocxml?pmids=33833667
+    # &concepts=gene
+    # dus https://www.ncbi.nlm.nih.gov/research/pubtator-api/publications/export/biocxml?pmids=33833667&concepts=gene
     return complete_url
+
 
 def pubtator_output(complete_url):
     """
@@ -167,6 +173,33 @@ def article(id_list):
                            publication_date=article_publication_date, abstract=article_abstract)
         print(Article1.title)
 
+
+# def alias_search_hgnc():
+#     # # http://rest.genenames.org/fetch/symbol/A2M
+#     gene_symbol = "A2M"
+#     url = "http://rest.genenames.org/fetch/symbol/{}".format(gene_symbol)
+#
+#     try:
+#         result = requests.get(url)
+#         # https://stackoverflow.com/questions/18308529/python-requests-package-handling-xml-response
+#         if result.status_code == 200: # webpage legit
+#             # handle = Entrez.parse(result.text)
+#             # record = Entrez.read(handle)
+#             # print(record)
+#             tree = ElementTree.fromstring(result.text)
+#             print(tree)
+#             for child in tree:
+#                 print(child)
+#             # root = ET.fromstring(country_data_as_string)
+#
+#             # parse hier de xml output
+#
+#     except requests.exceptions.RequestException:
+#         print("Geen entry gevonden op HGNC")
+
+
+# http://rest.genenames.org/fetch/symbol/A2M
+# gene_symbol # wordt het symbol voor in de link
 
 
 # def query_HGNC(gene):
