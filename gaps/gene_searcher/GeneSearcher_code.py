@@ -1,8 +1,14 @@
+from xml.etree import ElementTree as etree
 from Bio import Entrez
 import requests
-import pyhgnc
+import ssl
+
+
+# import pyhgnc
 
 def main():
+    ssl._create_default_https_context = ssl._create_unverified_context
+
     query = "((variant [tiab] OR variants [tiab] OR mutation [tiab] OR mutations [tiab] OR substitutions [tiab] OR substitution [tiab] ) \
     AND (\"loss of function\" [tiab] OR \"loss-of-function\" [tiab] OR \"haplo-insufficiency\" [tiab] OR haploinsufficiency [tiab] \
     OR \"bi-allelic\" [tiab] OR \"biallelic\" [tiab] OR recessive [tiab] OR homozygous [tiab] OR heterozygous [tiab] OR \"de novo\" \
@@ -11,10 +17,10 @@ def main():
 
     query2 = "((\"2021\"[Date - Publication] : \"3000\"[Date - Publication])) AND (CDH8[Text Word])"
 
-    idlist = query_pubmed(query)
-    hele_url = url_maker(idlist)
+    # idlist = query_pubmed(query)
+    hele_url = url_maker(["33833667", "33810959"])
     pubtator_output(hele_url)
-    #query_HGNC("AGPAT4")
+    # query_HGNC("AGPAT4")
 
 def query_validator(query):
     """
@@ -68,6 +74,7 @@ def query_pubmed(query):
     else:
         print("The query isn't valid")
 
+
 def url_maker(idlist):
     """
     Creates the URL used for looking up genes on Pubtator
@@ -76,13 +83,19 @@ def url_maker(idlist):
     """
     url = ""
     for i in idlist:
-        if i != idlist[len(idlist)-1]:
+        if i != idlist[len(idlist) - 1]:
             url += i + ","
         else:
             url += i
-    complete_url = "https://www.ncbi.nlm.nih.gov/research/pubtator-api/publications/export/pubtator?pmids=" + url + "&concepts=gene"
+    # complete_url = "https://www.ncbi.nlm.nih.gov/research/pubtator-api/publications/export/pubtator?pmids=" + url + "&concepts=gene"
+    complete_url = "https://www.ncbi.nlm.nih.gov/research/pubtator-api/publications/export/biocxml?pmids={}&concepts=gene".format(
+        url)
     print(complete_url)
+    # https://www.ncbi.nlm.nih.gov/research/pubtator-api/publications/export/biocxml?pmids=33833667
+    # &concepts=gene
+    # dus https://www.ncbi.nlm.nih.gov/research/pubtator-api/publications/export/biocxml?pmids=33833667&concepts=gene
     return complete_url
+
 
 def pubtator_output(complete_url):
     """
@@ -96,7 +109,29 @@ def pubtator_output(complete_url):
         print("Request succesful.")
     else:
         print("Request not succesful.")
-    #print(result.text)
+    # print(result.text)
+    # print(result.text)
+
+    tree = etree.fromstring(result.text)
+    for documents in tree.findall("document"):
+        for document in documents.findall("passage"):
+            for doc in document.findall("annotation"):
+                for anno in doc:  # hoeven infon gene niet uit te filteren doet pubtator url
+                    if doc.findall("text"):
+                        print(doc)
+                    if doc.findall("identifier"):
+                        pass
+                        # print(anno.identifier)
+
+    # gene_name = []
+    # ncbi_id = []
+    # for i in result.text.split("\n"):
+    #     if len(i.split("\t")) > 3:
+    #         if i.split("\t")[4] == "Gene":
+    #             gene_name.append(i.split("\t")[3])
+    #             ncbi_id.append(i.split("\t")[5])
+    # print(gene_name)
+    # print(ncbi_id)
 
 #def query_HGNC(gene):
     #pyhgnc.set_mysql_connection(host='localhost', user='pyhgnc_user', passwd='pyhgnc_passwd', db='pyhgnc')

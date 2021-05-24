@@ -126,14 +126,14 @@ def updateGenpanel():
                     #                     i.genes.append(current_gene.id)     ((c is not None) and instance_state(c) or None, c)
                     # AttributeError: 'int' object has no attribute '_sa_instance_state'
 
-                    i.genes.append(line.gene)
+                    i.genes.append(line.gene.id)
                     # https://stackoverflow.com/questions/25668092/flask-sqlalchemy-many-to-many-insert-data
                     db.session.add(i)
                     db.session.commit()
                     # Alias.id.append(gene_id)
                     # genes moet nu gevuld worden
                     # db.session.add(t)
-                    db.session.commit()
+                    # db.session.commit()
             if len(line.panel) >= 1:
                 # https://www.tutorialspoint.com/sqlalchemy/sqlalchemy_orm_many_to_many_relationships.htm
                 # https://flask-sqlalchemy.palletsprojects.com/en/2.x/queries/
@@ -145,27 +145,38 @@ def updateGenpanel():
                         #                  InheritanceType))  # K = Inheritance en GenePanel
                         # if k.
                         if isinstance(k, Genepanel):
+
                             for test in testen:  # test = [InheritanceType(id=None, type='AD')]
                                 print(k, "Genepanel")
-                                duplicate = k.query.filter_by(
-                                    abbreviation=k.abbreviation).first()
+                                duplicate = test.query.filter_by(
+                                    type=test).first()
                                 print(duplicate, " duplicate")
                                 if duplicate is None:
-                                    dp = test.query.filter_by(
-                                        type=test.type).first()
-                                    if dp is None:
-                                        k.inheritance_types.append(test)
-                                        db.session.add(k)
-                                        db.session.commit()
-                                    else:
-                                        k.inheritance_types.append(test.id)
-                                        db.session.add(k)
-                                        db.session.commit()
-                                else:
-                                    print("else check")
-                                    k.inheritance_types.append(duplicate.id)
+                                    k.inheritance_types.append(test)
                                     db.session.add(k)
                                     db.session.commit()
+                                else:
+                                    k.inheritance_types.append(duplicate.id)
+                                # print(k, "Genepanel")
+                                # duplicate = k.query.filter_by(
+                                #     abbreviation=k.abbreviation).first()
+                                # print(duplicate, " duplicate")
+                                # if duplicate is None:
+                                #     dp = test.query.filter_by(
+                                #         type=test.type).first()
+                                #     if dp is None:
+                                #         k.inheritance_types.append(test)
+                                #         db.session.add(k)
+                                #         db.session.commit()
+                                #     else:
+                                #         k.inheritance_types.append(test.id)
+                                #         db.session.add(k)
+                                #         db.session.commit()
+                                # else:
+                                #     print("else check")
+                                #     k.inheritance_types.append(duplicate.id)
+                                #     db.session.add(k)
+                                #     db.session.commit()
                             testen = []
                         if isinstance(k,
                                       InheritanceType):  # kijkt of het het juiste object is
