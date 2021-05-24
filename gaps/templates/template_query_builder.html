@@ -3,25 +3,27 @@
 {% block title %}GAPS query builder{% endblock %}
 
 {% block head %}
-    <script src="{{ url_for("static", filename="js/query_builder.js") }}"></script>
+    <script src="{{ url_for("static", filename="js/generic_functions.js") }}"></script>
+    <script src="{{ url_for("static", filename="js/query_builder_functions.js") }}"></script>
+    <script src="{{ url_for("static", filename="js/events_query_builder.js") }}"></script>
 {% endblock %}
 
 {% block content %}
     <div class="container" id="page_query_builder">
-        <div class="row gy-2" style="padding-bottom: 3em;">
-            <div class="col-12">
-                <h1 class="display-2">Query_builder</h1>
+        <div class="row gy-2 padding_below_section" id="row_informative_text">
+            <div class="col-12" id="col_header">
+                <h1 class="display-2" id="header">Query_builder</h1>
             </div>
-            <div class="col-lg-9">
-                <p>Welcome to the query builder! Your quest for finding new genes starts here. Follow the three simple steps below to specify what you are looking for and press '<em>Search genes</em>' to start searching for new genes.</p>
-                <p>For detailed information about every step in the query builder and a step-by-step-guide, please refer to '<em>How to use the query builder</em>' in the help-section.</p>
+            <div class="col-lg-9" id="col_text">
+                <p id="paragraph_welcome">Welcome to the Query_builder! Your quest for finding new genes starts here. Use the three simple steps below to specify what you are looking for and press '<em>Search genes</em>' to start searching for new genes.</p>
+                <p id="paragraph_help">For detailed information about every step in the query builder, and a step-by-step-guide, please refer to '<em>How to use the query builder</em>' in the help-section.</p>
             </div>
         </div>
-        <div class="alert alert-info alert-dismissible" role="alert" hidden=""><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button><span><strong>Alert</strong> text.</span></div>
-        <form id="input_form" class="gy-5">
-            <div class="row gy-5 gx-5" id="row_query_symbols">
-                <div class="col-lg-7 d-flex flex-column" id="col_query_builder">
-                    <h2 id="header_query_builder" style="font-weight: 400;color: var(--bs-gray-dark);">1. Build a query</h2>
+        <div class="alert alert-info alert-dismissible" role="alert" id="alert" hidden=""><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button><span id="alert_message"><strong>Alert</strong> text.</span></div>
+        <form id="input_form" class="gy-5" method="post" enctype="multipart/form-data">
+            <div class="row gy-5 gx-lg-5" id="row_query_symbols">
+                <div class="col-lg-7 d-flex flex-column overflow-hidden" id="col_query_builder">
+                    <h2 id="header_query_builder" class="section_header">1. Build a query</h2>
                     <div class="row gy-3" id="row_parameters">
                         <div class="col-12 col-xxl-auto" id="col_input_field"><label class="form-label" id="label_field" for="input_field">Field to search</label><select class="form-select" id="input_field">
                                 <option value="AFFL">Affiliation</option>
@@ -77,7 +79,7 @@
                                 <option value="VOL">Volume</option>
                             </select></div>
                         <div class="col-12 col-sm-auto flex-grow-1" id="col_input_term"><label class="form-label" id="label_search_term" for="input_search_term">Search term</label><input class="form-control font-monospace" type="text" id="input_search_term" placeholder="e.g. Alzheimer" autocomplete="off"></div>
-                        <div class="col-sm-auto flex-grow-1 flex-sm-grow-0" id="col_input_addition" style="width: auto;"><label class="form-label" id="label_search_term" for="input_add_type">Type of addition</label>
+                        <div class="col-sm-auto flex-grow-1 flex-sm-grow-0" id="col_input_addition"><label class="form-label" id="label_search_term" for="input_add_type">Type of addition</label>
                             <div class="input-group flex-nowrap" id="input_group_add"><select class="form-select" id="input_add_type" disabled="">
                                     <option value="AND" selected="">AND</option>
                                     <option value="OR">OR</option>
@@ -86,27 +88,27 @@
                         </div>
                     </div>
                     <div class="row d-flex flex-grow-1" id="row_generated_query">
-                        <div class="col d-flex flex-column gy-3" id="col_generated_query"><label class="form-label" id="label_generated_query" for="input_generated_query">Query</label><textarea class="form-control d-flex flex-grow-1 font-monospace" id="input_generated_query" spellcheck="false" autocomplete="off" placeholder="No query found" style="min-height: 93px;"></textarea><small class="form-text" id="help_query">Or, write/paste your own query</small></div>
+                        <div class="col d-flex flex-column gy-3" id="col_generated_query"><label class="form-label" id="label_generated_query" for="input_generated_query">Query</label><textarea class="form-control d-flex flex-grow-1 textarea_minimal_height font-monospace" id="input_generated_query" spellcheck="false" autocomplete="off" placeholder="No query found" style="min-height: 93px;" name="input_generated_query"></textarea><small class="form-text" id="help_query">Or, write/paste your own query</small></div>
                     </div>
                 </div>
                 <div class="col-lg-5" id="col_specify_symbols">
-                    <h2 id="header_specify_symbols" style="font-weight: 400;color: var(--bs-gray-dark);">2. Specify gene symbols</h2>
+                    <h2 id="header_specify_symbols" class="section_header">2. Specify gene symbols</h2>
                     <div class="row gy-3" id="row_specify_symbols">
                         <div class="col" id="col_include_exclude_symbols"><label class="form-label" id="label_inlude_exclude_symbols">Include or exclude gene symbols from search</label>
-                            <div class="form-check" id="radio_label_include_symbols"><input class="form-check-input" type="radio" id="radio_include_symbols" name="radio_include_exclude" value="true" checked=""><label class="form-check-label" id="label_include_label" for="radio_include_symbols">Include gene symbols</label></div>
-                            <div class="form-check" id="radio_label_exclude_symbols"><input class="form-check-input" type="radio" id="radio_exclude_symbols" name="radio_include_exclude" value="false"><label class="form-check-label" id="label_exclude_symbols" for="radio_exclude_symbols">Exclude gene symbols</label></div>
+                            <div class="form-check" id="radio_label_include_symbols"><input class="form-check-input" type="radio" id="radio_include_symbols" name="radio_include_symbols" value="true" checked=""><label class="form-check-label" id="label_include_label" for="radio_include_symbols">Include gene symbols</label></div>
+                            <div class="form-check" id="radio_label_exclude_symbols"><input class="form-check-input" type="radio" id="radio_exclude_symbols" name="radio_include_symbols" value="false"><label class="form-check-label" id="label_exclude_symbols" for="radio_exclude_symbols">Exclude gene symbols</label></div>
                         </div>
-                        <div class="col-lg-12" id="col_display_symbols"><label class="form-label" id="label_symbols" for="input_symbols">Gene symbols to include/exclude</label><textarea class="form-control font-monospace" id="input_symbols" autocomplete="off" spellcheck="false" placeholder="No gene symbols specified" style="min-height: 93px;"></textarea><small class="form-text" id="help_multiple_symbols">Separate gene symbols with a comma-sign (,)</small></div>
+                        <div class="col-lg-12" id="col_display_symbols"><label class="form-label" id="label_symbols" for="input_symbols">Gene symbols to include/exclude</label><textarea class="form-control textarea_minimal_height font-monospace" id="input_symbols" autocomplete="off" spellcheck="false" placeholder="No gene symbols specified" style="min-height: 93px;" name="input_symbols"></textarea><small class="form-text" id="help_multiple_symbols">Separate gene symbols with a comma-sign (,)</small></div>
                         <div class="col" id="col_load_symbols"><label class="form-label" id="label_load_symbols" for="input_load_symbols">Or, load gene symbols from a file</label>
-                            <div class="input-group" id="input_group_clear_file"><input class="form-control" type="file" id="input_load_symbols"><button class="btn btn-outline-primary" id="button_clear_file" type="button">Clear</button></div><small class="form-text">File may contain only one gene symbol per line</small>
+                            <div class="input-group" id="input_group_clear_file"><input class="form-control" type="file" id="input_load_symbols" name="input_load_symbols"><button class="btn btn-outline-primary" id="button_clear_file" type="button">Clear</button></div><small class="form-text">File may contain only one gene symbol per line</small>
                         </div>
                     </div>
                 </div>
                 <div class="col-12" id="col_options">
-                    <h2 id="header_options" style="font-weight: 400;color: var(--bs-gray-dark);">3. Optional options</h2>
+                    <h2 id="header_options" class="section_header">3. Optional options</h2>
                     <div class="row gy-3" id="row_date_options">
-                        <div class="col text-nowrap" id="row_date_after"><label class="form-label" id="label_date_after" for="input_date_after">Search articles published after</label><input class="form-control" id="input_date_after" type="date"></div>
-                        <div class="col text-nowrap" id="row_date_before"><label class="form-label" id="label_date_before" for="input_date_before">Search articles published before</label><input class="form-control" id="input_date_before" type="date"></div>
+                        <div class="col text-nowrap" id="row_date_after"><label class="form-label" id="label_date_after" for="input_date_after">Search articles published after</label><input class="form-control" id="input_date_after" type="date" name="input_date_after"></div>
+                        <div class="col text-nowrap" id="row_date_before"><label class="form-label" id="label_date_before" for="input_date_before">Search articles published before</label><input class="form-control" id="input_date_before" type="date" name="input_date_before"></div>
                     </div>
                 </div>
                 <div class="col" id="col_submit_options">
@@ -114,7 +116,7 @@
                         <div class="col-auto d-flex align-items-center" id="col_new_tab">
                             <div id="div_new_tab" class="form-check form-switch"><input type="checkbox" id="check_new_tab" class="form-check-input"><label class="form-label text-nowrap form-check-label my-0" id="label_new_tab" for="check_new_tab">Open search in new tab</label></div>
                         </div>
-                        <div class="col-sm-auto" id="col_submit_clear">
+                        <div class="col-md-auto" id="col_submit_clear">
                             <div class="row gy-2" id="row_submit_clear">
                                 <div class="col d-grid" id="col_submit"><button class="btn btn-primary text-nowrap flex-nowrap" id="button_submit" type="submit">Search genes</button></div>
                                 <div class="col d-grid" id="col_clear"><button class="btn btn-outline-danger text-nowrap" id="button_clear" type="reset">Clear all input</button></div>
