@@ -8,3 +8,4 @@ selenium>=3.141.0
 pytest>=6.2.4
 pytest-flask>=1.2.0
 pytest-selenium>=2.0.1
+Werkzeug>=2.0.1
