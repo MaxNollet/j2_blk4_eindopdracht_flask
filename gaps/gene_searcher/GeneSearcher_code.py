@@ -1,6 +1,8 @@
 from Bio import Entrez
 import requests
 import pyhgnc
+from gaps.gene_searcher.Article import Article
+
 
 def main():
     query = "((variant [tiab] OR variants [tiab] OR mutation [tiab] OR mutations [tiab] OR substitutions [tiab] OR substitution [tiab] ) \
@@ -15,6 +17,7 @@ def main():
     hele_url = url_maker(idlist)
     pubtator_output(hele_url)
     #query_HGNC("AGPAT4")
+    article(idlist)
 
 def query_validator(query):
     """
@@ -97,6 +100,39 @@ def pubtator_output(complete_url):
     else:
         print("Request not succesful.")
     #print(result.text)
+
+    gene_name = []
+    ncbi_id = []
+    for i in result.text.split("\n"):
+        if len(i.split("\t")) > 3:
+            if i.split("\t")[4] == "Gene":
+                gene_name.append(i.split("\t")[3])
+                ncbi_id.append(i.split("\t")[5])
+    #print(gene_name)
+    #print(ncbi_id)
+
+def article(id_list):
+    Entrez.email = "Your.Name.Here@example.org"
+    for id in id_list:
+        #For finding title, publication date, doi and pubmed ID
+        Entrez.email = "Your.Name.Here@example.org"
+        handle = Entrez.esummary(db="pubmed", id=id)
+        record = Entrez.read(handle)
+        #print(record)
+        article_publication_date = record[0]["EPubDate"]
+        article_title = record[0]["Title"]
+        article_doi = record[0]["ArticleIds"]["doi"]
+        article_pubmed_id = id
+        handle.close()
+
+        #For finding the abstract
+        handle = Entrez.efetch(db="pubmed", id=id, rettype="text", retmode="abstract")
+        article_abstract = handle
+        handle.close()
+        Article1 = Article(article_title, article_pubmed_id, article_doi, article_publication_date, article_abstract)
+        print(Article1.get_title())
+
+
 
 #def query_HGNC(gene):
     #pyhgnc.set_mysql_connection(host='localhost', user='pyhgnc_user', passwd='pyhgnc_passwd', db='pyhgnc')
