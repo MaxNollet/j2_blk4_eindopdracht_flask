@@ -21,6 +21,7 @@ def query_builder_submit():
     # main()
     secure_filenames = VerifyFormParameters.get_valid_filenames("input_load_symbols")
     valid_parameters = VerifyFormParameters.get_valid_parameters()
+    # genesearch_code(valid_parameters["input_generated_query"])
     response = {"input": {"files": secure_filenames, "parameters": valid_parameters}}
     return jsonify(response)
 

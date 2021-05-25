@@ -1,12 +1,13 @@
+from dataclasses import dataclass, field
 from xml.etree import ElementTree as etree
 from os import environ
 import requests
 import ssl
 from Bio import Entrez
-
-from gaps.models import Article
+from gaps.models import Article, Journal, Gene
 
 Entrez.email = environ.get("EMAIL_ENTREZ")
+Entrez.email = "mjh.nollet@student.han.nl"
 
 
 def main():
@@ -21,12 +22,13 @@ def main():
     print(Entrez.email)
     query = "((\"2021\"[Date - Publication] : \"3000\"[Date - Publication])) AND (CDH8[Text Word])"
 
-    # idlist = query_pubmed(query)
-    hele_url = url_maker(["33833667", "33810959"])
-    pubtator_output(hele_url)
+    idlist = query_pubmed(query)
+    # hele_url = url_maker(["33833667", "33810959"])
+    # pubtator_output(hele_url)
     # query_HGNC("AGPAT4")
     # alias_search_hgnc()
     # article(idlist)
+
 
 def query_validator(query):
     """
@@ -62,7 +64,6 @@ def query_pubmed(query):
     :param query: String which contains the query used as search term
     :return:
     """
-
     search_results = Entrez.read(
         Entrez.esearch(
             db="pubmed",
@@ -86,83 +87,98 @@ def query_pubmed(query):
                                )
         records = Entrez.read(handle)
         for record in records["PubmedArticle"]:
+            # print(record)
             title = record["MedlineCitation"]["Article"]["ArticleTitle"]
             pubmed_id = record["MedlineCitation"]["PMID"]
+            print(pubmed_id)
             doi = record["MedlineCitation"]["Article"]["ELocationID"][0]
-            publication_date = None
-            abstract = record["MedlineCitation"]["Article"]["Abstract"]["AbstractText"][0]
-            journal_name = record["MedlineCitation"]["Article"]["Journal"]["Title"]
-
-    # query_validator(query)
-    # if query_validator(query):
-    #     print("The query is valid.")
-    #     searchhandle = Entrez.esearch(db="pubmed", term=query)
-    #     search_results = Entrez.read(searchhandle)
-    #
-    #     idlist = search_results["IdList"]
-    #     if len(set(idlist)) == len(idlist):
-    #         list_unique = True
-    #         print("List does not contain duplicates.")
-    #     else:
-    #         list_unique = False
-    #         print("List does not contain duplicates")
-    #     print(idlist)
-    #     return idlist
-    # else:
-    #     print("The query isn't valid")
-
+            # publication_year = record["MedlineCitation"]["Article"]["ArticleDate"]["Year"]
+            publication_year = \
+                record["MedlineCitation"]["Article"]["ArticleDate"][0]["Year"]
+            publication_month = \
+                record["MedlineCitation"]["Article"]["ArticleDate"][0]["Month"]
+            publication_day = \
+                record["MedlineCitation"]["Article"]["ArticleDate"][0]["Day"]
+            # jaar maand dag
+            publication_date = publication_year + "-" + \
+                               publication_month + "-" + publication_day
+            abstract = \
+                record["MedlineCitation"]["Article"]["Abstract"][
+                    "AbstractText"][0]
+            journal_name = record["MedlineCitation"]["Article"]["Journal"][
+                "Title"]
+            # print(title, "\n", pubmed_id, "\n", doi, "\n", publication_date,
+            #       "\n", abstract, "\n", journal_name)  # example
+            art = Article(title=title, pubmed_id=pubmed_id, doi=doi,
+                          publication_date=publication_date, abstract=abstract,
+                          journal=Journal(name=journal_name))
+            # journal = Journal(name=journal_name)
+            articles.append(DataArticle(article=art))
+    # url_maker(articles)
+    pubtator_output(articles)
 
 
 def url_maker(idlist):
     """
     Creates the URL used for looking up genes on Pubtator
     :param idlist: List that contains of all the unique ids found in query_pubmed
-    :return: 
+    :return: complete_url: url for Pubtator
     """
+
+    # print(article.article.pubmed_id, "pbid")
     url = ""
-    for i in idlist:
-        if i != idlist[len(idlist) - 1]:
-            url += i + ","
+    for id in idlist:  # id = pubmedid for article pubtator
+        if id != idlist[len(idlist) - 1]:
+            url += id + ","
         else:
-            url += i
-    # complete_url = "https://www.ncbi.nlm.nih.gov/research/pubtator-api/publications/export/pubtator?pmids=" + url + "&concepts=gene"
-    complete_url = "https://www.ncbi.nlm.nih.gov/research/pubtator-api/publications/export/biocxml?pmids={}&concepts=gene".format(
-        url)
-    print(complete_url)
-    # https://www.ncbi.nlm.nih.gov/research/pubtator-api/publications/export/biocxml?pmids=33833667
-    # &concepts=gene
-    # dus https://www.ncbi.nlm.nih.gov/research/pubtator-api/publications/export/biocxml?pmids=33833667&concepts=gene
+            url += id
+
+    complete_url = "https://www.ncbi.nlm.nih.gov/research/pubtator-api" \
+                   "/publications/export/biocxml?pmids={}&" \
+                   "concepts=gene".format(url)
+    # complete_url is url for pubtator from pubtator API
     return complete_url
 
 
-def pubtator_output(complete_url):
+def pubtator_output(articles):
     """
     Uses the URL made in url_maker to look up genes on pubtator.
     :param complete_url: string of the url used as input for Pubtator. It contains the genes found in the articles
     :return:
     """
-    result = requests.get(complete_url)
-    status_code = result.status_code
-    if status_code == 200:
+    idlist = []
+    for article in articles:
+        # print(article.article.pubmed_id, "pbid")
+        idlist.append(str(article.article.pubmed_id))
+    url = url_maker(idlist)
+    result = requests.get(url)  # get xml-page pubtator
+    if result.status_code == 200:
         print("Request succesful.")
         parse_results(result)
     else:
         print("Request not succesful.")
-    # print(result.text)
-    # print(result.text)
-    # {geneid : gen}    opslag
 
 
 def parse_results(result):
+    """
+    Parses all the necessary results out of the Pubtator output.
+    :param result: xml form from Pubtator output
+    :return: genes_pt: dict with ncbiID's and genes
+    """
     genes_pt = {}
     tree = etree.fromstring(result.text)
     gene_idlist = []
+    test = []
+
     for documents in tree.findall("document"):
         for document in documents.findall("passage"):
+            print(document.tag, document.attrib)
             for doc in document.findall("annotation"):
                 # print(doc.tag, doc.attrib)
+
                 for anno in doc:
                     tt = [anno.attrib, anno.text]
+
                     gene_idlist.append(tt)
     for gi in gene_idlist:
         try:
@@ -176,21 +192,16 @@ def parse_results(result):
             # print("check gene", gi[1])
             genes_pt[iden] = gi[1]
     print(genes_pt)
-    return
-
-
-    gene_name = []
-    ncbi_id = []
-    for i in result.text.split("\n"):
-        if len(i.split("\t")) > 3:
-            if i.split("\t")[4] == "Gene":
-                gene_name.append(i.split("\t")[3])
-                ncbi_id.append(i.split("\t")[5])
-    # print(gene_name)
-    # print(ncbi_id)
+    return genes_pt  # dict key = ncbigeneID value gene pubtator
 
 
 def article(id_list):
+    """
+
+    :param id_list: list with pmids f
+    :return:
+    """
+
     for article_id in id_list:
         # For finding title, publication date, doi and pubmed ID
         Entrez.email = "Your.Name.Here@example.org"
@@ -205,12 +216,24 @@ def article(id_list):
         print(article_doi)
 
         # For finding the abstract
-        handle = Entrez.efetch(db="pubmed", id=article_id, rettype="text", retmode="abstract")
+        handle = Entrez.efetch(db="pubmed", id=article_id, rettype="text",
+                               retmode="abstract")
         article_abstract = handle
         handle.close()
-        Article1 = Article(title=article_title, pubmed_id=article_pubmed_id, doi=article_doi,
-                           publication_date=article_publication_date, abstract=article_abstract)
+        Article1 = Article(title=article_title, pubmed_id=article_pubmed_id,
+                           doi=article_doi,
+                           publication_date=article_publication_date,
+                           abstract=article_abstract)
         print(Article1.title)
+
+
+# [article, journal, [genes, genes, genes]]
+
+@dataclass
+class DataArticle:
+    article: Article
+    # journal : Journal
+    genes: list = field(default_factory=list)
 
 
 # def alias_search_hgnc():

@@ -2,7 +2,7 @@ from os import environ, path
 from dotenv import load_dotenv
 
 base_directory = path.abspath(path.dirname(__file__))
-load_dotenv(path.join(base_directory, "gaps/.env"))
+load_dotenv(path.join(base_directory, ".env"))
 
 
 class Config(object):
