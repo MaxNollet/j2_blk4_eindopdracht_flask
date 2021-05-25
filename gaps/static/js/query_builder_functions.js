@@ -1,27 +1,4 @@
 /**
- * A function which adds several event triggers to
- * elements in the interface.
- *
- * @author Max Nollet
- * */
-window.onload = function () {
-    document.getElementById("input_search_term")
-        .addEventListener("keypress", function (event) {
-            if (event.key === "Enter") {
-                event.preventDefault();
-                document.getElementById("button_add_item").click();
-            }
-        });
-    document.getElementById("button_add_item")
-        .addEventListener("click", QueryBuilder);
-    // document.getElementById("input_generated_query")
-    //     .addEventListener("change", OnQueryChange);
-    // OnQueryChange();
-    document.getElementById("button_clear_file")
-        .addEventListener("click", ClearFile);
-}
-
-/**
  * A function which retrieves values from the interface
  * and uses these values to update the interface with a
  * new query.
@@ -66,20 +43,15 @@ function Concatenate(field, term, type, query) {
     return query;
 }
 
-// function OnQueryChange() {
-//     const element_query = document.getElementById("input_generated_query");
-//     const element_add = document.getElementById("input_add_type");
-//     element_add.disabled = element_query.value.trim() === "";
-// }
-
 /**
- * A function which clears the selected file from
- * the file-chooser in the interface if a file has
- * been chosen by the user.
+ * A function which enables/disables the dropdown
+ * button containing different types for adding a
+ * value to the query.
+ *
+ * @author Max Nollet
  * */
-function ClearFile() {
-    const file_chooser = document.getElementById("input_load_symbols");
-    if (file_chooser.value.trim() !== "") {
-        file_chooser.value = "";
-    }
+function OnQueryChange() {
+    const element_query = document.getElementById("input_generated_query");
+    const element_add = document.getElementById("input_add_type");
+    element_add.disabled = element_query.value.trim() === "";
 }

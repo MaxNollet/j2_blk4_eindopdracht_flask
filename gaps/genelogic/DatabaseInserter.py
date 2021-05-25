@@ -1,5 +1,4 @@
 # insert_genepanel(tuple(str)): bool
-import bdb
 import os
 from gaps.genelogic import reader
 from sqlalchemy import create_engine
@@ -44,23 +43,22 @@ import psycopg2
 #     print(row.Gene, row.ncbi_gene_id)
 class Alchemy:
 
-    def __init__(self):
-        self.engine = None
-        self.session = None
+    def __init__(self, engine, session):
+        self.engine = engine
+        self.session = session
+        self.test()
 
-    def __create__engine(self, db):
-        self.engine = create_engine(db, echo=True)
+    def create__engine(self):
+        self.engine = create_engine(
 
-    def __create__session(self):
+
+    def create__session(self):
         print("Creating session")
         Session = sessionmaker(bind=self.engine)
         self.session = Session()
 
     def test(self):
-        self.__create__engine(
-            "postgresql://maxn:blaat1234@bio-inf.han.nl:5432/maxn")
-        self.__create__session()
-        gene = Gene(id=None, ncbi_gene_id='8139', hgnc_symbol='GAPS',
+        gene = Gene(id=None, ncbi_gene_id='8139', hgnc_symbol='GAAAN',
                     in_genepanel=True)
         self.session.add(gene)
         self.session.commit()
@@ -146,57 +144,6 @@ def updateGenpanel():
                         # if k.
                         if isinstance(k, Genepanel):
 
-                            for test in testen:  # test = [InheritanceType(id=None, type='AD')]
-                                print(k, "Genepanel")
-                                duplicate = test.query.filter_by(
-                                    type=test).first()
-                                print(duplicate, " duplicate")
-                                if duplicate is None:
-                                    k.inheritance_types.append(test)
-                                    db.session.add(k)
-                                    db.session.commit()
-                                else:
-                                    k.inheritance_types.append(duplicate.id)
-                                # print(k, "Genepanel")
-                                # duplicate = k.query.filter_by(
-                                #     abbreviation=k.abbreviation).first()
-                                # print(duplicate, " duplicate")
-                                # if duplicate is None:
-                                #     dp = test.query.filter_by(
-                                #         type=test.type).first()
-                                #     if dp is None:
-                                #         k.inheritance_types.append(test)
-                                #         db.session.add(k)
-                                #         db.session.commit()
-                                #     else:
-                                #         k.inheritance_types.append(test.id)
-                                #         db.session.add(k)
-                                #         db.session.commit()
-                                # else:
-                                #     print("else check")
-                                #     k.inheritance_types.append(duplicate.id)
-                                #     db.session.add(k)
-                                #     db.session.commit()
-                            testen = []
-                        if isinstance(k,
-                                      InheritanceType):  # kijkt of het het juiste object is
-                            # ih = k
-                            testen.append(k)
-                            # >> > peter = User.query.filter_by(
-                            #     username='peter').first()
-                            # moet unique zijn
-                            # duplicate = InheritanceType.query.filter_by(
-                            #     type=k.type).first()
-                            # if duplicate is None:  # zodat er geen dubbele in komen
-                            #     print("=-=-=", k)
-                            #     line.gene.genepanels.append(k)
-                            #     # de tussen tabelen moetne nog
-                            #     db.session.add(k)
-                            #     db.session.commit()
-            db.session.commit()
-        print("Done")
-    else:
-        print("No file!")
 
 # def main():
 #     path = "/Users/lean/Documenten/School/Flask/Course8_project/gaps/genelogic/GenPanelOverzicht_DG-3.1.0_HAN_original_tsv.txt"

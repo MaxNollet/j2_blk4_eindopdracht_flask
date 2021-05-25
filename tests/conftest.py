@@ -1,23 +1,42 @@
-import pytest
 import os
-import sys
+import subprocess
 
-current_dir = os.path.abspath(os.path.dirname(__file__))
-parent_dir = os.path.dirname(current_dir)
-sys.path.append(parent_dir)
+import pytest
 
-from gaps import create_app
-from gaps.models import db
+
+def pytest_addoption(parser):
+    """A function which adds a new option to PyTest:
+       the --headless option makes sure to run Selenium-
+       tests in a headless-mode when the browser supports
+       the option.
+    """
+    group = parser.getgroup('selenium', 'selenium')
+    group.addoption('--headless',
+                    action='store_true',
+                    help='enable headless mode for supported browsers.')
 
 
 @pytest.fixture
-def client():
-    """A function which prepares the application for
-       testing and returns a testing client.
-
-    :return Testing client (Flask).
+def chrome_options(chrome_options, pytestconfig):
+    """A function which passes the 'headless'-option
+       to Chrome to run Selenium-tests in a headless-
+       mode.
     """
-    app = create_app(testing=True)
-    with app.app_context():
-        db.create_all()
-    yield app.test_client()
+    if pytestconfig.getoption('headless'):
+        chrome_options.add_argument('headless')
+    return chrome_options
+
+
+@pytest.fixture(scope="session", autouse=True)
+def live_server():
+    """A function which tries to solve an issue when the
+       original liver_server-fixture tries to pickle an
+       object but fails on Windows 10.
+    """
+    env = os.environ.copy()
+    env["FLASK_APP"] = "gaps"
+    server = subprocess.Popen(['flask', 'run', '--port', "5000"], env=env)
+    try:
+        yield server
+    finally:
+        server.terminate()

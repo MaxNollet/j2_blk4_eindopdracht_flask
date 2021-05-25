@@ -1,0 +1,39 @@
+{% extends "base_template.html" %}
+
+{% block title %}GAPS update genepanel{% endblock %}
+
+{% block head %}
+    <script src="{{ url_for("static", filename="js/generic_functions.js") }}"></script>
+    <script src="{{ url_for("static", filename="js/events_update_genepanel.js") }}"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="container" id="page_update_genepanel">
+        <div class="row gy-2 padding_below_section" id="row_informative_text">
+            <div class="col-12" id="col_header">
+                <h1 class="display-2" id="header">Update_genepanel</h1>
+            </div>
+            <div class="col-lg-9" id="col_text">
+                <p id="paragraph_information">This is the page where genepanels are updated. By uploading a genepanel to GAPS, some additional options and filters will be unlocked for the results of searches. Example: options to hide all genes from a search that are already included in a genepanel.</p>
+                <p id="paragraph_help">For information about how to update genepanels and which files are accepted for uploads, please refer to '<em>How to update a genepanel</em>' in the help-section.</p>
+                <div class="alert alert-info" role="alert" id="alert_best_results"><span id="text_alert_best_results"><strong>Important!&nbsp;</strong>To achieve the best results when using the extra options and filters it is important to keep uploading new versions of genepanels to make use of the newest information in genepanels.<br></span></div>
+            </div>
+        </div>
+        <form id="form_update_genepanel" class="padding_below_section" method="post" enctype="multipart/form-data">
+            <h2 id="header_update_genepanel" class="section_header">Update genepanel</h2>
+            <div class="row gy-3" id="row_update_genepanel">
+                <div class="col-lg-8" id="col_select_genepanel"><label class="form-label" id="label_upload_genepanel" for="input_upload_panel">Select a genepanel</label>
+                    <div class="input-group" id="input_group_upload_genepanel"><input class="form-control" type="file" id="input_upload_genepanel" required="" name="input_upload_genepanel"><button class="btn btn-outline-primary" id="button_clear" type="button">Clear</button></div><small class="form-text" id="help_accepted_files">Only tab-seperated-files (TSV-files) are accepted</small>
+                </div>
+                <div class="col-lg-auto align-self-start d-grid" id="col_update_genepanel"><label class="form-label" id="label_update_genepanel" for="button_update_genepanel">Update genepanel</label><button class="btn btn-primary" id="button_update_genepanel" type="submit">Upload &amp; update genepanel</button></div>
+            </div>
+        </form>
+        <div class="row section_header" id="row_statistics">
+            <div class="col-lg-9" id="col_statistics">
+                <h2 id="header_statistics" class="section_header">Statistics</h2>
+                <p id="paragraph_about_statistics">Below are a few fun statistics about genepanels that have been uploaded before. Statistics about searches are not included here.</p>
+                <p class="font-monospace" id="paragraph_statistics"><div>Custom Code for showing stats</div></p>
+            </div>
+        </div>
+    </div>
+{% endblock %}
