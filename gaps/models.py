@@ -13,8 +13,49 @@ Model = db.Model
 metadata = db.metadata
 
 
+def _unique(session, cls, hashfunc, queryfunc, constructor, arg, kw):
+    cache = getattr(session, '_unique_cache', None)
+    if cache is None:
+        session._unique_cache = cache = {}
+
+    key = (cls, hashfunc(*arg, **kw))
+    if key in cache:
+        return cache[key]
+    else:
+        with session.no_autoflush:
+            q = session.query(cls)
+            q = queryfunc(q, *arg, **kw)
+            obj = q.first()
+            if not obj:
+                obj = constructor(*arg, **kw)
+                session.add(obj)
+        cache[key] = obj
+        return obj
+
+
+class UniqueMixin(object):
+    @classmethod
+    def unique_hash(cls, *arg, **kw):
+        raise NotImplementedError()
+
+    @classmethod
+    def unique_filter(cls, query, *arg, **kw):
+        raise NotImplementedError()
+
+    @classmethod
+    def as_unique(cls, session, *arg, **kw):
+        return _unique(
+                    session,
+                    cls,
+                    cls.unique_hash,
+                    cls.unique_filter,
+                    cls,
+                    arg, kw
+               )
+
+
 @dataclass
-class Gene(Model):
+class Gene(UniqueMixin, Model):
     """A class which maps to the table 'gene' in
        the database.
     """
@@ -28,6 +69,15 @@ class Gene(Model):
 
     queries: list = relationship('Query', secondary='eindopdracht.query_gene')
     genepanels: list = relationship('Genepanel', secondary='eindopdracht.genepanel_gene')
+    aliases: list = relationship('Alias', secondary='eindopdracht.gene_alias', back_populates='genes')
+
+    @classmethod
+    def unique_hash(cls, hgnc_symbol):
+        return hgnc_symbol
+
+    @classmethod
+    def unique_filter(cls, query, hgnc_symbol):
+        return query.filter(Gene.hgnc_symbol == hgnc_symbol)
 
 
 @dataclass
@@ -96,7 +146,7 @@ class Symbol(Model):
 
 
 @dataclass
-class Alias(Model):
+class Alias(UniqueMixin, Model):
     """A class which maps to the table 'alias'
        in the database.
     """
@@ -106,7 +156,15 @@ class Alias(Model):
     id: int = Column(Integer, primary_key=True, server_default=text("nextval('eindopdracht.alias_id_seq'::regclass)"))
     hgnc_symbol: str = Column(String(30), nullable=False, unique=True)
 
-    genes: list = relationship('Gene', secondary='eindopdracht.gene_alias')
+    genes: list = relationship('Gene', secondary='eindopdracht.gene_alias', back_populates='aliases')
+
+    @classmethod
+    def unique_hash(cls, hgnc_symbol):
+        return hgnc_symbol
+
+    @classmethod
+    def unique_filter(cls, query, hgnc_symbol):
+        return query.filter(Alias.hgnc_symbol == hgnc_symbol)
 
 
 @dataclass
