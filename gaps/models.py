@@ -28,6 +28,8 @@ class Gene(Model):
 
     queries: list = relationship('Query', secondary='eindopdracht.query_gene')
     genepanels: list = relationship('Genepanel', secondary='eindopdracht.genepanel_gene')
+    aliases: list = relationship('Alias', secondary='eindopdracht.gene_alias', back_populates='genes')
+    # genepanel_symbol = relationship('GenepanelSymbol')
 
 
 @dataclass
@@ -106,7 +108,7 @@ class Alias(Model):
     id: int = Column(Integer, primary_key=True, server_default=text("nextval('eindopdracht.alias_id_seq'::regclass)"))
     hgnc_symbol: str = Column(String(30), nullable=False, unique=True)
 
-    genes: list = relationship('Gene', secondary='eindopdracht.gene_alias')
+    genes: list = relationship('Gene', secondary='eindopdracht.gene_alias', back_populates='aliases')
 
 
 @dataclass

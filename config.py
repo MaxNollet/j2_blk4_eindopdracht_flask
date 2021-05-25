@@ -34,7 +34,7 @@ class Development(Config):
     DEBUG = True
     TESTING = False
     # Config for the database
-    SQLALCHEMY_ECHO = True
+    SQLALCHEMY_ECHO = False
 
 
 class Testing(Config):

@@ -13,7 +13,7 @@ def reader(file, headers):
     :param headers: names of the columns to get the data from
     :return:
     """
-    print("reading file")
+    # print("reading file")
     data = {}  # index and name column
     file_list = []  # Contains objects from FileInfo
     with open(file, mode="r", encoding="utf-8-sig") as f:
@@ -88,11 +88,11 @@ def reader(file, headers):
             fi = FileInfo(gene=gene, alias=aliases, p_symbol=p_symbol,
                           panel=combi_panel)
             file_list.append(fi)  # kan niet in 1 regel
-    print("complete")
-    print(len(file_list))
+    # print("complete")
+    # print(len(file_list))
     # print(file_list[len(file_list) - 6])  # 79755 GeneID_NCBI
     # print(file_list[len(file_list) - 1])  # examples
-    print(file_list[1569])  # 1571 ncbi_geneID = 8139
+    # print(file_list[1569])  # 1571 ncbi_geneID = 8139
     return list(file_list)
 
 

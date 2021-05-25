@@ -5,6 +5,7 @@ from gaps.genelogic import reader
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from gaps.models import *
+from sqlalchemy.exc import IntegrityError
 
 import psycopg2
 
@@ -49,7 +50,7 @@ class Alchemy:
         self.session = None
 
     def create__engine(self):
-        self.engine = create_engine(
+        self.engine = create_engine()
 
     def __create__engine(self, db):
         self.engine = create_engine(db, echo=True)
@@ -67,6 +68,75 @@ class Alchemy:
                     in_genepanel=True)
         self.session.add(gene)
         self.session.commit()
+
+
+def update_genepanel_v2():
+    """A function which inserts every line of a file
+       into the database.
+    """
+    print("Triggered")
+    path = os.path.join(os.path.dirname(__file__), "GenPanelOverzicht_DG-3.1.0_HAN_original_tsv.txt")
+    if os.path.exists(path):
+        file = reader.get_reader(path)
+        session = db.session
+        try:
+            cached_genes = dict((gene.hgnc_symbol, gene) for gene in Gene.query.all())
+            cached_aliases = dict((alias.hgnc_symbol, alias) for alias in Alias.query.all())
+            cached_genepanel_symbols = dict((genepanel_symbol.symbol, genepanel_symbol) for genepanel_symbol in GenepanelSymbol.query.all())
+            for line in file:
+                gene = line.gene
+                if gene.hgnc_symbol in cached_genes:
+                    gene = cached_genes[gene.hgnc_symbol]
+                else:
+                    cached_genes[gene.hgnc_symbol] = gene
+                # Insert aliases.
+                for alias in line.alias:
+                    if alias.hgnc_symbol in cached_aliases:
+                        gene.aliases.append(cached_aliases[alias.hgnc_symbol])
+                    else:
+                        gene.aliases.append(alias)
+                        cached_aliases[alias.hgnc_symbol] = alias
+                # # Insert genepanel symbols.
+                # genepanel_symbol = GenepanelSymbol(symbol=line.p_symbol.symbol)
+                # if genepanel_symbol.symbol in cached_genepanel_symbols:
+                #     gene.genepanel_symbol = cached_genepanel_symbols[genepanel_symbol.symbol]
+                # else:
+                #     gene.genepanel_symbol = genepanel_symbol
+                #     cached_genepanel_symbols[genepanel_symbol.symbol] = genepanel_symbol
+
+                session.add(gene)
+                session.flush()
+            session.commit()
+        except IntegrityError:
+            session.rollback()
+
+
+
+
+
+
+        # count = len(file)
+        # counter = 1
+        # for line in file:
+        #     print(f"\r{counter} / {count}")
+        #     insert = line.gene
+        #     for alias in line.alias:
+        #         retrieved = Alias.query.filter(Alias.hgnc_symbol == alias.hgnc_symbol).first()
+        #         if retrieved is None:
+        #             insert.aliases.append(alias)
+        #         else:
+        #             insert.aliases.append(retrieved)
+        #     db.session.add(insert)
+        #     db.session.flush()
+        #     counter += 1
+        # db.session.commit()
+            # for alias in line.alias:
+            #     print(db.session.get(Alias, alias.hgnc_symbol))
+            # # [insert.aliases.append(alias) for alias in line.alias]
+            # # db.session.add(insert)
+            # db.session.merge(insert)
+            # db.session.flush()
+        # db.session.commit()
 
 
 def updateGenpanel():
