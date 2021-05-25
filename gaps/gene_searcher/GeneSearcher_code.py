@@ -107,70 +107,39 @@ def pubtator_output(complete_url):
     status_code = result.status_code
     if status_code == 200:
         print("Request succesful.")
+        parse_results(result)
     else:
         print("Request not succesful.")
     # print(result.text)
     # print(result.text)
     # {geneid : gen}    opslag
-    t = {}
+
+
+def parse_results(result):
+    genes_pt = {}
     tree = etree.fromstring(result.text)
-    test = []
+    gene_idlist = []
     for documents in tree.findall("document"):
         for document in documents.findall("passage"):
             for doc in document.findall("annotation"):
                 # print(doc.tag, doc.attrib)
                 for anno in doc:
-                    # print(anno.tag, anno.attrib)
-                    # print(key['key'], "jaja")
-                    # print(iden, "iden")
-                    # print(iden == "identifier")
-                    # print(anno.attrib['key'], "wat")
-                    try:
-                        # print(anno.attrib["id"])
-                        # id = anno.attrib['id']
-                        # print(id, "id", anno.text)
-                        # key = anno.attrib["key"]
-                        # print(key, "key")
-                        # print(anno.attrib["key"])
-                        # iden = key['key']
-                        print(anno.attrib, "anno")
-                        # if anno.attrib["key"] == "identifier":
-                        #     print(anno.text, anno.attrib, "jaa")
-                        #     key_id = anno.text
-                        #     t[key_id] = []
-                        #     print("jaaa")
-                        # if anno.attrib["id"]:
-                        #     print("anno", anno.text)
-                        #     t[key_id] = [anno.text]
-                    except KeyError:
-                        pass
-    print(t)
-    # if doc.findall("text"):
-    #     for anno in doc.findall("text"):
-    #         # print(anno.tag, anno.attrib)
-    #         pass
-    # if doc.findall("infon"):
-    #     for anno in doc.findall("infon"):
-    #         print(anno.tag, "anno.tag")
-    #         print(anno.tag, anno.attrib)
-    #         print(anno.tag, anno.text)
+                    tt = [anno.attrib, anno.text]
+                    gene_idlist.append(tt)
+    for gi in gene_idlist:
+        try:
+            if gi[0]["key"] == "identifier":
+                iden = gi[1]  # iden is the ncbi id from the gene
+                genes_pt[iden] = ""
+        except KeyError:
+            pass
 
-    # for anno in doc:  # hoeven infon gene niet uit te filteren doet pubtator url
-    #     if doc.findall("text"):
-    #         print(doc)
-    #     if doc.findall("identifier"):
-    #         pass
-    # print(anno.identifier)
+        if not gi[0]:  # de annotion dict/ text is always empty
+            # print("check gene", gi[1])
+            genes_pt[iden] = gi[1]
+    print(genes_pt)
+    return
 
-    # gene_name = []
-    # ncbi_id = []
-    # for i in result.text.split("\n"):
-    #     if len(i.split("\t")) > 3:
-    #         if i.split("\t")[4] == "Gene":
-    #             gene_name.append(i.split("\t")[3])
-    #             ncbi_id.append(i.split("\t")[5])
-    # print(gene_name)
-    # print(ncbi_id)
 
 #def query_HGNC(gene):
     #pyhgnc.set_mysql_connection(host='localhost', user='pyhgnc_user', passwd='pyhgnc_passwd', db='pyhgnc')
