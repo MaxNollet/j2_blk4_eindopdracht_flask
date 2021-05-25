@@ -26,7 +26,7 @@ def main():
     pubtator_output(hele_url)
     # query_HGNC("AGPAT4")
     # alias_search_hgnc()
-    article(idlist)
+    # article(idlist)
 
 def query_validator(query):
     """
