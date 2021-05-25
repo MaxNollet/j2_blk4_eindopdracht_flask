@@ -80,22 +80,29 @@ def update_genepanel_v2():
         file = reader.get_reader(path)
         session = db.session
         try:
-            cached_genes = dict((gene.hgnc_symbol, gene) for gene in Gene.query.all())
-            cached_aliases = dict((alias.hgnc_symbol, alias) for alias in Alias.query.all())
-            cached_genepanel_symbols = dict((genepanel_symbol.symbol, genepanel_symbol) for genepanel_symbol in GenepanelSymbol.query.all())
             for line in file:
                 gene = line.gene
-                if gene.hgnc_symbol in cached_genes:
-                    gene = cached_genes[gene.hgnc_symbol]
-                else:
-                    cached_genes[gene.hgnc_symbol] = gene
-                # Insert aliases.
                 for alias in line.alias:
-                    if alias.hgnc_symbol in cached_aliases:
-                        gene.aliases.append(cached_aliases[alias.hgnc_symbol])
-                    else:
-                        gene.aliases.append(alias)
-                        cached_aliases[alias.hgnc_symbol] = alias
+                    gene.aliases.append(Alias.as_unique(session, alias.hgnc_symbol))
+                session.add(gene)
+                session.flush()
+            session.commit()
+            # cached_genes = dict((gene.hgnc_symbol, gene) for gene in Gene.query.all())
+            # cached_aliases = dict((alias.hgnc_symbol, alias) for alias in Alias.query.all())
+            # cached_genepanel_symbols = dict((genepanel_symbol.symbol, genepanel_symbol) for genepanel_symbol in GenepanelSymbol.query.all())
+            # for line in file:
+            #     gene = line.gene
+            #     if gene.hgnc_symbol in cached_genes:
+            #         gene = cached_genes[gene.hgnc_symbol]
+            #     else:
+            #         cached_genes[gene.hgnc_symbol] = gene
+            #     # Insert aliases.
+            #     for alias in line.alias:
+            #         if alias.hgnc_symbol in cached_aliases:
+            #             gene.aliases.append(cached_aliases[alias.hgnc_symbol])
+            #         else:
+            #             gene.aliases.append(alias)
+            #             cached_aliases[alias.hgnc_symbol] = alias
                 # # Insert genepanel symbols.
                 # genepanel_symbol = GenepanelSymbol(symbol=line.p_symbol.symbol)
                 # if genepanel_symbol.symbol in cached_genepanel_symbols:
@@ -104,10 +111,14 @@ def update_genepanel_v2():
                 #     gene.genepanel_symbol = genepanel_symbol
                 #     cached_genepanel_symbols[genepanel_symbol.symbol] = genepanel_symbol
 
-                session.add(gene)
-                session.flush()
-            session.commit()
+            #     session.add(gene)
+            #     session.flush()
+            # session.commit()
         except IntegrityError:
+            print("Rolling back . . .")
+            session.rollback()
+        finally:
+            print("Undoing stuff")
             session.rollback()
 
 
@@ -115,20 +126,20 @@ def update_genepanel_v2():
 
 
 
-        # count = len(file)
-        # counter = 1
-        # for line in file:
-        #     print(f"\r{counter} / {count}")
-        #     insert = line.gene
-        #     for alias in line.alias:
-        #         retrieved = Alias.query.filter(Alias.hgnc_symbol == alias.hgnc_symbol).first()
-        #         if retrieved is None:
-        #             insert.aliases.append(alias)
-        #         else:
-        #             insert.aliases.append(retrieved)
-        #     db.session.add(insert)
-        #     db.session.flush()
-        #     counter += 1
+        count = len(file)
+        counter = 1
+        for line in file:
+            print(f"\r{counter} / {count}")
+            insert = line.gene
+            for alias in line.alias:
+                retrieved = Alias.query.filter(Alias.hgnc_symbol == alias.hgnc_symbol).first()
+                if retrieved is None:
+                    insert.aliases.append(alias)
+                else:
+                    insert.aliases.append(retrieved)
+            db.session.add(insert)
+            db.session.flush()
+            counter += 1
         # db.session.commit()
             # for alias in line.alias:
             #     print(db.session.get(Alias, alias.hgnc_symbol))
