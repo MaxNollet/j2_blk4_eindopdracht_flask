@@ -111,17 +111,56 @@ def pubtator_output(complete_url):
         print("Request not succesful.")
     # print(result.text)
     # print(result.text)
-
+    # {geneid : gen}    opslag
+    t = {}
     tree = etree.fromstring(result.text)
+    test = []
     for documents in tree.findall("document"):
         for document in documents.findall("passage"):
             for doc in document.findall("annotation"):
-                for anno in doc:  # hoeven infon gene niet uit te filteren doet pubtator url
-                    if doc.findall("text"):
-                        print(doc)
-                    if doc.findall("identifier"):
+                # print(doc.tag, doc.attrib)
+                for anno in doc:
+                    # print(anno.tag, anno.attrib)
+                    # print(key['key'], "jaja")
+                    # print(iden, "iden")
+                    # print(iden == "identifier")
+                    # print(anno.attrib['key'], "wat")
+                    try:
+                        # print(anno.attrib["id"])
+                        # id = anno.attrib['id']
+                        # print(id, "id", anno.text)
+                        # key = anno.attrib["key"]
+                        # print(key, "key")
+                        # print(anno.attrib["key"])
+                        # iden = key['key']
+                        print(anno.attrib, "anno")
+                        # if anno.attrib["key"] == "identifier":
+                        #     print(anno.text, anno.attrib, "jaa")
+                        #     key_id = anno.text
+                        #     t[key_id] = []
+                        #     print("jaaa")
+                        # if anno.attrib["id"]:
+                        #     print("anno", anno.text)
+                        #     t[key_id] = [anno.text]
+                    except KeyError:
                         pass
-                        # print(anno.identifier)
+    print(t)
+    # if doc.findall("text"):
+    #     for anno in doc.findall("text"):
+    #         # print(anno.tag, anno.attrib)
+    #         pass
+    # if doc.findall("infon"):
+    #     for anno in doc.findall("infon"):
+    #         print(anno.tag, "anno.tag")
+    #         print(anno.tag, anno.attrib)
+    #         print(anno.tag, anno.text)
+
+    # for anno in doc:  # hoeven infon gene niet uit te filteren doet pubtator url
+    #     if doc.findall("text"):
+    #         print(doc)
+    #     if doc.findall("identifier"):
+    #         pass
+    # print(anno.identifier)
 
     # gene_name = []
     # ncbi_id = []
