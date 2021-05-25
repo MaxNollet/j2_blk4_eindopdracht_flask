@@ -49,7 +49,7 @@ class Alchemy:
         self.test()
 
     def create__engine(self):
-        self.engine = create_engine(
+        self.engine = create_engine()
 
 
     def create__session(self):
@@ -143,6 +143,7 @@ def updateGenpanel():
                         #                  InheritanceType))  # K = Inheritance en GenePanel
                         # if k.
                         if isinstance(k, Genepanel):
+                            pass
 
 
 # def main():
