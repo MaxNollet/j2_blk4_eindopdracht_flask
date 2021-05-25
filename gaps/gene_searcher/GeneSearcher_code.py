@@ -22,7 +22,8 @@ def main():
     print(Entrez.email)
     query = "((\"2021\"[Date - Publication] : \"3000\"[Date - Publication])) AND (CDH8[Text Word])"
 
-    idlist = query_pubmed(query)
+    articles = query_pubmed(query)
+    # print(articles)
     # hele_url = url_maker(["33833667", "33810959"])
     # pubtator_output(hele_url)
     # query_HGNC("AGPAT4")
@@ -90,7 +91,7 @@ def query_pubmed(query):
             # print(record)
             title = record["MedlineCitation"]["Article"]["ArticleTitle"]
             pubmed_id = record["MedlineCitation"]["PMID"]
-            print(pubmed_id)
+            print(pubmed_id, "pubmed_id")
             doi = record["MedlineCitation"]["Article"]["ELocationID"][0]
             # publication_year = record["MedlineCitation"]["Article"]["ArticleDate"]["Year"]
             publication_year = \
@@ -115,8 +116,8 @@ def query_pubmed(query):
             # journal = Journal(name=journal_name)
             articles.append(DataArticle(article=art))
     # url_maker(articles)
-    pubtator_output(articles)
-
+    articles = pubtator_output(articles)
+    return articles  # articles list with DataArticle complete
 
 def url_maker(idlist):
     """
@@ -143,56 +144,91 @@ def url_maker(idlist):
 def pubtator_output(articles):
     """
     Uses the URL made in url_maker to look up genes on pubtator.
-    :param complete_url: string of the url used as input for Pubtator. It contains the genes found in the articles
-    :return:
+    :param complete_url: string of the url used as input for Pubtator.
+    It contains the genes found in the articles
+    :return: articles updated with genes from pubtator
     """
     idlist = []
     for article in articles:
         # print(article.article.pubmed_id, "pbid")
         idlist.append(str(article.article.pubmed_id))
-    url = url_maker(idlist)
+    url = url_maker(idlist)  # url for all the articles pubmed found
     result = requests.get(url)  # get xml-page pubtator
     if result.status_code == 200:
         print("Request succesful.")
-        parse_results(result)
+        data = parse_results(result)
+        if len(data) == len(articles):  # so they can use the same index
+            for index, article in enumerate(articles):
+                # genes moet waarschijnlijk dict worden ipv genes
+                print(index)
+                article.genes = data[index]  # added to DataArticle
+                # not the article object it self yet
+
+        # for a in articles:
+        # print(a) # check
+
     else:
         print("Request not succesful.")
+    return articles  # updated DataArticle with genes from pubtator
+
+
+def anno_document(documents, count):
+    """
+    Adds the ncbi gene id and the gene per article to list, so it can
+    later be added to the Article object.
+    :param documents: <passage>info</passage> all the info from pubtator
+    :param count: the amount of articles
+    :return:
+    """
+    data_document = []
+    for document in documents.findall("passage"):
+        for doc in document.findall("annotation"):
+            for anno in doc:
+                data_document.append([count, anno.attrib, anno.text])
+    return data_document
 
 
 def parse_results(result):
     """
     Parses all the necessary results out of the Pubtator output.
     :param result: xml form from Pubtator output
-    :return: genes_pt: dict with ncbiID's and genes
+    :return: data: list with dict [ncbi gene id, gene]
     """
-    genes_pt = {}
     tree = etree.fromstring(result.text)
-    gene_idlist = []
-    test = []
-
+    data_documents = []
+    count = -1
     for documents in tree.findall("document"):
-        for document in documents.findall("passage"):
-            print(document.tag, document.attrib)
-            for doc in document.findall("annotation"):
-                # print(doc.tag, doc.attrib)
+        count += 1
+        data_documents.append(anno_document(documents, count))
 
-                for anno in doc:
-                    tt = [anno.attrib, anno.text]
+    data = []
+    data2 = []  # contains only the unique ncbi gene id / genes from pubtator
+    c = 0
+    for gene_idlist in data_documents:
+        # print(t, "hats")
+        genes_pt = {}  # contains all the genes in the article from pubtator
+        genes_pt2 = {}  # contains only the unique ncbi gene id / genes from pubtator
 
-                    gene_idlist.append(tt)
-    for gi in gene_idlist:
-        try:
-            if gi[0]["key"] == "identifier":
-                iden = gi[1]  # iden is the ncbi id from the gene
-                genes_pt[iden] = ""
-        except KeyError:
-            pass
-
-        if not gi[0]:  # de annotion dict/ text is always empty
-            # print("check gene", gi[1])
-            genes_pt[iden] = gi[1]
-    print(genes_pt)
-    return genes_pt  # dict key = ncbigeneID value gene pubtator
+        for gi in gene_idlist:
+            try:
+                if gi[1]["key"] == "identifier":
+                    c += 1  # as key because the ncbi_gene id is not unique in article
+                    genes_pt[c] = gi[2]  # ncbi gene id
+                    iden = gi[2]
+                    genes_pt2[iden] = ""
+            except KeyError:
+                pass  # only need the identifier key
+            if not gi[1]:  # de annotion dict/ text is always empty
+                genes_pt[c] = [genes_pt[c], gi[2]]
+                genes_pt2[iden] = gi[2]
+        data.append(genes_pt)
+        data2.append(genes_pt2)
+    print(data2)
+    print(len(data[0]))
+    print(len(data2[0]))
+    print(len(data[1]))
+    print(len(data2[1]))
+    return data2  # onlt the unique genes
 
 
 def article(id_list):
@@ -233,7 +269,7 @@ def article(id_list):
 class DataArticle:
     article: Article
     # journal : Journal
-    genes: list = field(default_factory=list)
+    genes: dict = field(default_factory=dict)
 
 
 # def alias_search_hgnc():
