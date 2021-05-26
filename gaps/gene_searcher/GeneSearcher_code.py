@@ -133,7 +133,7 @@ def query_pubmed(query):
         # url_maker(articles)
         articles = pubtator_output(articles)
         return articles  # articles list with DataArticle complete
-    except None:
+    except None:  # only get None
         print(
             "The Entrez package is currently offline, please try again later.")
 
