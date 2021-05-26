@@ -1,12 +1,37 @@
 # insert_genepanel(tuple(str)): bool
 import os
-from gaps.genelogic import reader
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from gaps.models import *
-from sqlalchemy.exc import IntegrityError
+from typing import List, Mapping
 
-import psycopg2
+import time
+
+from sqlalchemy import create_engine, bindparam
+from sqlalchemy.dialects import postgresql
+from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import sessionmaker, Session
+
+from gaps.genelogic import reader
+from gaps.models import *
+
+
+# class Inserter:
+#     @staticmethod
+#     def insert_genes(session, genes: List[Gene]):
+#         genes_in_db = dict((gene.hgnc_symbol, gene) for gene in Gene.query.all())
+#         for gene in genes:
+#             if gene.hgnc_symbol in genes_in_db:
+#                 session.merge(genes_in_db[gene.hgnc_symbol])
+#             else:
+#                 session.add(gene)
+#
+#     @staticmethod
+#     def insert_aliases(session, aliases: List[Alias]):
+#         aliases_in_db = dict((alias.hgnc_symbol, aliases) for alias in Alias.query.all())
+#         for alias in aliases:
+#             if alias.hgnc_symbol in aliases_in_db:
+#                 session.merge(aliases_in_db[alias.hgnc_symbol])
+#             else:
+#                 session.add(alias)
 
 
 # https://docs.sqlalchemy.org/en/14/orm/tutorial.html
@@ -26,7 +51,7 @@ import psycopg2
 #
 #     print(postgre)
 #
-#engine = create_engine("postgresql://maxn:blaat1234@bio-inf.han.nl:5432/maxn", echo=True)
+# engine = create_engine("postgresql://maxn:blaat1234@bio-inf.han.nl:5432/maxn", echo=True)
 #     Session = sessionmaker(bind=engine)
 #     print("Creating session")
 #     session = Session()
@@ -52,7 +77,6 @@ class Alchemy:
     def create__engine(self):
         self.engine = create_engine()
 
-
     def create__session(self):
         print("Creating session")
         Session = sessionmaker(bind=self.engine)
@@ -65,6 +89,86 @@ class Alchemy:
         self.session.commit()
 
 
+class DatabaseInserter:
+    @staticmethod
+    def insert_genepanel(session: Session, rows: List[Mapping[str, Mapping[str, str]]]):
+        starttijd = time.perf_counter()
+        genes: List[dict] = list()
+        aliases: List[dict] = list()
+        genepanel_symbols: List[dict] = list()
+        for row in rows:
+            gene = row.get("gene")
+            if gene is not None and len(gene) > 0:
+                genes.append(gene)
+            alias = row.get("aliases")
+            if alias is not None and len(alias) > 0:
+                aliases.extend(alias)
+            genepanel_symbol = row.get("genepanel_symbol")
+            if genepanel_symbol is not None:
+                genepanel_symbols.append(genepanel_symbol)
+
+        DatabaseInserter.insert_genes(session, genes)
+        DatabaseInserter.insert_aliases(session, aliases)
+        # DatabaseInserter.insert_genepanel_symbol(session, genepanel_symbols)
+        DatabaseInserter.link_gene_alias(session, rows)
+
+        print(f"Verwerktijd: {time.perf_counter() - starttijd}")
+
+    @staticmethod
+    def insert_genes(session: Session, genes: List[dict]):
+        """Insert genes into the database."""
+        statement = postgresql.insert(Gene).values(genes).on_conflict_do_nothing(
+            index_elements=["hgnc_symbol"]
+        )
+        session.execute(statement)
+        session.commit()
+
+    @staticmethod
+    def insert_aliases(session: Session, aliases: List[dict]):
+        """Insert aliases into the database."""
+        statement = postgresql.insert(Alias).values(aliases)\
+            .on_conflict_do_nothing(
+            index_elements=["hgnc_symbol"]
+        )
+        session.execute(statement)
+        session.commit()
+
+    @staticmethod
+    def insert_genepanel_symbol(session: Session, symbols: List[dict]):
+        statement = postgresql.insert(GenepanelSymbol).values(symbols)\
+            .on_conflict_do_nothing(
+            index_elements=["symbol"]
+        )
+        session.execute(statement)
+        session.commit()
+
+
+    @staticmethod
+    def link_gene_alias(session: Session, rows: List[dict]):
+        gene_symbols = list()
+        alias_symbols = list()
+        for row in rows:
+            gene_symbols.append(row.get("gene").get("hgnc_symbol"))
+            for alias in row.get("aliases"):
+                alias_symbols.append(alias.get("hgnc_symbol"))
+
+        gene_objects = dict((gene.hgnc_symbol, gene) for gene in Gene.query.filter(Gene.hgnc_symbol.in_(gene_symbols)).all())
+        alias_objects = dict((alias.hgnc_symbol, alias) for alias in Alias.query.filter(Alias.hgnc_symbol.in_(alias_symbols)).all())
+
+        combos = list()
+        for row in rows:
+            id_gene = gene_objects.get(row.get("gene").get("hgnc_symbol")).id
+            for alias in row.get("aliases"):
+                id_alias = alias_objects.get(alias.get("hgnc_symbol")).id
+                combos.append({"gene_id": id_gene, "alias_id": id_alias})
+
+        statement = postgresql.insert(t_gene_alias).values(combos).on_conflict_do_nothing(
+            index_elements=["gene_id", "alias_id"]
+        )
+        session.execute(statement)
+        session.commit()
+
+
 def update_genepanel_v2():
     """A function which inserts every line of a file
        into the database.
@@ -74,75 +178,19 @@ def update_genepanel_v2():
     if os.path.exists(path):
         file = reader.get_reader(path)
         session = db.session
-        try:
-            for line in file:
-                gene = line.gene
-                for alias in line.alias:
-                    gene.aliases.append(Alias.as_unique(session, alias.hgnc_symbol))
-                session.add(gene)
-                session.flush()
-            session.commit()
-            # cached_genes = dict((gene.hgnc_symbol, gene) for gene in Gene.query.all())
-            # cached_aliases = dict((alias.hgnc_symbol, alias) for alias in Alias.query.all())
-            # cached_genepanel_symbols = dict((genepanel_symbol.symbol, genepanel_symbol) for genepanel_symbol in GenepanelSymbol.query.all())
-            # for line in file:
-            #     gene = line.gene
-            #     if gene.hgnc_symbol in cached_genes:
-            #         gene = cached_genes[gene.hgnc_symbol]
-            #     else:
-            #         cached_genes[gene.hgnc_symbol] = gene
-            #     # Insert aliases.
-            #     for alias in line.alias:
-            #         if alias.hgnc_symbol in cached_aliases:
-            #             gene.aliases.append(cached_aliases[alias.hgnc_symbol])
-            #         else:
-            #             gene.aliases.append(alias)
-            #             cached_aliases[alias.hgnc_symbol] = alias
-                # # Insert genepanel symbols.
-                # genepanel_symbol = GenepanelSymbol(symbol=line.p_symbol.symbol)
-                # if genepanel_symbol.symbol in cached_genepanel_symbols:
-                #     gene.genepanel_symbol = cached_genepanel_symbols[genepanel_symbol.symbol]
-                # else:
-                #     gene.genepanel_symbol = genepanel_symbol
-                #     cached_genepanel_symbols[genepanel_symbol.symbol] = genepanel_symbol
-
-            #     session.add(gene)
-            #     session.flush()
-            # session.commit()
-        except IntegrityError:
-            print("Rolling back . . .")
-            session.rollback()
-        finally:
-            print("Undoing stuff")
-            session.rollback()
-
-
-
-
-
-
-        count = len(file)
-        counter = 1
+        all_rows: List[Mapping[str, Mapping[str, str]]] = list()
         for line in file:
-            print(f"\r{counter} / {count}")
-            insert = line.gene
+            gene = line.gene
+            row = {"gene": {"ncbi_gene_id": gene.ncbi_gene_id, "hgnc_symbol": gene.hgnc_symbol, "in_genepanel": True},
+                   "aliases": []}
             for alias in line.alias:
-                retrieved = Alias.query.filter(Alias.hgnc_symbol == alias.hgnc_symbol).first()
-                if retrieved is None:
-                    insert.aliases.append(alias)
-                else:
-                    insert.aliases.append(retrieved)
-            db.session.add(insert)
-            db.session.flush()
-            counter += 1
-        # db.session.commit()
-            # for alias in line.alias:
-            #     print(db.session.get(Alias, alias.hgnc_symbol))
-            # # [insert.aliases.append(alias) for alias in line.alias]
-            # # db.session.add(insert)
-            # db.session.merge(insert)
-            # db.session.flush()
-        # db.session.commit()
+                row["aliases"].append({"hgnc_symbol": alias.hgnc_symbol})
+            row["genepanel_symbol"] = {"symbol": line.p_symbol.symbol}
+            all_rows.append(row)
+
+        print("Executing . . .")
+        DatabaseInserter.insert_genepanel(session, all_rows)
+        print("Done")
 
 
 def updateGenpanel():
@@ -225,7 +273,6 @@ def updateGenpanel():
                         # if k.
                         if isinstance(k, Genepanel):
                             pass
-
 
 # def main():
 #     path = "/Users/lean/Documenten/School/Flask/Course8_project/gaps/genelogic/GenPanelOverzicht_DG-3.1.0_HAN_original_tsv.txt"
