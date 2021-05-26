@@ -14,12 +14,18 @@
             <tbody>
             {% for result in results %}
                 <tr>
-                    <td>{{ result["article"]["title"] }}</td>
+                    <td>
+                        <a href="https://pubmed.ncbi.nlm.nih.gov/{{ result["article"]["pubmed_id"] }}/"
+                           target="_blank" title="PubMed Artikel"
+                           class="link-secondary">{{ result["article"]["title"] }}</a>
+                    </td>
                     <td>{{ result["article"]["publication_date"] }}</td>
                     <td>
                         {% for gene in result["genes"].items() %}
                             {% if not ";" in gene[0] %}
-                                <a href="https://www.ncbi.nlm.nih.gov/gene/{{ gene[0] }}">{{ gene[1] }}</a>
+                                <a href="https://www.ncbi.nlm.nih.gov/gene/{{ gene[0] }}"
+                                   class="link-secondary" target="_blank"
+                                   title="Gene ncbi">{{ gene[1] }}</a>
                             {% endif %}
                         {% endfor %}
                     </td>
