@@ -32,7 +32,7 @@
             <div class="col-lg-9" id="col_statistics">
                 <h2 id="header_statistics" class="section_header">Statistics</h2>
                 <p id="paragraph_about_statistics">Below are a few fun statistics about genepanels that have been uploaded before. Statistics about searches are not included here.</p>
-                <p class="font-monospace" id="paragraph_statistics"><div>Custom Code for showing stats</div></p>
+                <p id="paragraph_statistics">Unique genes:&nbsp;{% if unique_genes %}{{ unique_genes }}{% else %}None{% endif %}<br>Unique aliases:&nbsp;{% if unique_aliases %}{{ unique_aliases }}{% else %}None{% endif %}<br>Unique genepanels:&nbsp;{% if unique_genepanels %}{{ unique_genepanels }}{% else %}None{% endif %}<br><br></p>
             </div>
         </div>
     </div>
