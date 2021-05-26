@@ -3,17 +3,20 @@
 
 {% block content %}
     {% if results %}
-        <table style="border: 1px solid black;">
+        <table class="table table-hover table-primary table-striped table-sm">
+            <thead>
             <tr>
-                <th style="border: 1px solid black;">Article title</th>
-                <th style="border: 1px solid black;">Publication date</th>
-                <th style="border: 1px solid black;">Genes</th>
+                <th scope="col">Article title</th>
+                <th scope="col">Publication date</th>
+                <th scope="col">Genes</th>
             </tr>
+            </thead>
+            <tbody>
             {% for result in results %}
                 <tr>
-                    <td style="border: 1px solid black;">{{ result["article"]["title"] }}</td>
-                    <td style="border: 1px solid black;">{{ result["article"]["publication_date"] }}</td>
-                    <td style="border: 1px solid black;">
+                    <td>{{ result["article"]["title"] }}</td>
+                    <td>{{ result["article"]["publication_date"] }}</td>
+                    <td>
                         {% for gene in result["genes"].items() %}
                             {% if not ";" in gene[0] %}
                                 <a href="https://www.ncbi.nlm.nih.gov/gene/{{ gene[0] }}">{{ gene[1] }}</a>
@@ -22,6 +25,7 @@
                     </td>
                 </tr>
             {% endfor %}
+            </tbody>
         </table>
     {% else %}
         <p>No results found ┗|｀O′|┛</p>
