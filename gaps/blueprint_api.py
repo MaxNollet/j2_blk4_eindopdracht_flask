@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, render_template
 from typing import Tuple, Dict
 from werkzeug.utils import secure_filename
 from gaps.gene_searcher import GeneSearcher_code as retriever
