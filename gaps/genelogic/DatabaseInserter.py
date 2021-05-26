@@ -5,7 +5,7 @@ from typing import List, Mapping
 import time
 
 from sqlalchemy import create_engine, bindparam
-from sqlalchemy.dialects import postgresql
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker, Session
@@ -14,85 +14,9 @@ from gaps.genelogic import reader
 from gaps.models import *
 
 
-# class Inserter:
-#     @staticmethod
-#     def insert_genes(session, genes: List[Gene]):
-#         genes_in_db = dict((gene.hgnc_symbol, gene) for gene in Gene.query.all())
-#         for gene in genes:
-#             if gene.hgnc_symbol in genes_in_db:
-#                 session.merge(genes_in_db[gene.hgnc_symbol])
-#             else:
-#                 session.add(gene)
-#
-#     @staticmethod
-#     def insert_aliases(session, aliases: List[Alias]):
-#         aliases_in_db = dict((alias.hgnc_symbol, aliases) for alias in Alias.query.all())
-#         for alias in aliases:
-#             if alias.hgnc_symbol in aliases_in_db:
-#                 session.merge(aliases_in_db[alias.hgnc_symbol])
-#             else:
-#                 session.add(alias)
-
-
-# https://docs.sqlalchemy.org/en/14/orm/tutorial.html
-
-
-# def insertGene():
-#     pass
-#
-# def session():
-#     # Session = sessionmaker(bind=engine)
-#     # Session =
-#     pass
-#
-# def createEngine():
-#     postgre = os.environ.get('SQLALCHEMY_DATABASE_URI')
-#     postgre = os.getenv("SQLALCHEMY_DATABASE_URI")
-#
-#     print(postgre)
-#
-# engine = create_engine("postgresql://maxn:blaat1234@bio-inf.han.nl:5432/maxn", echo=True)
-#     Session = sessionmaker(bind=engine)
-#     print("Creating session")
-#     session = Session()
-#     t = Gene(id=None, ncbi_gene_id='8139', hgnc_symbol='GAAN', in_genepanel=True)
-#     # session.add(t)
-#
-#     tt = session.query(Gene).filter_by(ncbi_gene_id='8139').count()
-#     session.commit()
-#     print(tt)
-#
-#
-#     session.close()
-
-# for row in session.query(Gene, Gene.ncbi_gene_id).all():
-#     print(row.Gene, row.ncbi_gene_id)
-class Alchemy:
-
-    def __init__(self, engine, session):
-        self.engine = engine
-        self.session = session
-        self.test()
-
-    def create__engine(self):
-        self.engine = create_engine()
-
-    def create__session(self):
-        print("Creating session")
-        Session = sessionmaker(bind=self.engine)
-        self.session = Session()
-
-    def test(self):
-        gene = Gene(id=None, ncbi_gene_id='8139', hgnc_symbol='GAAAN',
-                    in_genepanel=True)
-        self.session.add(gene)
-        self.session.commit()
-
-
 class DatabaseInserter:
     @staticmethod
     def insert_genepanel(session: Session, rows: List[Mapping[str, Mapping[str, str]]]):
-        starttijd = time.perf_counter()
         genes: List[dict] = list()
         aliases: List[dict] = list()
         genepanel_symbols: List[dict] = list()
@@ -107,9 +31,10 @@ class DatabaseInserter:
             if genepanel_symbol is not None:
                 genepanel_symbols.append(genepanel_symbol)
 
+        starttijd = time.perf_counter()
         DatabaseInserter.insert_genes(session, genes)
         DatabaseInserter.insert_aliases(session, aliases)
-        # DatabaseInserter.insert_genepanel_symbol(session, genepanel_symbols)
+        DatabaseInserter.insert_genepanel_symbol(session, genepanel_symbols)
         DatabaseInserter.link_gene_alias(session, rows)
 
         print(f"Verwerktijd: {time.perf_counter() - starttijd}")
@@ -117,29 +42,22 @@ class DatabaseInserter:
     @staticmethod
     def insert_genes(session: Session, genes: List[dict]):
         """Insert genes into the database."""
-        statement = postgresql.insert(Gene).values(genes).on_conflict_do_nothing(
-            index_elements=["hgnc_symbol"]
-        )
-        session.execute(statement)
+        statement = insert(Gene).on_conflict_do_nothing()
+        session.execute(statement=statement, params=genes)
         session.commit()
 
     @staticmethod
     def insert_aliases(session: Session, aliases: List[dict]):
         """Insert aliases into the database."""
-        statement = postgresql.insert(Alias).values(aliases)\
-            .on_conflict_do_nothing(
-            index_elements=["hgnc_symbol"]
-        )
-        session.execute(statement)
+        statement = insert(Alias).on_conflict_do_nothing()
+        session.execute(statement=statement, params=aliases)
         session.commit()
 
     @staticmethod
     def insert_genepanel_symbol(session: Session, symbols: List[dict]):
-        statement = postgresql.insert(GenepanelSymbol).values(symbols)\
-            .on_conflict_do_nothing(
-            index_elements=["symbol"]
-        )
-        session.execute(statement)
+        """Insert genepanel symbols into the database."""
+        statement = insert(GenepanelSymbol).on_conflict_do_nothing()
+        session.execute(statement=statement, params=symbols)
         session.commit()
 
 
@@ -161,11 +79,8 @@ class DatabaseInserter:
             for alias in row.get("aliases"):
                 id_alias = alias_objects.get(alias.get("hgnc_symbol")).id
                 combos.append({"gene_id": id_gene, "alias_id": id_alias})
-
-        statement = postgresql.insert(t_gene_alias).values(combos).on_conflict_do_nothing(
-            index_elements=["gene_id", "alias_id"]
-        )
-        session.execute(statement)
+        statement = insert(t_gene_alias).on_conflict_do_nothing()
+        session.execute(statement=statement, params=combos)
         session.commit()
 
 
@@ -184,7 +99,8 @@ def update_genepanel_v2():
             row = {"gene": {"ncbi_gene_id": gene.ncbi_gene_id, "hgnc_symbol": gene.hgnc_symbol, "in_genepanel": True},
                    "aliases": []}
             for alias in line.alias:
-                row["aliases"].append({"hgnc_symbol": alias.hgnc_symbol})
+                if alias.hgnc_symbol is not None and alias.hgnc_symbol != "":
+                    row["aliases"].append({"hgnc_symbol": alias.hgnc_symbol})
             row["genepanel_symbol"] = {"symbol": line.p_symbol.symbol}
             all_rows.append(row)
 
