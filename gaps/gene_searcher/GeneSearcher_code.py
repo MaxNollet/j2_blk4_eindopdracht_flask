@@ -22,23 +22,39 @@ def main():
     print(Entrez.email)
     query = "((\"2021\"[Date - Publication] : \"3000\"[Date - Publication])) AND (CDH8[Text Word])"
 
-    articles = query_pubmed(query)
+    # articles = query_pubmed(query)
+    #
+    # for art in articles:
+    #     row = {"article": {"title": art.article.title,
+    #                        "pubmed_id": art.article.pubmed_id,
+    #                        "doi": art.article.doi,
+    #                        "publication_date": art.article.publication_date,
+    #                        "abstract": art.article.abstract,
+    #                        "journal": art.article.journal.name},
+    #            "genes": art.genes}  # weet niet of dit helemaal juist is.
+    #     print(row)
 
-    for art in articles:
-        row = {"article": {"title": art.article.title,
-                           "pubmed_id": art.article.pubmed_id,
-                           "doi": art.article.doi,
-                           "publication_date": art.article.publication_date,
-                           "abstract": art.article.abstract,
-                           "journal": art.article.journal.name},
-               "genes": art.genes}  # weet niet of dit helemaal juist is.
-
-        # print(articles)
+    # print(articles)
     # hele_url = url_maker(["33833667", "33810959"])
     # pubtator_output(hele_url)
     # query_HGNC("AGPAT4")
     # alias_search_hgnc()
     # article(idlist)
+
+
+def results_query(query):
+    ssl._create_default_https_context = ssl._create_unverified_context
+    articles = query_pubmed(query)
+    results = []  # results from pubmed en pubtator
+    for art in articles:
+        results.append({"article": {"title": art.article.title,
+                                    "pubmed_id": art.article.pubmed_id,
+                                    "doi": art.article.doi,
+                                    "publication_date": art.article.publication_date,
+                                    "abstract": art.article.abstract,
+                                    "journal": art.article.journal.name},
+                        "genes": art.genes})  # weet niet of dit helemaal juist is.
+    return results  # list with dict per article
 
 
 def query_validator(query):
@@ -86,6 +102,9 @@ def query_pubmed(query):
         count = int(search_results["Count"])
         print("Found %i results" % count)
 
+        if "Alzheimer" in query:
+            count = 10
+
         articles = list()
         batch_size = 10
         for start in range(0, count, batch_size):
@@ -99,37 +118,43 @@ def query_pubmed(query):
                                    )
             records = Entrez.read(handle)
             for record in records["PubmedArticle"]:
-                # print(record)
-                title = record["MedlineCitation"]["Article"]["ArticleTitle"]
-                pubmed_id = record["MedlineCitation"]["PMID"]
-                print(pubmed_id, "pubmed_id")
-                doi = record["MedlineCitation"]["Article"]["ELocationID"][0]
-                # publication_year = record["MedlineCitation"]["Article"]["ArticleDate"]["Year"]
-                publication_year = \
-                    record["MedlineCitation"]["Article"]["ArticleDate"][0][
-                        "Year"]
-                publication_month = \
-                    record["MedlineCitation"]["Article"]["ArticleDate"][0][
-                        "Month"]
-                publication_day = \
-                    record["MedlineCitation"]["Article"]["ArticleDate"][0][
-                        "Day"]
-                # jaar maand dag
-                publication_date = publication_year + "-" + \
-                                   publication_month + "-" + publication_day
-                abstract = \
-                    record["MedlineCitation"]["Article"]["Abstract"][
-                        "AbstractText"][0]
-                journal_name = record["MedlineCitation"]["Article"]["Journal"][
-                    "Title"]
-                # print(title, "\n", pubmed_id, "\n", doi, "\n", publication_date,
-                #       "\n", abstract, "\n", journal_name)  # example
-                art = Article(title=title, pubmed_id=pubmed_id, doi=doi,
-                              publication_date=publication_date,
-                              abstract=abstract,
-                              journal=Journal(name=journal_name))
-                # journal = Journal(name=journal_name)
-                articles.append(DataArticle(article=art))
+                try:
+                    # print(record)
+                    title = record["MedlineCitation"]["Article"][
+                        "ArticleTitle"]
+                    pubmed_id = record["MedlineCitation"]["PMID"]
+                    print(pubmed_id, "pubmed_id")
+                    doi = record["MedlineCitation"]["Article"]["ELocationID"][
+                        0]
+                    # publication_year = record["MedlineCitation"]["Article"]["ArticleDate"]["Year"]
+                    publication_year = \
+                        record["MedlineCitation"]["Article"]["ArticleDate"][0][
+                            "Year"]
+                    publication_month = \
+                        record["MedlineCitation"]["Article"]["ArticleDate"][0][
+                            "Month"]
+                    publication_day = \
+                        record["MedlineCitation"]["Article"]["ArticleDate"][0][
+                            "Day"]
+                    # jaar maand dag
+                    publication_date = publication_year + "-" + \
+                                       publication_month + "-" + publication_day
+                    abstract = \
+                        record["MedlineCitation"]["Article"]["Abstract"][
+                            "AbstractText"][0]
+                    journal_name = \
+                    record["MedlineCitation"]["Article"]["Journal"][
+                        "Title"]
+                    # print(title, "\n", pubmed_id, "\n", doi, "\n", publication_date,
+                    #       "\n", abstract, "\n", journal_name)  # example
+                    art = Article(title=title, pubmed_id=pubmed_id, doi=doi,
+                                  publication_date=publication_date,
+                                  abstract=abstract,
+                                  journal=Journal(name=journal_name))
+                    # journal = Journal(name=journal_name)
+                    articles.append(DataArticle(article=art))
+                except (TypeError, KeyError):
+                    print("Element not available")
         # url_maker(articles)
         articles = pubtator_output(articles)
         return articles  # articles list with DataArticle complete
@@ -182,10 +207,8 @@ def pubtator_output(articles):
                 print(index)
                 article.genes = data[index]  # added to DataArticle
                 # not the article object it self yet
-
         # for a in articles:
         # print(a) # check
-
     else:
         print("Request not succesful.")
     return articles  # updated DataArticle with genes from pubtator
@@ -220,33 +243,21 @@ def parse_results(result):
         count += 1
         data_documents.append(anno_document(documents, count))
 
-    data = []
     data2 = []  # contains only the unique ncbi gene id / genes from pubtator
-    c = 0
     for gene_idlist in data_documents:
         # print(t, "hats")
-        genes_pt = {}  # contains all the genes in the article from pubtator
         genes_pt2 = {}  # contains only the unique ncbi gene id / genes from pubtator
 
         for gi in gene_idlist:
             try:
                 if gi[1]["key"] == "identifier":
-                    c += 1  # as key because the ncbi_gene id is not unique in article
-                    genes_pt[c] = gi[2]  # ncbi gene id
                     iden = gi[2]
                     genes_pt2[iden] = ""
             except KeyError:
                 pass  # only need the identifier key
             if not gi[1]:  # de annotion dict/ text is always empty
-                genes_pt[c] = [genes_pt[c], gi[2]]
                 genes_pt2[iden] = gi[2]
-        data.append(genes_pt)
         data2.append(genes_pt2)
-    print(data2)
-    print(len(data[0]))
-    print(len(data2[0]))
-    print(len(data[1]))
-    print(len(data2[1]))
     return data2  # onlt the unique genes
 
 

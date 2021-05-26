@@ -1,0 +1,29 @@
+{% extends "base_template.html" %}
+{% block title %}GAPS results{% endblock %}
+
+{% block content %}
+    {% if results %}
+        <table style="border: 1px solid black;">
+            <tr>
+                <th style="border: 1px solid black;">Article title</th>
+                <th style="border: 1px solid black;">Publication date</th>
+                <th style="border: 1px solid black;">Genes</th>
+            </tr>
+            {% for result in results %}
+                <tr>
+                    <td style="border: 1px solid black;">{{ result["article"]["title"] }}</td>
+                    <td style="border: 1px solid black;">{{ result["article"]["publication_date"] }}</td>
+                    <td style="border: 1px solid black;">
+                        {% for gene in result["genes"].items() %}
+                            {% if not ";" in gene[0] %}
+                                <a href="https://www.ncbi.nlm.nih.gov/gene/{{ gene[0] }}">{{ gene[1] }}</a>
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No results found ┗|｀O′|┛</p>
+    {% endif %}
+{% endblock %}

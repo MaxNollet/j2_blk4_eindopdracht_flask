@@ -1,8 +1,7 @@
 from flask import Blueprint, request, jsonify
 from typing import Tuple, Dict
 from werkzeug.utils import secure_filename
-
-from gaps.gene_searcher.GeneSearcher_code import main
+from gaps.gene_searcher import GeneSearcher_code as retriever
 
 blueprint_api = Blueprint("blueprint_api", __name__)
 
@@ -19,11 +18,18 @@ def query_builder_submit():
     :return JSON-response containing valid values (JSON).
     """
     # main()
-    secure_filenames = VerifyFormParameters.get_valid_filenames("input_load_symbols")
+    secure_filenames = VerifyFormParameters.get_valid_filenames(
+        "input_load_symbols")
     valid_parameters = VerifyFormParameters.get_valid_parameters()
     # genesearch_code(valid_parameters["input_generated_query"])
-    response = {"input": {"files": secure_filenames, "parameters": valid_parameters}}
-    return jsonify(response)
+    response = {
+        "input": {"files": secure_filenames, "parameters": valid_parameters}}
+    results = retriever.results_query(
+        valid_parameters["input_generated_query"])
+    print(results)
+
+    return render_template("template_results.html", results=results)
+    # return jsonify(response)
 
 
 @blueprint_api.route("/update_genepanel", methods=["POST"])
