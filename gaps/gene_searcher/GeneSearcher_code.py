@@ -23,7 +23,17 @@ def main():
     query = "((\"2021\"[Date - Publication] : \"3000\"[Date - Publication])) AND (CDH8[Text Word])"
 
     articles = query_pubmed(query)
-    # print(articles)
+
+    for art in articles:
+        row = {"article": {"title": art.article.title,
+                           "pubmed_id": art.article.pubmed_id,
+                           "doi": art.article.doi,
+                           "publication_date": art.article.publication_date,
+                           "abstract": art.article.abstract,
+                           "journal": art.article.journal.name},
+               "genes": art.genes}  # weet niet of dit helemaal juist is.
+
+        # print(articles)
     # hele_url = url_maker(["33833667", "33810959"])
     # pubtator_output(hele_url)
     # query_HGNC("AGPAT4")
@@ -65,59 +75,68 @@ def query_pubmed(query):
     :param query: String which contains the query used as search term
     :return:
     """
-    search_results = Entrez.read(
-        Entrez.esearch(
-            db="pubmed",
-            term=query,
-            usehistory="y"
+    try:
+        search_results = Entrez.read(
+            Entrez.esearch(
+                db="pubmed",
+                term=query,
+                usehistory="y"
+            )
         )
-    )
-    count = int(search_results["Count"])
-    print("Found %i results" % count)
+        count = int(search_results["Count"])
+        print("Found %i results" % count)
 
-    articles = list()
-    batch_size = 10
-    for start in range(0, count, batch_size):
-        handle = Entrez.efetch(db="pubmed",
-                               rettype="medline",
-                               retmode="xml",
-                               retstart=start,
-                               retmax=batch_size,
-                               webenv=search_results["WebEnv"],
-                               query_key=search_results["QueryKey"],
-                               )
-        records = Entrez.read(handle)
-        for record in records["PubmedArticle"]:
-            # print(record)
-            title = record["MedlineCitation"]["Article"]["ArticleTitle"]
-            pubmed_id = record["MedlineCitation"]["PMID"]
-            print(pubmed_id, "pubmed_id")
-            doi = record["MedlineCitation"]["Article"]["ELocationID"][0]
-            # publication_year = record["MedlineCitation"]["Article"]["ArticleDate"]["Year"]
-            publication_year = \
-                record["MedlineCitation"]["Article"]["ArticleDate"][0]["Year"]
-            publication_month = \
-                record["MedlineCitation"]["Article"]["ArticleDate"][0]["Month"]
-            publication_day = \
-                record["MedlineCitation"]["Article"]["ArticleDate"][0]["Day"]
-            # jaar maand dag
-            publication_date = publication_year + "-" + \
-                               publication_month + "-" + publication_day
-            abstract = \
-                record["MedlineCitation"]["Article"]["Abstract"][
-                    "AbstractText"][0]
-            journal_name = record["MedlineCitation"]["Article"]["Journal"][
-                "Title"]
-            # print(title, "\n", pubmed_id, "\n", doi, "\n", publication_date,
-            #       "\n", abstract, "\n", journal_name)  # example
-            art = Article(title=title, pubmed_id=pubmed_id, doi=doi,
-                          publication_date=publication_date, abstract=abstract,
-                          journal=Journal(name=journal_name))
-            # journal = Journal(name=journal_name)
-            articles.append(DataArticle(article=art))
-    # url_maker(articles)
-    articles = pubtator_output(articles)
-    return articles  # articles list with DataArticle complete
+        articles = list()
+        batch_size = 10
+        for start in range(0, count, batch_size):
+            handle = Entrez.efetch(db="pubmed",
+                                   rettype="medline",
+                                   retmode="xml",
+                                   retstart=start,
+                                   retmax=batch_size,
+                                   webenv=search_results["WebEnv"],
+                                   query_key=search_results["QueryKey"],
+                                   )
+            records = Entrez.read(handle)
+            for record in records["PubmedArticle"]:
+                # print(record)
+                title = record["MedlineCitation"]["Article"]["ArticleTitle"]
+                pubmed_id = record["MedlineCitation"]["PMID"]
+                print(pubmed_id, "pubmed_id")
+                doi = record["MedlineCitation"]["Article"]["ELocationID"][0]
+                # publication_year = record["MedlineCitation"]["Article"]["ArticleDate"]["Year"]
+                publication_year = \
+                    record["MedlineCitation"]["Article"]["ArticleDate"][0][
+                        "Year"]
+                publication_month = \
+                    record["MedlineCitation"]["Article"]["ArticleDate"][0][
+                        "Month"]
+                publication_day = \
+                    record["MedlineCitation"]["Article"]["ArticleDate"][0][
+                        "Day"]
+                # jaar maand dag
+                publication_date = publication_year + "-" + \
+                                   publication_month + "-" + publication_day
+                abstract = \
+                    record["MedlineCitation"]["Article"]["Abstract"][
+                        "AbstractText"][0]
+                journal_name = record["MedlineCitation"]["Article"]["Journal"][
+                    "Title"]
+                # print(title, "\n", pubmed_id, "\n", doi, "\n", publication_date,
+                #       "\n", abstract, "\n", journal_name)  # example
+                art = Article(title=title, pubmed_id=pubmed_id, doi=doi,
+                              publication_date=publication_date,
+                              abstract=abstract,
+                              journal=Journal(name=journal_name))
+                # journal = Journal(name=journal_name)
+                articles.append(DataArticle(article=art))
+        # url_maker(articles)
+        articles = pubtator_output(articles)
+        return articles  # articles list with DataArticle complete
+    except None:
+        print(
+            "The Entrez package is currently offline, please try again later.")
+
 
 def url_maker(idlist):
     """
