@@ -37,11 +37,15 @@ def reader(file, headers):
                     p_symbol.symbol = line.strip().split("\t")[key_index]
                 if re.search("Aliases", value[0]):
                     aliases = []
-                    for alias in line.strip().split("\t")[key_index].split(
-                            "|"):
-                        # al = Alias(hgnc_symbol=alias, genes=[gene])
-                        al = Alias(hgnc_symbol=alias)  # ouder
-                        aliases.append(al)
+                    if len(line.strip().split("\t")[key_index].split()) == 0:
+                        al = Alias(hgnc_symbol=None)  # if there is no
+                        aliases.append(al)  # alias
+                    else:
+                        for alias in line.strip().split("\t")[key_index].split(
+                                "|"):
+                            # al = Alias(hgnc_symbol=alias, genes=[gene])
+                            al = Alias(hgnc_symbol=alias)  # ouder
+                            aliases.append(al)
                 if "GenePanel" == value[0]:
                     combi_panel = []  # combi [OMIM],[ AR, AD]] example
                     haken = re.findall(f"(?<=\().+?(?=\))",
@@ -123,10 +127,13 @@ def get_reader(file):
 #     headers = ["GeneID_NCBI", "Symbol_HGNC", "Aliases", "GenePanels_Symbol",
 #                "GenePanel"]
 #     file = "/gaps/genelogic/GenPanelOverzicht_DG-3.1.0_HAN_original_tsv.txt"
+#     file = "/Users/lean/Documenten/School/Flask/Course8_project/gaps/genelogic/GenPanelOverzicht_DG-3.1.0_HAN_original_tsv.txt"
+#     print(file)
 #     try:
-#         reader(file, headers)
+#         # reader(file, headers)
+#         get_reader(file)
 #     except FileNotFoundError:
 #         print("File not found! ->", file)
-#
-#
+
+
 # main()
