@@ -9,6 +9,7 @@
                 <th scope="col">Article title</th>
                 <th scope="col">Publication date</th>
                 <th scope="col">Genes</th>
+                <th scope="col">Diseases</th>
             </tr>
             </thead>
             <tbody>
@@ -28,6 +29,12 @@
                                    title="Gene ncbi">{{ gene[1] }}</a>
                             {% endif %}
                         {% endfor %}
+                    </td>
+                    <td> {% for gene in result["diseases"].items() %}
+                        <a href="https://meshb.nlm.nih.gov/record/ui?ui={{ gene[0][5:] }}"
+                           class="link-secondary" target="_blank"
+                           title="mesh link">{{ gene[1] }}</a>
+                    {% endfor %}
                     </td>
                 </tr>
             {% endfor %}

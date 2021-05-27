@@ -53,7 +53,8 @@ def results_query(query):
                                     "publication_date": art.article.publication_date,
                                     "abstract": art.article.abstract,
                                     "journal": art.article.journal.name},
-                        "genes": art.genes})  # weet niet of dit helemaal juist is.
+                        "genes": art.genes, "diseases": art.diseases})
+
     return results  # list with dict per article
 
 
@@ -204,7 +205,8 @@ def url_maker(idlist):
     :return: complete_url: url for Pubtator
     """
 
-    # print(article.article.pubmed_id, "pbid")
+    # post request 1000
+    # get request = 100
     url = ""
     for id in idlist:  # id = pubmedid for article pubtator
         if id != idlist[len(idlist) - 1]:
@@ -214,7 +216,7 @@ def url_maker(idlist):
 
     complete_url = "https://www.ncbi.nlm.nih.gov/research/pubtator-api" \
                    "/publications/export/biocxml?pmids={}&" \
-                   "concepts=gene".format(url)
+                   "concepts=gene,disease".format(url)
     # complete_url is url for pubtator from pubtator API
     return complete_url
 
@@ -231,16 +233,23 @@ def pubtator_output(articles):
         # print(article.article.pubmed_id, "pbid")
         idlist.append(str(article.article.pubmed_id))
     url = url_maker(idlist)  # url for all the articles pubmed found
+    print(url)
     result = requests.get(url)  # get xml-page pubtator
     if result.status_code == 200:
         print("Request succesful.")
         data = parse_results(result)
-        if len(data) == len(articles):  # so they can use the same index
-            for index, article in enumerate(articles):
+        if len(data) == len(articles):  # doesn't cont. if something is wrong
+            for art in articles:
                 # genes moet waarschijnlijk dict worden ipv genes
-                print(index)
-                article.genes = data[index]  # added to DataArticle
-                print(data[index])
+                # print(data)
+                art.genes = data[art.article.pubmed_id][0]  # genes dict
+                art.diseases = data[art.article.pubmed_id][1]  # diseases
+                # print(data[art.article.pubmed_id])
+
+                # if data[art.article.pubmed_id].keys()[:4] == "MESH":
+                #     art.diseaes
+                # art.genes = data[art.article.pubmed_id]  # added to DataArticle
+                # print(data[art.article.pubmed_id])
                 # not the article object it self yet
         # for a in articles:
         # print(a) # check
@@ -249,7 +258,7 @@ def pubtator_output(articles):
     return articles  # updated DataArticle with genes from pubtator
 
 
-def anno_document(documents, count):
+def anno_document(documents):
     """
     Adds the ncbi gene id and the gene per article to list, so it can
     later be added to the Article object.
@@ -257,12 +266,18 @@ def anno_document(documents, count):
     :param count: the amount of articles
     :return:
     """
+
     data_document = []
     for document in documents.findall("passage"):
         for doc in document.findall("annotation"):
             for anno in doc:
-                data_document.append([count, anno.attrib, anno.text])
+                data_document.append([anno.attrib, anno.text])
     return data_document
+
+
+def article_id(documents):
+    for document in documents.findall("id"):
+        return document.text
 
 
 def parse_results(result):
@@ -272,34 +287,37 @@ def parse_results(result):
     :return: data: list with dict [ncbi gene id, gene]
     """
     tree = etree.fromstring(result.text)
-    data_documents = []
-
-    c = 0
-    count = -1
+    data_doc = {}
     for documents in tree.findall("document"):
-        count += 1
-        data_documents.append(anno_document(documents, count))
-    data21 = []
-    data2 = []  # contains only the unique ncbi gene id / genes from pubtator
-    for gene_idlist in data_documents:
-        # print(t, "hats")
-        genes_pt2 = {}  # contains only the unique ncbi gene id / genes from pubtator
-        genes_pt21 = {}
-        for gi in gene_idlist:
+        data_doc[article_id(documents)] = anno_document(documents)
+
+    data_pubtator = {}
+    for pmid, data in data_doc.items():
+        # print(pmid, data, "data")
+        print(pmid, "pmid")
+        genes_pt3 = {}
+        mesh = {}
+        for gene in data:  # gene = {'key': 'identifier'}, '5362']
             try:
-                if gi[1]["key"] == "identifier":
-                    c += 1
-                    iden = gi[2]
-                    genes_pt2[iden] = ""
-                    genes_pt21[c] = iden
+                if gene[0]["key"] == "identifier":
+                    gene_id = gene[1]
+                    genes_pt3[gene_id] = ""
+                if gene[0]["key"] == "Identifier":
+                    gene_id = gene[1]
+                    mesh[gene_id] = ""
             except KeyError:
-                pass  # only need the identifier key
-            if not gi[1]:  # de annotion dict/ text is always empty
-                genes_pt2[iden] = gi[2]
-                genes_pt21[c] = [genes_pt21[c], gi[2]]
-        data2.append(genes_pt2)
-        data21.append(genes_pt21)
-    return data2  # onlt the unique genes
+                pass
+            if not gene[0]:
+                if gene_id[:4] == "MESH":
+                    if gene[1].strip != "":
+                        # print(gene[1], gene_id, "strip") hier is nog geen None?
+                        mesh[gene_id.strip()] = gene[1].strip()
+                else:
+                    genes_pt3[gene_id] = gene[1]
+
+        data_pubtator[pmid] = [genes_pt3, mesh]
+    # print(data_pubtator)
+    return data_pubtator
 
 
 def article(id_list):
@@ -341,6 +359,7 @@ class DataArticle:
     article: Article
     # journal : Journal
     genes: dict = field(default_factory=dict)
+    diseases: dict = field(default_factory=dict)
 
 
 # def alias_search_hgnc():
