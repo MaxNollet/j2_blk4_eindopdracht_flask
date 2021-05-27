@@ -27,7 +27,7 @@ def query_builder_submit():
     results = retriever.results_query(
         valid_parameters["input_generated_query"])
     print(results)
-
+    # mindate en maxdate  YYYY/MM/DD 2021/05/01
     return render_template("template_results.html", results=results)
     # return jsonify(response)
 

@@ -96,7 +96,9 @@ def query_pubmed(query):
             Entrez.esearch(
                 db="pubmed",
                 term=query,
-                usehistory="y"
+                usehistory="y"  # ,
+                # mindate="2021/05/01",
+                # maxdate="2022/05/01"
             )
         )
         count = int(search_results["Count"])
@@ -106,7 +108,7 @@ def query_pubmed(query):
             count = 10
 
         articles = list()
-        batch_size = 10
+        batch_size = 100
         for start in range(0, count, batch_size):
             handle = Entrez.efetch(db="pubmed",
                                    rettype="medline",
@@ -118,49 +120,81 @@ def query_pubmed(query):
                                    )
             records = Entrez.read(handle)
             for record in records["PubmedArticle"]:
-                try:
-                    # print(record)
-                    title = record["MedlineCitation"]["Article"][
-                        "ArticleTitle"]
-                    pubmed_id = record["MedlineCitation"]["PMID"]
-                    print(pubmed_id, "pubmed_id")
-                    doi = record["MedlineCitation"]["Article"]["ELocationID"][
-                        0]
-                    # publication_year = record["MedlineCitation"]["Article"]["ArticleDate"]["Year"]
-                    publication_year = \
-                        record["MedlineCitation"]["Article"]["ArticleDate"][0][
-                            "Year"]
-                    publication_month = \
-                        record["MedlineCitation"]["Article"]["ArticleDate"][0][
-                            "Month"]
-                    publication_day = \
-                        record["MedlineCitation"]["Article"]["ArticleDate"][0][
-                            "Day"]
-                    # jaar maand dag
-                    publication_date = publication_year + "-" + \
-                                       publication_month + "-" + publication_day
-                    abstract = \
-                        record["MedlineCitation"]["Article"]["Abstract"][
-                            "AbstractText"][0]
-                    journal_name = \
-                    record["MedlineCitation"]["Article"]["Journal"][
-                        "Title"]
-                    # print(title, "\n", pubmed_id, "\n", doi, "\n", publication_date,
-                    #       "\n", abstract, "\n", journal_name)  # example
-                    art = Article(title=title, pubmed_id=pubmed_id, doi=doi,
-                                  publication_date=publication_date,
-                                  abstract=abstract,
-                                  journal=Journal(name=journal_name))
-                    # journal = Journal(name=journal_name)
-                    articles.append(DataArticle(article=art))
-                except (TypeError, KeyError):
-                    print("Element not available")
+
+                # print(record)
+                pubmed_id = record.get("MedlineCitation").get("PMID")
+                title = record.get("MedlineCitation").get("Article").get("ArticleTitle")
+
+                print(pubmed_id, "pubmed_id")
+                doi_element = record.get("MedlineCitation").get("Article").get("ELocationID")
+                if doi_element is not None:
+                    try:
+                        doi = doi_element[0]
+                    except IndexError:
+                        doi = None
+                publication_date = extract_date(record)
+                abstract_element = \
+                    record.get("MedlineCitation").get("Article").get("Abstract")
+                abstract = None
+                if abstract_element is not None:
+                    abstract = abstract_element.get("AbstractText")[0]
+                journal_name = \
+                record.get("MedlineCitation").get("Article").get("Journal").get("Title")
+                # print(title, "\n", pubmed_id, "\n", doi, "\n", publication_date,
+                #       "\n", abstract, "\n", journal_name)  # example
+                art = Article(title=title, pubmed_id=pubmed_id, doi=doi,
+                              publication_date=publication_date,
+                              abstract=abstract,
+                              journal=Journal(name=journal_name))
+                # journal = Journal(name=journal_name)
+                articles.append(DataArticle(article=art))
+                # except (TypeError, KeyError):
+                #     print("Element not available")
         # url_maker(articles)
         articles = pubtator_output(articles)
         return articles  # articles list with DataArticle complete
     except None:  # only get None
         print(
             "The Entrez package is currently offline, please try again later.")
+
+
+def extract_date(record: dict):
+    """A method which safely extracts a publication date
+       from an article.
+
+    :param record Article possibly containing a publication date (Dict).
+    :return Extracted date from the article if available.
+    """
+    pub_date = record.get("MedlineCitation").get("Article").get("Journal").get("JournalIssue").get("PubDate")
+    if pub_date is not None:
+        year = pub_date.get("Year")
+        month = pub_date.get("Month")
+        day = pub_date.get("Day")
+        concatinated = "Not available"
+        if year is not None:
+            concatinated = year
+            if month is not None:
+                concatinated += f"-{month}"
+                if day is not None:
+                    concatinated += f"-{day}"
+        return concatinated
+
+    # try:
+    #     publication_year = \
+    #         record.get("MedlineCitation").get("Article").get("ArticleDate")[0].get("Year")
+    # except IndexError:
+    #     publication_year = None
+    # try:
+    #     publication_month = \
+    #         record.get("MedlineCitation").get("Article").get("ArticleDate")[0].get("Month")
+    # except IndexError:
+    #     publication_month = None
+    # try:
+    #     publication_day = \
+    #         record.get("MedlineCitation").get("Article").get("ArticleDate")[0].get("Day")
+    # except IndexError:
+    #     publication_day = None
+    return None
 
 
 def url_maker(idlist):
