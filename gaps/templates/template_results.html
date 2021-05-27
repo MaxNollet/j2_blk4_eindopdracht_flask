@@ -16,8 +16,8 @@
                 <tr>
                     <td>
                         <a href="https://pubmed.ncbi.nlm.nih.gov/{{ result["article"]["pubmed_id"] }}/"
-                           target="_blank" title="PubMed Artikel"
-                           class="link-secondary">{{ result["article"]["title"] }}</a>
+                           target="_blank" title="PubMed article"
+                           class="link-secondary">{{ result["article"]["title"] | safe }}</a>
                     </td>
                     <td>{{ result["article"]["publication_date"] }}</td>
                     <td>
