@@ -158,7 +158,13 @@ def query_pubmed(query):
             "The Entrez package is currently offline, please try again later.")
 
 
-def extract_date(record):
+def extract_date(record: dict):
+    """A method which safely extracts a publication date
+       from an article.
+
+    :param record Article possibly containing a publication date (Dict).
+    :return Extracted date from the article if available.
+    """
     pub_date = record.get("MedlineCitation").get("Article").get("Journal").get("JournalIssue").get("PubDate")
     if pub_date is not None:
         year = pub_date.get("Year")
