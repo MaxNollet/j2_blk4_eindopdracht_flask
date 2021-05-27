@@ -240,6 +240,7 @@ def pubtator_output(articles):
                 # genes moet waarschijnlijk dict worden ipv genes
                 print(index)
                 article.genes = data[index]  # added to DataArticle
+                print(data[index])
                 # not the article object it self yet
         # for a in articles:
         # print(a) # check
@@ -272,26 +273,32 @@ def parse_results(result):
     """
     tree = etree.fromstring(result.text)
     data_documents = []
+
+    c = 0
     count = -1
     for documents in tree.findall("document"):
         count += 1
         data_documents.append(anno_document(documents, count))
-
+    data21 = []
     data2 = []  # contains only the unique ncbi gene id / genes from pubtator
     for gene_idlist in data_documents:
         # print(t, "hats")
         genes_pt2 = {}  # contains only the unique ncbi gene id / genes from pubtator
-
+        genes_pt21 = {}
         for gi in gene_idlist:
             try:
                 if gi[1]["key"] == "identifier":
+                    c += 1
                     iden = gi[2]
                     genes_pt2[iden] = ""
+                    genes_pt21[c] = iden
             except KeyError:
                 pass  # only need the identifier key
             if not gi[1]:  # de annotion dict/ text is always empty
                 genes_pt2[iden] = gi[2]
+                genes_pt21[c] = [genes_pt21[c], gi[2]]
         data2.append(genes_pt2)
+        data21.append(genes_pt21)
     return data2  # onlt the unique genes
 
 
