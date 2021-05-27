@@ -96,7 +96,9 @@ def query_pubmed(query):
             Entrez.esearch(
                 db="pubmed",
                 term=query,
-                usehistory="y"
+                usehistory="y"  # ,
+                # mindate="2021/05/01",
+                # maxdate="2022/05/01"
             )
         )
         count = int(search_results["Count"])
