@@ -303,7 +303,6 @@ def parse_results(result):
     data_doc = {}
     for documents in tree.findall("document"):
         data_doc[article_id(documents)] = anno_document(documents)
-
     data_pubtator = {}
     for pmid, data in data_doc.items():
         # print(pmid, data, "data")
