@@ -124,10 +124,12 @@ def query_pubmed(query):
 
                 # print(record)
                 pubmed_id = record.get("MedlineCitation").get("PMID")
-                title = record.get("MedlineCitation").get("Article").get("ArticleTitle")
+                title = record.get("MedlineCitation").get("Article").get(
+                    "ArticleTitle")
 
                 print(pubmed_id, "pubmed_id")
-                doi_element = record.get("MedlineCitation").get("Article").get("ELocationID")
+                doi_element = record.get("MedlineCitation").get("Article").get(
+                    "ELocationID")
                 if doi_element is not None:
                     try:
                         doi = doi_element[0]
@@ -135,12 +137,14 @@ def query_pubmed(query):
                         doi = None
                 publication_date = extract_date(record)
                 abstract_element = \
-                    record.get("MedlineCitation").get("Article").get("Abstract")
+                    record.get("MedlineCitation").get("Article").get(
+                        "Abstract")
                 abstract = None
                 if abstract_element is not None:
                     abstract = abstract_element.get("AbstractText")[0]
                 journal_name = \
-                record.get("MedlineCitation").get("Article").get("Journal").get("Title")
+                    record.get("MedlineCitation").get("Article").get(
+                        "Journal").get("Title")
                 # print(title, "\n", pubmed_id, "\n", doi, "\n", publication_date,
                 #       "\n", abstract, "\n", journal_name)  # example
                 art = Article(title=title, pubmed_id=pubmed_id, doi=doi,
@@ -166,7 +170,8 @@ def extract_date(record: dict):
     :param record Article possibly containing a publication date (Dict).
     :return Extracted date from the article if available.
     """
-    pub_date = record.get("MedlineCitation").get("Article").get("Journal").get("JournalIssue").get("PubDate")
+    pub_date = record.get("MedlineCitation").get("Article").get("Journal").get(
+        "JournalIssue").get("PubDate")
     if pub_date is not None:
         year = pub_date.get("Year")
         month = pub_date.get("Month")
@@ -268,10 +273,18 @@ def anno_document(documents):
     """
 
     data_document = []
+    id = 0
     for document in documents.findall("passage"):
         for doc in document.findall("annotation"):
             for anno in doc:
-                data_document.append([anno.attrib, anno.text])
+                if anno.text is None:
+                    data_document.append([anno.attrib])
+
+                elif anno.text == "None":  # when there is no MESH:
+                    data_document.append([anno.attrib, "MESH:" + str(id)])
+                    id += 1  # if there is no ID
+                else:
+                    data_document.append([anno.attrib, anno.text])
     return data_document
 
 
@@ -301,22 +314,21 @@ def parse_results(result):
             try:
                 if gene[0]["key"] == "identifier":
                     gene_id = gene[1]
+                    print(gene_id)
                     genes_pt3[gene_id] = ""
                 if gene[0]["key"] == "Identifier":
                     gene_id = gene[1]
                     mesh[gene_id] = ""
             except KeyError:
                 pass
-            if not gene[0]:
-                if gene_id[:4] == "MESH":
-                    if gene[1].strip != "":
-                        # print(gene[1], gene_id, "strip") hier is nog geen None?
-                        mesh[gene_id.strip()] = gene[1].strip()
-                else:
-                    genes_pt3[gene_id] = gene[1]
-
+            if len(gene) >= 2:
+                if not gene[0]:
+                    if gene_id[:4] == "MESH":
+                        if gene[1].strip() != "":
+                            mesh[gene_id.strip()] = gene[1].strip()
+                    else:
+                        genes_pt3[gene_id] = gene[1]
         data_pubtator[pmid] = [genes_pt3, mesh]
-    # print(data_pubtator)
     return data_pubtator
 
 
