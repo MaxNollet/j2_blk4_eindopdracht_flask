@@ -1,14 +1,11 @@
 # insert_genepanel(tuple(str)): bool
 import os
+import time
 from typing import List, Mapping
 
-import time
-
-from sqlalchemy import create_engine, bindparam
-from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.orm import Session
 
 from gaps.genelogic import reader
 from gaps.models import *
@@ -32,7 +29,7 @@ class DatabaseInserter:
                 genepanel_symbols.append(genepanel_symbol)
 
         starttijd = time.perf_counter()
-        DatabaseInserter.insert_genes(session, genes)
+        test = DatabaseInserter.insert_genes(session, genes, True)
         DatabaseInserter.insert_aliases(session, aliases)
         DatabaseInserter.insert_genepanel_symbol(session, genepanel_symbols)
         DatabaseInserter.link_gene_alias(session, rows)
@@ -40,26 +37,36 @@ class DatabaseInserter:
         print(f"Verwerktijd: {time.perf_counter() - starttijd}")
 
     @staticmethod
-    def insert_genes(session: Session, genes: List[dict]):
-        """Insert genes into the database."""
-        statement = insert(Gene).on_conflict_do_nothing()
-        session.execute(statement=statement, params=genes)
-        session.commit()
+    def insert_genes(session: Session, genes: List[dict], return_ids: bool = False) -> Mapping[str, int]:
+        """A method which inserts genes into the database and
+           returns a dictionary of all genes with corresponding
+           ID's if needed.
+
+        :param session Session-object to communicate with the database (Session).
+        :param genes All genes to be inserted into the database (List[dict]).
+        :param return_ids Indication to return inserted ID's or not (Bool).
+        :return Inserted ID's of all genes (Mapping[str, int]).
+        """
+        statement_insert = insert(Gene).on_conflict_do_nothing()
+        session.execute(statement=statement_insert, params=genes)
+        if return_ids:
+            symbols = [gene["hgnc_symbol"] for gene in genes]
+            statement_select = select(Gene.hgnc_symbol, Gene.id).where(Gene.hgnc_symbol.in_(symbols))
+            return {key[0]: key[1] for key in session.execute(statement_select)}
 
     @staticmethod
     def insert_aliases(session: Session, aliases: List[dict]):
         """Insert aliases into the database."""
         statement = insert(Alias).on_conflict_do_nothing()
         session.execute(statement=statement, params=aliases)
-        session.commit()
+        # session.commit()
 
     @staticmethod
     def insert_genepanel_symbol(session: Session, symbols: List[dict]):
         """Insert genepanel symbols into the database."""
         statement = insert(GenepanelSymbol).on_conflict_do_nothing()
         session.execute(statement=statement, params=symbols)
-        session.commit()
-
+        # session.commit()
 
     @staticmethod
     def link_gene_alias(session: Session, rows: List[dict]):
@@ -70,8 +77,10 @@ class DatabaseInserter:
             for alias in row.get("aliases"):
                 alias_symbols.append(alias.get("hgnc_symbol"))
 
-        gene_objects = dict((gene.hgnc_symbol, gene) for gene in Gene.query.filter(Gene.hgnc_symbol.in_(gene_symbols)).all())
-        alias_objects = dict((alias.hgnc_symbol, alias) for alias in Alias.query.filter(Alias.hgnc_symbol.in_(alias_symbols)).all())
+        gene_objects = dict(
+            (gene.hgnc_symbol, gene) for gene in Gene.query.filter(Gene.hgnc_symbol.in_(gene_symbols)).all())
+        alias_objects = dict(
+            (alias.hgnc_symbol, alias) for alias in Alias.query.filter(Alias.hgnc_symbol.in_(alias_symbols)).all())
 
         combos = list()
         for row in rows:
@@ -81,7 +90,7 @@ class DatabaseInserter:
                 combos.append({"gene_id": id_gene, "alias_id": id_alias})
         statement = insert(t_gene_alias).on_conflict_do_nothing()
         session.execute(statement=statement, params=combos)
-        session.commit()
+        # session.commit()
 
 
 def update_genepanel_v2():
