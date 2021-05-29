@@ -3,7 +3,7 @@ import os
 import time
 from typing import List, Mapping
 
-from sqlalchemy import select
+from sqlalchemy import select, bindparam
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
@@ -12,8 +12,18 @@ from gaps.models import *
 
 
 class DatabaseInserter:
-    @staticmethod
-    def insert_genepanel(session: Session, rows: List[Mapping[str, Mapping[str, str]]]):
+    stmt_gene_insert = insert(Gene).on_conflict_do_nothing()
+    stmt_gene_select = select(Gene.hgnc_symbol, Gene.id).where(Gene.hgnc_symbol.in_(bindparam("values")))
+    stmt_alias_insert = insert(Alias).on_conflict_do_nothing()
+    stmt_alias_select = select(Alias.hgnc_symbol, Alias.id).where(Alias.hgnc_symbol.in_(bindparam("values")))
+    stmt_genepanel_symbol_insert = insert(GenepanelSymbol).on_conflict_do_nothing()
+    stmt_genepanel_symbol_select = select(GenepanelSymbol.symbol, GenepanelSymbol.id).where(
+        GenepanelSymbol.symbol.in_(bindparam("values")))
+
+    def __init__(self):
+        self.session: Session = db.session
+
+    def insert_genepanel(self, rows: List[Mapping[str, Mapping[str, str]]]):
         genes: List[dict] = list()
         aliases: List[dict] = list()
         genepanel_symbols: List[dict] = list()
@@ -27,46 +37,38 @@ class DatabaseInserter:
             genepanel_symbol = row.get("genepanel_symbol")
             if genepanel_symbol is not None:
                 genepanel_symbols.append(genepanel_symbol)
-
         starttijd = time.perf_counter()
-        test = DatabaseInserter.insert_genes(session, genes, True)
-        DatabaseInserter.insert_aliases(session, aliases)
-        DatabaseInserter.insert_genepanel_symbol(session, genepanel_symbols)
-        DatabaseInserter.link_gene_alias(session, rows)
 
+        gene_ids = self.insert(insert_stmt=self.stmt_gene_insert, values=genes, return_ids=True,
+                               select_stmt=self.stmt_gene_select, col_as_key="hgnc_symbol")
+        alias_ids = self.insert(insert_stmt=self.stmt_alias_insert, values=aliases, return_ids=True,
+                                select_stmt=self.stmt_alias_select, col_as_key="hgnc_symbol")
+        genepanel_symbols_ids = self.insert(insert_stmt=self.stmt_genepanel_symbol_insert, values=genepanel_symbols,
+                                            return_ids=True, select_stmt=self.stmt_genepanel_symbol_select,
+                                            col_as_key="symbol")
+        # DatabaseInserter.insert_genepanel_symbol(session, genepanel_symbols)
+        # DatabaseInserter.link_gene_alias(session, rows)
         print(f"Verwerktijd: {time.perf_counter() - starttijd}")
 
-    @staticmethod
-    def insert_genes(session: Session, genes: List[dict], return_ids: bool = False) -> Mapping[str, int]:
-        """A method which inserts genes into the database and
-           returns a dictionary of all genes with corresponding
-           ID's if needed.
+    def insert(self, insert_stmt: insert, values: List[dict], return_ids: bool = False,
+               select_stmt: select = None, col_as_key: str = None) -> Mapping[str, int]:
+        """A method which inserts values into the database and
+           returns the primary keys of all inserted values if
+           return_ids is set to True.
 
-        :param session Session-object to communicate with the database (Session).
-        :param genes All genes to be inserted into the database (List[dict]).
+        :param insert_stmt Statement to use when inserting values (Insert).
+        :param values All values to be inserted into the database (List[dict]).
         :param return_ids Indication to return inserted ID's or not (Bool).
-        :return Inserted ID's of all genes (Mapping[str, int]).
+        :param select_stmt Statement to use when selecting values (Select).
+        :param col_as_key Column to use for the keys in the returned dictionary (str).
+        :return All inserted primary keys bound to corresponding values (Mapping[str, int]).
         """
-        statement_insert = insert(Gene).on_conflict_do_nothing()
-        session.execute(statement=statement_insert, params=genes)
-        if return_ids:
-            symbols = [gene["hgnc_symbol"] for gene in genes]
-            statement_select = select(Gene.hgnc_symbol, Gene.id).where(Gene.hgnc_symbol.in_(symbols))
-            return {key[0]: key[1] for key in session.execute(statement_select)}
-
-    @staticmethod
-    def insert_aliases(session: Session, aliases: List[dict]):
-        """Insert aliases into the database."""
-        statement = insert(Alias).on_conflict_do_nothing()
-        session.execute(statement=statement, params=aliases)
-        # session.commit()
-
-    @staticmethod
-    def insert_genepanel_symbol(session: Session, symbols: List[dict]):
-        """Insert genepanel symbols into the database."""
-        statement = insert(GenepanelSymbol).on_conflict_do_nothing()
-        session.execute(statement=statement, params=symbols)
-        # session.commit()
+        self.session.execute(statement=insert_stmt, params=values)
+        if return_ids is True and select_stmt is not None and col_as_key is not None:
+            values = {"values": [value[col_as_key] for value in values]}
+            results = self.session.execute(statement=select_stmt, params=values)
+            # test = {result[0]: result[1] for result in results}
+            return {result[0]: result[1] for result in results}
 
     @staticmethod
     def link_gene_alias(session: Session, rows: List[dict]):
@@ -114,5 +116,6 @@ def update_genepanel_v2():
             all_rows.append(row)
 
         print("Executing . . .")
-        DatabaseInserter.insert_genepanel(session, all_rows)
+        inserter = DatabaseInserter()
+        inserter.insert_genepanel(all_rows)
         print("Done")
