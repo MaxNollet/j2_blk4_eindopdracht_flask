@@ -1,7 +1,7 @@
 # insert_genepanel(tuple(str)): bool
 import os
 import time
-from typing import List, Mapping
+from typing import List, Mapping, Tuple
 
 from sqlalchemy import select, bindparam
 from sqlalchemy.dialects.postgresql import insert
@@ -26,6 +26,8 @@ class DatabaseInserter:
     stmt_inheritance_type_select = select(InheritanceType.type, InheritanceType.id).where(
         InheritanceType.type.in_(bindparam("values")))
 
+    stmt_relation_gene_alias = insert(t_gene_alias).on_conflict_do_nothing()
+
     def __init__(self):
         self.session: Session = db.session
 
@@ -36,13 +38,18 @@ class DatabaseInserter:
         all_genepanel_symbols = list()
         all_genepanels = list()
         all_inheritace_types = list()
+        relation_gene_alias = list()
+        relation_gene_symbol = list()
+        relation_gene_genepanel = list()
+        relation_genepanel_inheritance = list()
         # Extract variables and seperate into categories.
         for line in file:
-            gene = line.gene
-            all_genes.append({"ncbi_gene_id": gene.ncbi_gene_id, "hgnc_symbol": gene.hgnc_symbol, "in_genepanel": True})
+            all_genes.append(
+                {"ncbi_gene_id": line.gene.ncbi_gene_id, "hgnc_symbol": line.gene.hgnc_symbol, "in_genepanel": True})
             for alias in line.alias:
                 if alias.hgnc_symbol is not None and alias.hgnc_symbol != "":
                     all_aliases.append({"hgnc_symbol": alias.hgnc_symbol})
+                    relation_gene_alias.append({"gene_id": line.gene.hgnc_symbol, "alias_id": alias.hgnc_symbol})
             all_genepanel_symbols.append({"symbol": line.p_symbol.symbol})
             for panel in line.panel:
                 [all_inheritace_types.append({"type": element.type}) for element in panel[:-1]]
@@ -63,7 +70,11 @@ class DatabaseInserter:
         inheritance_ids = self.insert(insert_stmt=self.stmt_inheritance_type_insert, values=all_inheritace_types,
                                       return_ids=True, select_stmt=self.stmt_inheritance_type_select,
                                       col_as_key="type")
+        # Opgehaalde primary keys gebruiken om relatie te updaten.
+        test = self.generate_combinations(relation_gene_alias, {"gene_id": gene_ids, "alias_id": alias_ids})
+        self.relationship(self.stmt_relation_gene_alias, test)
         self.session.commit()
+        # self.session.commit()
         # DatabaseInserter.insert_genepanel_symbol(session, genepanel_symbols)
         # DatabaseInserter.link_gene_alias(session, rows)
         print(f"Verwerktijd: {time.perf_counter() - starttijd}")
@@ -87,29 +98,24 @@ class DatabaseInserter:
             results = self.session.execute(statement=select_stmt, params=values)
             return {result[0]: result[1] for result in results}
 
-    @staticmethod
-    def link_gene_alias(session: Session, rows: List[dict]):
-        gene_symbols = list()
-        alias_symbols = list()
-        for row in rows:
-            gene_symbols.append(row.get("gene").get("hgnc_symbol"))
-            for alias in row.get("aliases"):
-                alias_symbols.append(alias.get("hgnc_symbol"))
+    def relationship(self, insert_stmt: insert, values: Tuple[dict]):
+        self.session.execute(statement=insert_stmt, params=values)
 
-        gene_objects = dict(
-            (gene.hgnc_symbol, gene) for gene in Gene.query.filter(Gene.hgnc_symbol.in_(gene_symbols)).all())
-        alias_objects = dict(
-            (alias.hgnc_symbol, alias) for alias in Alias.query.filter(Alias.hgnc_symbol.in_(alias_symbols)).all())
+    def generate_combinations(self, original_combinations: List[dict],
+                              primary_keys: Mapping[str, Mapping[str, int]]) -> Tuple[dict]:
+        """A method which updates combinations between two tables
+           using primary keys retrieved from the database.
 
-        combos = list()
-        for row in rows:
-            id_gene = gene_objects.get(row.get("gene").get("hgnc_symbol")).id
-            for alias in row.get("aliases"):
-                id_alias = alias_objects.get(alias.get("hgnc_symbol")).id
-                combos.append({"gene_id": id_gene, "alias_id": id_alias})
-        statement = insert(t_gene_alias).on_conflict_do_nothing()
-        session.execute(statement=statement, params=combos)
-        # session.commit()
+        :param original_combinations Combinations between two tables using normal values (List[dict]).
+        :param primary_keys Primary keys to use when updating normal values (List[dict]).
+        :return combinations of primary keys to insert into in-between-tables (List[Dict]).
+        """
+        keys = primary_keys.keys()
+        for combo in original_combinations:
+            for key in keys:
+                original_value = combo[key]
+                combo[key] = primary_keys[key][original_value]
+        return tuple(original_combinations)
 
 
 def update_genepanel_v2():
