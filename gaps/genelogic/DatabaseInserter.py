@@ -1,35 +1,33 @@
-# insert_genepanel(tuple(str)): bool
 import os
 import time
 from typing import List, Mapping, Tuple
 
-from sqlalchemy import select, bindparam
+from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
-from gaps.genelogic import reader
-from gaps.models import *
+from gaps.genelogic import reader, SelectStatements, InsertStatements
+from gaps.models import db
 
 
-class DatabaseInserter:
-    stmt_gene_insert = insert(Gene).on_conflict_do_nothing()
-    stmt_gene_select = select(Gene.hgnc_symbol, Gene.id).where(Gene.hgnc_symbol.in_(bindparam("values")))
-    stmt_alias_insert = insert(Alias).on_conflict_do_nothing()
-    stmt_alias_select = select(Alias.hgnc_symbol, Alias.id).where(Alias.hgnc_symbol.in_(bindparam("values")))
-    stmt_genepanel_symbol_insert = insert(GenepanelSymbol).on_conflict_do_nothing()
-    stmt_genepanel_symbol_select = select(GenepanelSymbol.symbol, GenepanelSymbol.id).where(
-        GenepanelSymbol.symbol.in_(bindparam("values")))
-    stmt_genepanel_insert = insert(Genepanel).on_conflict_do_nothing()
-    stmt_genepanel_select = select(Genepanel.abbreviation, Genepanel.id).where(
-        Genepanel.abbreviation.in_(bindparam("values")))
-    stmt_inheritance_type_insert = insert(InheritanceType).on_conflict_do_nothing()
-    stmt_inheritance_type_select = select(InheritanceType.type, InheritanceType.id).where(
-        InheritanceType.type.in_(bindparam("values")))
+class DatabaseInserter(SelectStatements, InsertStatements):
+    """A class which contains several methods for inserting
+       values into the database. This class extends the classes
+       SelectStatements and InsertStatements to rely on statements
+       defined in thode classes.
+    """
 
-    stmt_relation_gene_alias = insert(t_gene_alias).on_conflict_do_nothing()
+    def __init__(self, session: Session = None):
+        """Constructor of the object. Uses the session-object
+           provided to communicate with the database or creates
+           its own session if no session is provided.
 
-    def __init__(self):
-        self.session: Session = db.session
+        :param session Session-object used to communicate with the database (Session).
+        """
+        if session is None:
+            self.session: Session = db.session
+        else:
+            self.session = session
 
     def insert_genepanel(self, file):
         # New improved data structures for the db.
@@ -39,10 +37,9 @@ class DatabaseInserter:
         all_genepanels = list()
         all_inheritace_types = list()
         relation_gene_alias = list()
-        relation_gene_symbol = list()
         relation_gene_genepanel = list()
         relation_genepanel_inheritance = list()
-        # Extract variables and seperate into categories.
+        # Extract variables and separate into categories.
         for line in file:
             all_genes.append(
                 {"ncbi_gene_id": line.gene.ncbi_gene_id, "hgnc_symbol": line.gene.hgnc_symbol, "in_genepanel": True})
@@ -52,35 +49,38 @@ class DatabaseInserter:
                     relation_gene_alias.append({"gene_id": line.gene.hgnc_symbol, "alias_id": alias.hgnc_symbol})
             all_genepanel_symbols.append({"symbol": line.p_symbol.symbol})
             for panel in line.panel:
-                [all_inheritace_types.append({"type": element.type}) for element in panel[:-1]]
                 all_genepanels.append({"abbreviation": panel[-1].abbreviation})
+                [all_inheritace_types.append({"type": element.type}) for element in panel[:-1]]
+                relation_gene_genepanel.append(
+                    {"gene_id": line.gene.hgnc_symbol, "genepanel_id": panel[-1].abbreviation})
+                [relation_genepanel_inheritance.append(
+                    {"genepanel_id": panel[-1].abbreviation, "inheritance_type_id": element.type}) for element in
+                    panel[:-1]]
         # Generate combinations
 
         starttijd = time.perf_counter()
 
-        gene_ids = self.insert(insert_stmt=self.stmt_gene_insert, values=all_genes, return_ids=True,
-                               select_stmt=self.stmt_gene_select, col_as_key="hgnc_symbol")
-        alias_ids = self.insert(insert_stmt=self.stmt_alias_insert, values=all_aliases, return_ids=True,
-                                select_stmt=self.stmt_alias_select, col_as_key="hgnc_symbol")
-        genepanel_symbols_ids = self.insert(insert_stmt=self.stmt_genepanel_symbol_insert, values=all_genepanel_symbols,
-                                            return_ids=True, select_stmt=self.stmt_genepanel_symbol_select,
-                                            col_as_key="symbol")
-        genepanel_ids = self.insert(insert_stmt=self.stmt_genepanel_insert, values=all_genepanels, return_ids=True,
-                                    select_stmt=self.stmt_genepanel_select, col_as_key="abbreviation")
-        inheritance_ids = self.insert(insert_stmt=self.stmt_inheritance_type_insert, values=all_inheritace_types,
-                                      return_ids=True, select_stmt=self.stmt_inheritance_type_select,
-                                      col_as_key="type")
+        gene_ids = self.insert_values(self._insert_gene(), all_genes, True, self._select_gene(), "hgnc_symbol")
+        alias_ids = self.insert_values(self._insert_alias(), all_aliases, True, self._select_alias(), "hgnc_symbol")
+        genepanel_symbols_ids = self.insert_values(self._insert_genepanel_symbol(), all_genepanel_symbols, True,
+                                                   self._select_genepanel_symbol(), "symbol")
+        genepanel_ids = self.insert_values(self._insert_genepanel(), all_genepanels, True, self._select_genepanel(),
+                                    "abbreviation")
+        inheritance_ids = self.insert_values(self._insert_inheritance_type(), all_inheritace_types, True,
+                                             self._select_inheritance_type(), "type")
         # Opgehaalde primary keys gebruiken om relatie te updaten.
-        test = self.generate_combinations(relation_gene_alias, {"gene_id": gene_ids, "alias_id": alias_ids})
-        self.relationship(self.stmt_relation_gene_alias, test)
+        pks_gene_alias = self.combine(relation_gene_alias, {"gene_id": gene_ids, "alias_id": alias_ids})
+        pks_gene_genepanel = self.combine(relation_gene_genepanel, {"gene_id": gene_ids, "genepanel_id": genepanel_ids})
+        pks_genepanel_inheritance = self.combine(relation_genepanel_inheritance, {"genepanel_id": genepanel_ids,
+                                                                                  "inheritance_type_id": inheritance_ids})
+        self.insert_relationship(self._insert_relation_gene_alias(), pks_gene_alias)
+        self.insert_relationship(self._insert_relation_gene_genepanel(), pks_gene_genepanel)
+        self.insert_relationship(self._insert_relation_genepanel_inheritance(), pks_genepanel_inheritance)
         self.session.commit()
-        # self.session.commit()
-        # DatabaseInserter.insert_genepanel_symbol(session, genepanel_symbols)
-        # DatabaseInserter.link_gene_alias(session, rows)
         print(f"Verwerktijd: {time.perf_counter() - starttijd}")
 
-    def insert(self, insert_stmt: insert, values: List[dict], return_ids: bool = False,
-               select_stmt: select = None, col_as_key: str = None) -> Mapping[str, int]:
+    def insert_values(self, insert_stmt: insert, values: List[dict], return_ids: bool = False,
+                      select_stmt: select = None, col_as_key: str = None) -> Mapping[str, int]:
         """A method which inserts values into the database and
            returns the primary keys of all inserted values if
            return_ids is set to True.
@@ -98,11 +98,12 @@ class DatabaseInserter:
             results = self.session.execute(statement=select_stmt, params=values)
             return {result[0]: result[1] for result in results}
 
-    def relationship(self, insert_stmt: insert, values: Tuple[dict]):
+    def insert_relationship(self, insert_stmt: insert_values, values: Tuple[dict]):
         self.session.execute(statement=insert_stmt, params=values)
 
-    def generate_combinations(self, original_combinations: List[dict],
-                              primary_keys: Mapping[str, Mapping[str, int]]) -> Tuple[dict]:
+    @staticmethod
+    def combine(original_combinations: List[dict],
+                primary_keys: Mapping[str, Mapping[str, int]]) -> Tuple[dict]:
         """A method which updates combinations between two tables
            using primary keys retrieved from the database.
 
