@@ -90,21 +90,21 @@ class DatabaseInserter(StatementGroups, SelectStatements, InsertStatements):
         stmt_group = self._statement_groups.get(table_name)
         if stmt_group:
             insert_stmt = stmt_group.get("insert")
-            if insert_stmt:
+            if insert_stmt is not None:
                 self.session.execute(statement=insert_stmt, params=values)
             else:
                 raise InsertStatementNotDefined(table_name)
             if return_ids is True:
                 col_as_key = stmt_group.get("column_as_key")
                 select_stmt = stmt_group.get("select")
-                if col_as_key and select_stmt:
+                if col_as_key is not None and select_stmt is not None:
                     values = {"values": [value[col_as_key] for value in values]}
                     results = self.session.execute(statement=select_stmt, params=values)
                     return {result[0]: result[1] for result in results}
                 else:
-                    if not select_stmt:
+                    if select_stmt is None:
                         raise SelectStatementNotDefined(table_name)
-                    if not col_as_key:
+                    if col_as_key is None:
                         raise ColumnAsKeyNotDefined(table_name)
         else:
             raise StatementGroupNotDefined(table_name)
