@@ -58,3 +58,42 @@ def statement_group(table: str, column_as_key: str = None):
         return statement_function
 
     return decorator_add
+
+
+class StatementGroupNotDefined(Exception):
+    """An exception for when a statement group is requested
+       but it is not registered in the central mapper.
+    """
+
+    def __init__(self, stmt_group: str):
+        super().__init__(f"Statement group '{stmt_group}' not defined!")
+
+
+class InsertStatementNotDefined(Exception):
+    """An exception for when an insert statement for a specific
+       group is requested but it is not registered in the
+       central mapper.
+    """
+
+    def __init__(self, stmt_group: str):
+        super().__init__(f"Insert statement for group '{stmt_group}' not defined!")
+
+
+class SelectStatementNotDefined(Exception):
+    """An exception for when a select statement for a specific
+       group is requested but it is not registered in the
+       central mapper.
+    """
+
+    def __init__(self, stmt_group: str):
+        super().__init__(f"Select statement for group '{stmt_group}' not defined!")
+
+
+class ColumnAsKeyNotDefined(Exception):
+    """An exception for when a column name from a table is
+       requested but it is not registered in the central
+       mapper.
+    """
+
+    def __init__(self, stmt_group: str):
+        super().__init__(f"Column for key in select statement not defined for group '{stmt_group}'!")

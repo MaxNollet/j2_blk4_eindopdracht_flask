@@ -5,6 +5,8 @@ from typing import List, Mapping, Tuple
 from sqlalchemy.orm import Session
 
 from gaps.genelogic import reader, SelectStatements, InsertStatements, StatementGroups
+from gaps.genelogic.statement_groups import InsertStatementNotDefined, SelectStatementNotDefined,\
+    ColumnAsKeyNotDefined, StatementGroupNotDefined
 from gaps.models import db
 
 
@@ -90,6 +92,8 @@ class DatabaseInserter(StatementGroups, SelectStatements, InsertStatements):
             insert_stmt = stmt_group.get("insert")
             if insert_stmt:
                 self.session.execute(statement=insert_stmt, params=values)
+            else:
+                raise InsertStatementNotDefined(table_name)
             if return_ids is True:
                 col_as_key = stmt_group.get("column_as_key")
                 select_stmt = stmt_group.get("select")
@@ -97,6 +101,13 @@ class DatabaseInserter(StatementGroups, SelectStatements, InsertStatements):
                     values = {"values": [value[col_as_key] for value in values]}
                     results = self.session.execute(statement=select_stmt, params=values)
                     return {result[0]: result[1] for result in results}
+                else:
+                    if not select_stmt:
+                        raise SelectStatementNotDefined(table_name)
+                    if not col_as_key:
+                        raise ColumnAsKeyNotDefined(table_name)
+        else:
+            raise StatementGroupNotDefined(table_name)
 
     def combine(self, original_combinations: List[dict],
                 primary_keys: Tuple[str, str]) -> List[dict]:
