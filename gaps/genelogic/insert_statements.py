@@ -1,5 +1,6 @@
 from sqlalchemy.dialects.postgresql import insert
 
+from gaps.genelogic.statement_groups import statement_group
 from gaps.models import Gene, Alias, GenepanelSymbol, Genepanel, InheritanceType, t_gene_alias, t_genepanel_gene, \
     t_genepanel_inheritance
 
@@ -11,6 +12,7 @@ class InsertStatements:
     """
 
     @staticmethod
+    @statement_group(table="gene")
     def _insert_gene():
         """A statement for inserting values into the
            gene-table.
@@ -20,6 +22,7 @@ class InsertStatements:
         return insert(Gene).on_conflict_do_nothing()
 
     @staticmethod
+    @statement_group(table="alias")
     def _insert_alias():
         """A statement for inserting values into the
            alias-table.
@@ -29,6 +32,7 @@ class InsertStatements:
         return insert(Alias).on_conflict_do_nothing()
 
     @staticmethod
+    @statement_group(table="genepanel_symbol")
     def _insert_genepanel_symbol():
         """A statement for inserting values into the
            genepanel_symbol-table.
@@ -38,6 +42,7 @@ class InsertStatements:
         return insert(GenepanelSymbol).on_conflict_do_nothing()
 
     @staticmethod
+    @statement_group(table="genepanel")
     def _insert_genepanel():
         """A statement for inserting values into the
            genepanel-table.
@@ -47,6 +52,7 @@ class InsertStatements:
         return insert(Genepanel).on_conflict_do_nothing()
 
     @staticmethod
+    @statement_group(table="inheritance_type")
     def _insert_inheritance_type():
         """A statement for inserting values into the
            inheritance_type-table.
@@ -56,6 +62,7 @@ class InsertStatements:
         return insert(InheritanceType).on_conflict_do_nothing()
 
     @staticmethod
+    @statement_group(table="gene_alias")
     def _insert_relation_gene_alias():
         """A statement for inserting values into the
            gene_alias-table.
@@ -65,6 +72,7 @@ class InsertStatements:
         return insert(t_gene_alias).on_conflict_do_nothing()
 
     @staticmethod
+    @statement_group(table="genepanel_gene")
     def _insert_relation_gene_genepanel():
         """A statement for inserting values into the
            genepanel_gene-table.
@@ -74,6 +82,7 @@ class InsertStatements:
         return insert(t_genepanel_gene).on_conflict_do_nothing()
 
     @staticmethod
+    @statement_group(table="genepanel_inheritance")
     def _insert_relation_genepanel_inheritance():
         """A statement for inserting values into the
            genepanel_inheritance-table.

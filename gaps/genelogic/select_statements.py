@@ -1,5 +1,6 @@
 from sqlalchemy import select, bindparam
 
+from gaps.genelogic.statement_groups import statement_group
 from gaps.models import Gene, Alias, GenepanelSymbol, Genepanel, InheritanceType
 
 
@@ -10,6 +11,7 @@ class SelectStatements:
     """
 
     @staticmethod
+    @statement_group(table="gene", column_as_key="hgnc_symbol")
     def _select_gene():
         """A statement which selects hgnc_symbols and ids
            from the gene-table only if hgnc_symbol is
@@ -24,6 +26,7 @@ class SelectStatements:
         )
 
     @staticmethod
+    @statement_group(table="alias", column_as_key="hgnc_symbol")
     def _select_alias():
         """A statement wich selects hgnc_symbols and ids
            from the alias-table only if hgnc_symbol is
@@ -38,9 +41,10 @@ class SelectStatements:
         )
 
     @staticmethod
+    @statement_group(table="genepanel_symbol", column_as_key="symbol")
     def _select_genepanel_symbol():
         """A statement which selects symbols and ids
-           from the genepanel-table only if symbol is
+           from the genepanel_symbol-table only if symbol is
            in the filter.
 
         :return Select-statement for specific values from the genepanel-table (Select).
@@ -52,6 +56,7 @@ class SelectStatements:
         )
 
     @staticmethod
+    @statement_group("genepanel", column_as_key="abbreviation")
     def _select_genepanel():
         """A statement which selects abbreviations and ids
            from the genepanel-table only if abbreviation is
@@ -66,9 +71,10 @@ class SelectStatements:
         )
 
     @staticmethod
+    @statement_group(table="inheritance_type", column_as_key="type")
     def _select_inheritance_type():
         """A statement which selects types and ids from
-           the inheritance-table only when type is
+           the inheritance_type-table only when type is
            in the filter.
 
         :return Select-statement for specific values form the inheritance-table (Select).
