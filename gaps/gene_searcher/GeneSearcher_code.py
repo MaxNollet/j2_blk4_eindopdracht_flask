@@ -4,6 +4,7 @@ from os import environ
 import requests
 import ssl
 from Bio import Entrez
+from datetime import datetime
 
 from gaps.genelogic.database_inserter import DatabaseInserter
 from gaps.models import Article, Journal, Gene
@@ -51,6 +52,7 @@ def results_query(query):
 
     search_results = insert_db()
 
+
     for art in articles:
         results.append({"article": {"title": art.article.title,
                                     "pubmed_id": art.article.pubmed_id,
@@ -64,13 +66,15 @@ def results_query(query):
                                             "doi": art.article.doi,
                                             "publication_date": art.article.publication_date,
                                             "abstract": art.article.abstract})
-        search_results.journal_list.append({"name": art.article.journal})
+        search_results.journal_list.append({"name": art.article.journal.name})
 
         for id, gene in art.genes.items():
             if ";" not in id:
                 search_results.genes_list.append(
                     {"ncbi_gene_id": int(id), "hgnc_symbol": str(gene),
                      "in_genepanel": False})
+                search_results.article_gene.append(
+                    {"doi": art.article.doi, "hgnc_symbol": gene.hgnc_symbol})
 
     db = DatabaseInserter()
     db.insert_search_results(search_results)
@@ -189,6 +193,7 @@ def extract_date(record: dict):
     :param record Article possibly containing a publication date (Dict).
     :return Extracted date from the article if available.
     """
+
     pub_date = record.get("MedlineCitation").get("Article").get("Journal").get(
         "JournalIssue").get("PubDate")
     if pub_date is not None:
@@ -196,13 +201,19 @@ def extract_date(record: dict):
         month = pub_date.get("Month")
         day = pub_date.get("Day")
         concatinated = "Not available"
+        # x = datetime.datetime(int(year), int(month), int(day))
         if year is not None:
             concatinated = year
+            date = datetime.strptime(concatinated, "%Y")
             if month is not None:
                 concatinated += f"-{month}"
+                date = datetime.strptime(concatinated, "%Y-%m")
                 if day is not None:
                     concatinated += f"-{day}"
-        return concatinated
+                    print(concatinated)
+                    date = datetime.strptime(concatinated, "%Y-%m-%d")
+
+        return date
 
     # try:
     #     publication_year = \
@@ -397,6 +408,7 @@ class insert_db:
     article_list: list = field(default_factory=list)
     genes_list: list = field(default_factory=list)
     journal_list: list = field(default_factory=list)
+    article_gene: list = field(default_factory=list)
 
 
 # def alias_search_hgnc():

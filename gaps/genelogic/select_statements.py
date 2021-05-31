@@ -1,7 +1,8 @@
 from sqlalchemy import select, bindparam
 
 from gaps.genelogic import statement_group
-from gaps.models import Gene, Alias, GenepanelSymbol, Genepanel, InheritanceType
+from gaps.models import Gene, Alias, GenepanelSymbol, Genepanel, \
+    InheritanceType, Article
 
 
 class SelectStatements:
@@ -20,7 +21,7 @@ class SelectStatements:
         :return Select-statement for specific values from the gene-table (Select).
         """
         return select(
-            Gene.hgnc_symbol, Gene.id
+            Gene.hgnc_symbol, Gene.id  # key, value
         ).where(
             Gene.hgnc_symbol.in_(bindparam("values"))
         )
@@ -84,3 +85,9 @@ class SelectStatements:
         ).where(
             InheritanceType.type.in_(bindparam("values"))
         )
+
+    @staticmethod
+    @statement_group(table="article", column_as_key="doi")
+    def _select_article_id():
+        return select(Article.doi, Article.id).where(
+            Article.doi.in_(bindparam("values")))

@@ -3,7 +3,7 @@ from sqlalchemy.dialects.postgresql import insert
 from gaps.genelogic import statement_group
 from gaps.models import Gene, Alias, GenepanelSymbol, Genepanel, \
     InheritanceType, t_gene_alias, t_genepanel_gene, \
-    t_genepanel_inheritance, Article, Journal
+    t_genepanel_inheritance, Article, Journal, t_article_gene
 
 
 class InsertStatements:
@@ -96,3 +96,13 @@ class InsertStatements:
     @statement_group(table="article")
     def _insert_article():
         return insert(Article).on_conflict_do_nothing()
+
+    @staticmethod
+    @statement_group(table="journal")
+    def _insert_journal():
+        return insert(Journal).on_conflict_do_nothing()
+
+    @staticmethod
+    @statement_group(table="article_gene")
+    def _insert_article_gene():
+        return insert(t_article_gene).on_conflict_do_nothing()

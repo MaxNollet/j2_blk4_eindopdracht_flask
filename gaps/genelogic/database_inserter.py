@@ -32,8 +32,6 @@ class DatabaseInserter(StatementGroups):
             self.session = session
         self.ids = dict()
 
-        print(self._statement_groups)
-
     def insert_genepanel(self, file):
         # New improved data structures for the db.
         all_genes = list()
@@ -85,7 +83,19 @@ class DatabaseInserter(StatementGroups):
         print(f"Verwerktijd: {time.perf_counter() - starttijd}")
 
     def insert_search_results(self, search_results):
-        self.insert_values("article", search_results.article_list)
+        relation_genes_article = list()
+
+        self.ids["article"] = self.insert_values("article",
+                                                 search_results.article_list,
+                                                 True)
+        self.ids["gene"] = self.insert_values("gene",
+                                              search_results.genes_list, True)
+
+        t = self.combine(search_results.article_gene, ("doi", "hgnc_symbol"))
+        self.insert_values(table_name="article_gene", values=t)
+
+        self.insert_values("journal", search_results.journal_list)
+
         self.session.commit()
 
     def insert_values(self, table_name: str, values: List[dict],
