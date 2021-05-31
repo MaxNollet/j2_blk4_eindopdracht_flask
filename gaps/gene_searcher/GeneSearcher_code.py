@@ -4,6 +4,8 @@ from os import environ
 import requests
 import ssl
 from Bio import Entrez
+
+from gaps.genelogic.database_inserter import DatabaseInserter
 from gaps.models import Article, Journal, Gene
 
 Entrez.email = environ.get("EMAIL_ENTREZ")
@@ -46,6 +48,9 @@ def results_query(query):
     ssl._create_default_https_context = ssl._create_unverified_context
     articles = query_pubmed(query)
     results = []  # results from pubmed en pubtator
+
+    search_results = insert_db()
+
     for art in articles:
         results.append({"article": {"title": art.article.title,
                                     "pubmed_id": art.article.pubmed_id,
@@ -54,7 +59,21 @@ def results_query(query):
                                     "abstract": art.article.abstract,
                                     "journal": art.article.journal.name},
                         "genes": art.genes, "diseases": art.diseases})
+        search_results.article_list.append({"title": art.article.title,
+                                            "pubmed_id": art.article.pubmed_id,
+                                            "doi": art.article.doi,
+                                            "publication_date": art.article.publication_date,
+                                            "abstract": art.article.abstract})
+        search_results.journal_list.append({"name": art.article.journal})
 
+        for id, gene in art.genes.items():
+            if ";" not in id:
+                search_results.genes_list.append(
+                    {"ncbi_gene_id": int(id), "hgnc_symbol": str(gene),
+                     "in_genepanel": False})
+
+    db = DatabaseInserter()
+    db.insert_search_results(search_results)
     return results  # list with dict per article
 
 
@@ -371,6 +390,13 @@ class DataArticle:
     # journal : Journal
     genes: dict = field(default_factory=dict)
     diseases: dict = field(default_factory=dict)
+
+
+@dataclass
+class insert_db:
+    article_list: list = field(default_factory=list)
+    genes_list: list = field(default_factory=list)
+    journal_list: list = field(default_factory=list)
 
 
 # def alias_search_hgnc():

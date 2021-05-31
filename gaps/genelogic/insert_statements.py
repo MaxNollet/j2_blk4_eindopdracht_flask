@@ -1,8 +1,9 @@
 from sqlalchemy.dialects.postgresql import insert
 
 from gaps.genelogic.statement_groups import statement_group
-from gaps.models import Gene, Alias, GenepanelSymbol, Genepanel, InheritanceType, t_gene_alias, t_genepanel_gene, \
-    t_genepanel_inheritance
+from gaps.models import Gene, Alias, GenepanelSymbol, Genepanel, \
+    InheritanceType, t_gene_alias, t_genepanel_gene, \
+    t_genepanel_inheritance, Article, Journal
 
 
 class InsertStatements:
@@ -90,3 +91,8 @@ class InsertStatements:
         :return Insert-statement for the genepanel_inheritance-table (Insert).
         """
         return insert(t_genepanel_inheritance).on_conflict_do_nothing()
+
+    @staticmethod
+    @statement_group(table="article")
+    def _insert_article():
+        return insert(Article).on_conflict_do_nothing()

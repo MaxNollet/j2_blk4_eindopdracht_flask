@@ -45,7 +45,7 @@ def statement_group(table: str, column_as_key: str = None):
                          used as a key for dictionaries (str).
     :return Decorated function of the statement (Function).
     """
-
+    print(table)
     def decorator_add(statement_function):
         """A function which extracts the statement from a function
            and stores the statement in a central mapper.
@@ -54,6 +54,7 @@ def statement_group(table: str, column_as_key: str = None):
                                   to be stored in the mapper (Function).
         :return Original function containing the statement (Function).
         """
+
         StatementGroups.add_to_group(statement_function(), table, column_as_key)
         return statement_function
 

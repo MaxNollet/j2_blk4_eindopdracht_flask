@@ -4,13 +4,15 @@ from typing import List, Mapping, Tuple
 
 from sqlalchemy.orm import Session
 
-from gaps.genelogic import reader, SelectStatements, InsertStatements, StatementGroups
-from gaps.genelogic.statement_groups import InsertStatementNotDefined, SelectStatementNotDefined,\
-    ColumnAsKeyNotDefined, StatementGroupNotDefined
+# from gaps.genelogic import reader, StatementGroups
+from gaps.genelogic import reader
+from gaps.genelogic.statement_groups import InsertStatementNotDefined, \
+    SelectStatementNotDefined, \
+    ColumnAsKeyNotDefined, StatementGroupNotDefined, StatementGroups
 from gaps.models import db
 
 
-class DatabaseInserter(StatementGroups, SelectStatements, InsertStatements):
+class DatabaseInserter(StatementGroups):
     """A class which contains several methods for inserting
        values into the database. This class extends the classes
        SelectStatements and InsertStatements to rely on statements
@@ -29,6 +31,8 @@ class DatabaseInserter(StatementGroups, SelectStatements, InsertStatements):
         else:
             self.session = session
         self.ids = dict()
+
+        print(self._statement_groups)
 
     def insert_genepanel(self, file):
         # New improved data structures for the db.
@@ -67,17 +71,25 @@ class DatabaseInserter(StatementGroups, SelectStatements, InsertStatements):
         self.ids["genepanel_id"] = self.insert_values("genepanel", all_genepanels, True)
         self.ids["inheritance_type_id"] = self.insert_values("inheritance_type", all_inheritace_types, True)
         # Opgehaalde primary keys gebruiken om relatie te updaten.
-        pks_gene_alias = self.combine(relation_gene_alias, ("gene_id", "alias_id"))
-        pks_gene_genepanel = self.combine(relation_gene_genepanel, ("gene_id", "genepanel_id"))
-        pks_genepanel_inheritance = self.combine(relation_genepanel_inheritance,
-                                                 ("genepanel_id", "inheritance_type_id"))
+        pks_gene_alias = self.combine(relation_gene_alias,
+                                      ("gene_id", "alias_id"))
+        pks_gene_genepanel = self.combine(relation_gene_genepanel,
+                                          ("gene_id", "genepanel_id"))
+        pks_genepanel_inheritance = self.combine(
+            relation_genepanel_inheritance,
+            ("genepanel_id", "inheritance_type_id"))
         self.insert_values("gene_alias", pks_gene_alias)
         self.insert_values("genepanel_gene", pks_gene_genepanel)
         self.insert_values("genepanel_inheritance", pks_genepanel_inheritance)
         # self.session.commit()
         print(f"Verwerktijd: {time.perf_counter() - starttijd}")
 
-    def insert_values(self, table_name: str, values: List[dict], return_ids: bool = False) -> Mapping[str, int]:
+    def insert_search_results(self, search_results):
+        self.insert_values("article", search_results.article_list)
+        self.session.commit()
+
+    def insert_values(self, table_name: str, values: List[dict],
+                      return_ids: bool = False) -> Mapping[str, int]:
         """A method which inserts values into the database and
            returns the primary keys of all inserted values if
            return_ids is set to True.
