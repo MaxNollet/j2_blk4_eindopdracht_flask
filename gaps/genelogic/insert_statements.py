@@ -1,6 +1,6 @@
 from sqlalchemy.dialects.postgresql import insert
 
-from gaps.genelogic.statement_groups import statement_group
+from gaps.genelogic import statement_group
 from gaps.models import Gene, Alias, GenepanelSymbol, Genepanel, \
     InheritanceType, t_gene_alias, t_genepanel_gene, \
     t_genepanel_inheritance, Article, Journal
