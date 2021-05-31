@@ -19,7 +19,17 @@ class InsertStatements:
 
         :return Insert-statement for the gene-table (Insert).
         """
-        return insert(Gene).on_conflict_do_nothing()
+        # return insert(Gene).on_conflict_do_nothing()
+        statement = insert(Gene)
+        update_columns = ("ncbi_gene_id", "in_genepanel", "genepanel_symbol_id")
+        update_dict = {c.name: c for c in statement.excluded}
+        return statement.on_conflict_do_update(
+            index_elements=["hgnc_symbol"],
+            # set_={"ncbi_gene_id": statement.excluded.ncbi_gene_id,
+            #       "in_genepanel": statement.excluded.in_genepanel,
+            #       "genepanel_symbol_id": statement.excluded.genepanel_symbol_id}
+            set_=update_dict
+        )
 
     @staticmethod
     @statement_group(table="alias")
