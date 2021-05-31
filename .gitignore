@@ -249,3 +249,5 @@ modules.xml
 # Files related to the AI-branches.
 logs/*
 *dataset.txt
+
+test.py
