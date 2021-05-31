@@ -74,7 +74,10 @@ def results_query(query):
                     {"ncbi_gene_id": int(id), "hgnc_symbol": str(gene),
                      "in_genepanel": False})
                 search_results.article_gene.append(
-                    {"doi": art.article.doi, "hgnc_symbol": gene.hgnc_symbol})
+                    # Hier moeten de keys de namen van de kolommen bevatten
+                    # waar de waardes in moeten komen te staan in de gewenste
+                    # tabel.
+                    {"article_id": art.article.doi, "gene_id": gene})
 
     db = DatabaseInserter()
     db.insert_search_results(search_results)
