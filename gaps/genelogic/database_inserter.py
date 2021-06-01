@@ -79,7 +79,7 @@ class DatabaseInserter(StatementGroups):
         self.insert_values("gene_alias", pks_gene_alias)
         self.insert_values("genepanel_gene", pks_gene_genepanel)
         self.insert_values("genepanel_inheritance", pks_genepanel_inheritance)
-        # self.session.commit()
+        self.session.commit()
         print(f"Verwerktijd: {time.perf_counter() - starttijd}")
 
     def insert_search_results(self, search_results):
