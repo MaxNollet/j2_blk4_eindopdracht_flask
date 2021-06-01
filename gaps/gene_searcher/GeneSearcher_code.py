@@ -4,6 +4,9 @@ from os import environ
 import requests
 import ssl
 from Bio import Entrez
+from datetime import datetime
+
+from gaps.genelogic.database_inserter import DatabaseInserter
 from gaps.models import Article, Journal, Gene
 
 Entrez.email = environ.get("EMAIL_ENTREZ")
@@ -46,6 +49,10 @@ def results_query(query):
     ssl._create_default_https_context = ssl._create_unverified_context
     articles = query_pubmed(query)
     results = []  # results from pubmed en pubtator
+
+    search_results = insert_db()
+
+
     for art in articles:
         results.append({"article": {"title": art.article.title,
                                     "pubmed_id": art.article.pubmed_id,
@@ -53,7 +60,27 @@ def results_query(query):
                                     "publication_date": art.article.publication_date,
                                     "abstract": art.article.abstract,
                                     "journal": art.article.journal.name},
-                        "genes": art.genes})  # weet niet of dit helemaal juist is.
+                        "genes": art.genes, "diseases": art.diseases})
+        search_results.article_list.append({"title": art.article.title,
+                                            "pubmed_id": art.article.pubmed_id,
+                                            "doi": art.article.doi,
+                                            "publication_date": art.article.publication_date,
+                                            "abstract": art.article.abstract})
+        search_results.journal_list.append({"name": art.article.journal.name})
+
+        for id, gene in art.genes.items():
+            if ";" not in id:
+                search_results.genes_list.append(
+                    {"ncbi_gene_id": int(id), "hgnc_symbol": str(gene),
+                     "in_genepanel": False})
+                search_results.article_gene.append(
+                    # Hier moeten de keys de namen van de kolommen bevatten
+                    # waar de waardes in moeten komen te staan in de gewenste
+                    # tabel.
+                    {"article_id": art.article.doi, "gene_id": gene})
+
+    db = DatabaseInserter()
+    db.insert_search_results(search_results)
     return results  # list with dict per article
 
 
@@ -123,10 +150,12 @@ def query_pubmed(query):
 
                 # print(record)
                 pubmed_id = record.get("MedlineCitation").get("PMID")
-                title = record.get("MedlineCitation").get("Article").get("ArticleTitle")
+                title = record.get("MedlineCitation").get("Article").get(
+                    "ArticleTitle")
 
                 print(pubmed_id, "pubmed_id")
-                doi_element = record.get("MedlineCitation").get("Article").get("ELocationID")
+                doi_element = record.get("MedlineCitation").get("Article").get(
+                    "ELocationID")
                 if doi_element is not None:
                     try:
                         doi = doi_element[0]
@@ -134,12 +163,14 @@ def query_pubmed(query):
                         doi = None
                 publication_date = extract_date(record)
                 abstract_element = \
-                    record.get("MedlineCitation").get("Article").get("Abstract")
+                    record.get("MedlineCitation").get("Article").get(
+                        "Abstract")
                 abstract = None
                 if abstract_element is not None:
                     abstract = abstract_element.get("AbstractText")[0]
                 journal_name = \
-                record.get("MedlineCitation").get("Article").get("Journal").get("Title")
+                    record.get("MedlineCitation").get("Article").get(
+                        "Journal").get("Title")
                 # print(title, "\n", pubmed_id, "\n", doi, "\n", publication_date,
                 #       "\n", abstract, "\n", journal_name)  # example
                 art = Article(title=title, pubmed_id=pubmed_id, doi=doi,
@@ -165,19 +196,27 @@ def extract_date(record: dict):
     :param record Article possibly containing a publication date (Dict).
     :return Extracted date from the article if available.
     """
-    pub_date = record.get("MedlineCitation").get("Article").get("Journal").get("JournalIssue").get("PubDate")
+
+    pub_date = record.get("MedlineCitation").get("Article").get("Journal").get(
+        "JournalIssue").get("PubDate")
     if pub_date is not None:
         year = pub_date.get("Year")
         month = pub_date.get("Month")
         day = pub_date.get("Day")
         concatinated = "Not available"
+        # x = datetime.datetime(int(year), int(month), int(day))
         if year is not None:
             concatinated = year
+            date = datetime.strptime(concatinated, "%Y")
             if month is not None:
                 concatinated += f"-{month}"
+                date = datetime.strptime(concatinated, "%Y-%m")
                 if day is not None:
                     concatinated += f"-{day}"
-        return concatinated
+                    print(concatinated)
+                    date = datetime.strptime(concatinated, "%Y-%m-%d")
+
+        return date
 
     # try:
     #     publication_year = \
@@ -204,7 +243,8 @@ def url_maker(idlist):
     :return: complete_url: url for Pubtator
     """
 
-    # print(article.article.pubmed_id, "pbid")
+    # post request 1000
+    # get request = 100
     url = ""
     for id in idlist:  # id = pubmedid for article pubtator
         if id != idlist[len(idlist) - 1]:
@@ -214,7 +254,7 @@ def url_maker(idlist):
 
     complete_url = "https://www.ncbi.nlm.nih.gov/research/pubtator-api" \
                    "/publications/export/biocxml?pmids={}&" \
-                   "concepts=gene".format(url)
+                   "concepts=gene,disease".format(url)
     # complete_url is url for pubtator from pubtator API
     return complete_url
 
@@ -231,16 +271,23 @@ def pubtator_output(articles):
         # print(article.article.pubmed_id, "pbid")
         idlist.append(str(article.article.pubmed_id))
     url = url_maker(idlist)  # url for all the articles pubmed found
+    print(url)
     result = requests.get(url)  # get xml-page pubtator
     if result.status_code == 200:
         print("Request succesful.")
         data = parse_results(result)
-        if len(data) == len(articles):  # so they can use the same index
-            for index, article in enumerate(articles):
+        if len(data) == len(articles):  # doesn't cont. if something is wrong
+            for art in articles:
                 # genes moet waarschijnlijk dict worden ipv genes
-                print(index)
-                article.genes = data[index]  # added to DataArticle
-                print(data[index])
+                # print(data)
+                art.genes = data[art.article.pubmed_id][0]  # genes dict
+                art.diseases = data[art.article.pubmed_id][1]  # diseases
+                # print(data[art.article.pubmed_id])
+
+                # if data[art.article.pubmed_id].keys()[:4] == "MESH":
+                #     art.diseaes
+                # art.genes = data[art.article.pubmed_id]  # added to DataArticle
+                # print(data[art.article.pubmed_id])
                 # not the article object it self yet
         # for a in articles:
         # print(a) # check
@@ -249,7 +296,7 @@ def pubtator_output(articles):
     return articles  # updated DataArticle with genes from pubtator
 
 
-def anno_document(documents, count):
+def anno_document(documents):
     """
     Adds the ncbi gene id and the gene per article to list, so it can
     later be added to the Article object.
@@ -257,12 +304,26 @@ def anno_document(documents, count):
     :param count: the amount of articles
     :return:
     """
+
     data_document = []
+    id = 0
     for document in documents.findall("passage"):
         for doc in document.findall("annotation"):
             for anno in doc:
-                data_document.append([count, anno.attrib, anno.text])
+                if anno.text is None:
+                    data_document.append([anno.attrib])
+
+                elif anno.text == "None":  # when there is no MESH:
+                    data_document.append([anno.attrib, "MESH:" + str(id)])
+                    id += 1  # if there is no ID
+                else:
+                    data_document.append([anno.attrib, anno.text])
     return data_document
+
+
+def article_id(documents):
+    for document in documents.findall("id"):
+        return document.text
 
 
 def parse_results(result):
@@ -272,34 +333,35 @@ def parse_results(result):
     :return: data: list with dict [ncbi gene id, gene]
     """
     tree = etree.fromstring(result.text)
-    data_documents = []
-
-    c = 0
-    count = -1
+    data_doc = {}
     for documents in tree.findall("document"):
-        count += 1
-        data_documents.append(anno_document(documents, count))
-    data21 = []
-    data2 = []  # contains only the unique ncbi gene id / genes from pubtator
-    for gene_idlist in data_documents:
-        # print(t, "hats")
-        genes_pt2 = {}  # contains only the unique ncbi gene id / genes from pubtator
-        genes_pt21 = {}
-        for gi in gene_idlist:
+        data_doc[article_id(documents)] = anno_document(documents)
+    data_pubtator = {}
+    for pmid, data in data_doc.items():
+        # print(pmid, data, "data")
+        print(pmid, "pmid")
+        genes_pt3 = {}
+        mesh = {}
+        for gene in data:  # gene = {'key': 'identifier'}, '5362']
             try:
-                if gi[1]["key"] == "identifier":
-                    c += 1
-                    iden = gi[2]
-                    genes_pt2[iden] = ""
-                    genes_pt21[c] = iden
+                if gene[0]["key"] == "identifier":
+                    gene_id = gene[1]
+                    print(gene_id)
+                    genes_pt3[gene_id] = ""
+                if gene[0]["key"] == "Identifier":
+                    gene_id = gene[1]
+                    mesh[gene_id] = ""
             except KeyError:
-                pass  # only need the identifier key
-            if not gi[1]:  # de annotion dict/ text is always empty
-                genes_pt2[iden] = gi[2]
-                genes_pt21[c] = [genes_pt21[c], gi[2]]
-        data2.append(genes_pt2)
-        data21.append(genes_pt21)
-    return data2  # onlt the unique genes
+                pass
+            if len(gene) >= 2:
+                if not gene[0]:
+                    if gene_id[:4] == "MESH":
+                        if gene[1].strip() != "":
+                            mesh[gene_id.strip()] = gene[1].strip()
+                    else:
+                        genes_pt3[gene_id] = gene[1]
+        data_pubtator[pmid] = [genes_pt3, mesh]
+    return data_pubtator
 
 
 def article(id_list):
@@ -341,6 +403,15 @@ class DataArticle:
     article: Article
     # journal : Journal
     genes: dict = field(default_factory=dict)
+    diseases: dict = field(default_factory=dict)
+
+
+@dataclass
+class insert_db:
+    article_list: list = field(default_factory=list)
+    genes_list: list = field(default_factory=list)
+    journal_list: list = field(default_factory=list)
+    article_gene: list = field(default_factory=list)
 
 
 # def alias_search_hgnc():

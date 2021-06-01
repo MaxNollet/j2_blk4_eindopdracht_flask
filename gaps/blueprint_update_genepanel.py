@@ -3,7 +3,7 @@ from flask import Blueprint, render_template
 from gaps.models import db, Gene, Alias, Genepanel, t_gene_alias
 from sqlalchemy import func
 
-from gaps.genelogic.DatabaseInserter import update_genepanel_v2
+from gaps.genelogic.database_inserter import update_genepanel_v2
 
 blueprint_update_genepanel = Blueprint("blueprint_update_genepanel", __name__)
 
