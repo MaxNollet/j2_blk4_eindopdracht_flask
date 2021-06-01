@@ -1,7 +1,7 @@
 from typing import Dict
 
 from sqlalchemy.dialects.postgresql import Insert
-from sqlalchemy.sql import Select
+from sqlalchemy.sql import Select, Update
 
 
 class StatementGroups:
@@ -33,6 +33,8 @@ class StatementGroups:
             StatementGroups._statement_groups[table]["insert"] = statement
         elif isinstance(statement, Select):
             StatementGroups._statement_groups[table]["select"] = statement
+        elif isinstance(statement, Update):
+            StatementGroups._statement_groups[table]["update"] = statement
 
 
 def statement_group(table: str, column_as_key: str = None):

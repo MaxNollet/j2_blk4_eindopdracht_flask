@@ -1,3 +1,4 @@
+from sqlalchemy import bindparam
 from sqlalchemy.dialects.postgresql import insert
 
 from gaps.genelogic.statement_groups import statement_group
@@ -19,16 +20,13 @@ class InsertStatements:
 
         :return Insert-statement for the gene-table (Insert).
         """
-        # return insert(Gene).on_conflict_do_nothing()
         statement = insert(Gene)
-        update_columns = ("ncbi_gene_id", "in_genepanel", "genepanel_symbol_id")
-        update_dict = {c.name: c for c in statement.excluded}
+        column_references = {c.name: c for c in statement.excluded}
         return statement.on_conflict_do_update(
             index_elements=["hgnc_symbol"],
-            # set_={"ncbi_gene_id": statement.excluded.ncbi_gene_id,
-            #       "in_genepanel": statement.excluded.in_genepanel,
-            #       "genepanel_symbol_id": statement.excluded.genepanel_symbol_id}
-            set_=update_dict
+            set_={"ncbi_gene_id": column_references["ncbi_gene_id"],
+                  "in_genepanel": column_references["in_genepanel"],
+                  "genepanel_symbol_id": column_references["genepanel_symbol_id"]}
         )
 
     @staticmethod

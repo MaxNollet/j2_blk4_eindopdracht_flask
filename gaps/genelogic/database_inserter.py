@@ -72,6 +72,7 @@ class DatabaseInserter(StatementGroups, SelectStatements, InsertStatements):
             gene["symbol"] = self.ids["genepanel_symbol_id"][original_value]
         self.ids["gene_id"] = self.insert_values("gene", all_genes, True)
 
+
         pks_gene_alias = self.combine(relation_gene_alias, ("gene_id", "alias_id"))
         pks_gene_genepanel = self.combine(relation_gene_genepanel, ("gene_id", "genepanel_id"))
         pks_genepanel_inheritance = self.combine(relation_genepanel_inheritance,
