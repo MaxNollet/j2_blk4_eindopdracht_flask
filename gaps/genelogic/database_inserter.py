@@ -45,7 +45,8 @@ class DatabaseInserter(StatementGroups):
         # Extract variables and separate into categories.
         for line in file:
             all_genes.append(
-                {"ncbi_gene_id": line.gene.ncbi_gene_id, "hgnc_symbol": line.gene.hgnc_symbol, "in_genepanel": True})
+                {"ncbi_gene_id": line.gene.ncbi_gene_id, "hgnc_symbol": line.gene.hgnc_symbol,
+                 "genepanel_symbol_id": line.p_symbol.symbol, "in_genepanel": True})
             for alias in line.alias:
                 if alias.hgnc_symbol is not None and alias.hgnc_symbol != "":
                     all_aliases.append({"hgnc_symbol": alias.hgnc_symbol})
@@ -63,23 +64,25 @@ class DatabaseInserter(StatementGroups):
 
         starttijd = time.perf_counter()
 
-        self.ids["gene_id"] = self.insert_values("gene", all_genes, True)
+        self.ids["inheritance_type_id"] = self.insert_values("inheritance_type", all_inheritace_types, True)
+        self.ids["genepanel_id"] = self.insert_values("genepanel", all_genepanels, True)
         self.ids["alias_id"] = self.insert_values("alias", all_aliases, True)
         self.ids["genepanel_symbol_id"] = self.insert_values("genepanel_symbol", all_genepanel_symbols, True)
-        self.ids["genepanel_id"] = self.insert_values("genepanel", all_genepanels, True)
-        self.ids["inheritance_type_id"] = self.insert_values("inheritance_type", all_inheritace_types, True)
         # Opgehaalde primary keys gebruiken om relatie te updaten.
-        pks_gene_alias = self.combine(relation_gene_alias,
-                                      ("gene_id", "alias_id"))
-        pks_gene_genepanel = self.combine(relation_gene_genepanel,
-                                          ("gene_id", "genepanel_id"))
-        pks_genepanel_inheritance = self.combine(
-            relation_genepanel_inheritance,
-            ("genepanel_id", "inheritance_type_id"))
+        for gene in all_genes:
+            original_value = gene["genepanel_symbol_id"]
+            gene["genepanel_symbol_id"] = self.ids["genepanel_symbol_id"][original_value]
+        self.ids["gene_id"] = self.insert_values("gene", all_genes, True)
+
+
+        pks_gene_alias = self.combine(relation_gene_alias, ("gene_id", "alias_id"))
+        pks_gene_genepanel = self.combine(relation_gene_genepanel, ("gene_id", "genepanel_id"))
+        pks_genepanel_inheritance = self.combine(relation_genepanel_inheritance,
+                                                 ("genepanel_id", "inheritance_type_id"))
         self.insert_values("gene_alias", pks_gene_alias)
         self.insert_values("genepanel_gene", pks_gene_genepanel)
         self.insert_values("genepanel_inheritance", pks_genepanel_inheritance)
-        # self.session.commit()
+        self.session.commit()
         print(f"Verwerktijd: {time.perf_counter() - starttijd}")
 
     def insert_search_results(self, search_results):
