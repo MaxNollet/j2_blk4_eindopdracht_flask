@@ -44,7 +44,7 @@ class DatabaseInserter(StatementGroups, SelectStatements, InsertStatements):
         for line in file:
             all_genes.append(
                 {"ncbi_gene_id": line.gene.ncbi_gene_id, "hgnc_symbol": line.gene.hgnc_symbol,
-                 "symbol": line.p_symbol.symbol, "in_genepanel": True})
+                 "genepanel_symbol_id": line.p_symbol.symbol, "in_genepanel": True})
             for alias in line.alias:
                 if alias.hgnc_symbol is not None and alias.hgnc_symbol != "":
                     all_aliases.append({"hgnc_symbol": alias.hgnc_symbol})
@@ -68,8 +68,8 @@ class DatabaseInserter(StatementGroups, SelectStatements, InsertStatements):
         self.ids["genepanel_symbol_id"] = self.insert_values("genepanel_symbol", all_genepanel_symbols, True)
         # Opgehaalde primary keys gebruiken om relatie te updaten.
         for gene in all_genes:
-            original_value = gene["symbol"]
-            gene["symbol"] = self.ids["genepanel_symbol_id"][original_value]
+            original_value = gene["genepanel_symbol_id"]
+            gene["genepanel_symbol_id"] = self.ids["genepanel_symbol_id"][original_value]
         self.ids["gene_id"] = self.insert_values("gene", all_genes, True)
 
 
