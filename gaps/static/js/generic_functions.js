@@ -39,26 +39,32 @@ function ClearFile(target) {
  * @param message Message to display in the alert.
  * */
 function MessageBuilder(target, type, message) {
-    let alert_header = "Info";
+    let alert_header = "";
+    let type_safe = "";
     switch (type) {
+        default:
         case "info":
             alert_header = "Info";
+            type_safe = "info";
             break;
         case "success":
             alert_header = "Success";
+            type_safe = "success";
             break;
         case "warning":
             alert_header = "Alert";
+            type_safe = "warning";
             break;
         case "danger":
             alert_header = "Warning";
+            type_safe = "danger";
             break;
     }
     const alert_box = document.getElementById(target);
     const alert_element = document.createElement("div");
-    alert_element.setAttribute("class", `alert alert-${type} alert-dismissible`);
+    alert_element.setAttribute("class", `alert alert-${type_safe} alert-dismissible`);
     alert_element.setAttribute("role", "alert");
-    alert_element.setAttribute("id", `alert_${type}`);
+    alert_element.setAttribute("id", `alert_${type_safe}`);
     const alert_dismiss_element = document.createElement("button");
     alert_dismiss_element.setAttribute("type", "button");
     alert_dismiss_element.setAttribute("class", "btn-close");
@@ -66,7 +72,7 @@ function MessageBuilder(target, type, message) {
     alert_dismiss_element.setAttribute("aria-label", "Close");
     alert_element.appendChild(alert_dismiss_element);
     const alert_message_element = document.createElement("span");
-    alert_message_element.setAttribute("id", `alert_${type}_message`);
+    alert_message_element.setAttribute("id", `alert_${type_safe}_message`);
     alert_message_element.innerHTML = `<strong>${alert_header}</strong> ${message}`;
     alert_element.appendChild(alert_message_element);
     alert_box.appendChild(alert_element);

@@ -77,27 +77,37 @@ function Submit(event) {
     RemoveChilds("alert_box");
     ToggleDisableSubmitButton(true);
 
-    const target_url = document.getElementById("input_form").getAttribute("action");
+    const form_element = document.getElementById("input_form");
+
+    const target_url = form_element.getAttribute("action");
     const request = new XMLHttpRequest();
+    request.open("POST", target_url, true);
+    // request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     request.onreadystatechange = function () {
         if (this.readyState === 4) {
-            if (this.status === 200) {
-                console.log(this.responseText)
-                MessageBuilder("alert_box", "info", this.responseText)
-            } else {
-                let error_message = `Unknown error! Please contact your system administrator with this code` +
-                    `: <i>HTML status code ${this.status}</i>`;
-                switch (this.status) {
-                    case 0:
-                        error_message = "Could not contact the server! If the server running and are you " +
-                            "connected to the internet? <i>(HTML status code 0)</i>";
-                        break;
-                }
-                MessageBuilder("alert_box", "danger", error_message);
+            let response_message = "";
+            let message_type = "";
+            switch (this.status) {
+                case 200:
+                    const results = JSON.parse(this.responseText);
+                    response_message = results.message;
+                    message_type = results.type;
+                    break;
+                case 0:
+                    response_message = `Could not contact the server! Is the server running and are you ` +
+                        `connected to the internet? Please contact your system administrator regarding ` +
+                        `this issue with the following status code: <i>HTML status code ${this.status}</i>.`;
+                    message_type = "danger"
+                    break;
+                default:
+                    response_message = `Something went wrong on the server! Please contact your system administrator ` +
+                        `regarding this issue with the following status code: <i>HTML status code ${this.status}</i>.`
+                    message_type = "danger"
+                    break
             }
+            MessageBuilder("alert_box", message_type, response_message);
             ToggleDisableSubmitButton(false);
         }
     };
-    request.open("POST", target_url, true);
-    request.send();
+    request.send(new FormData(form_element));
 }

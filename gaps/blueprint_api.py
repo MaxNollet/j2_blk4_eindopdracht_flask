@@ -1,8 +1,13 @@
-from flask import Blueprint, request, jsonify, render_template
+from datetime import datetime
 from typing import Tuple, Dict
+
+from flask import Blueprint, request, jsonify
 from werkzeug.utils import secure_filename
-from gaps.gene_searcher import GeneSearcher_code as retriever
-from time import sleep
+
+# from gaps.gene_searcher import GeneSearcher_code as retriever
+from gaps.gene_searcher import *
+
+# from gene_searcher.GeneSearcher_code import NoDateBeforeSpecified, NoDateAfterSpecified
 
 blueprint_api = Blueprint("blueprint_api", __name__)
 
@@ -18,23 +23,29 @@ def query_builder_submit():
 
     :return JSON-response containing valid values (JSON).
     """
-    print("Received!")
-    sleep(2)
-    print("Responding . . .")
-    # main()
-    secure_filenames = VerifyFormParameters.get_valid_filenames(
-        "input_load_symbols")
+    secure_filenames = VerifyFormParameters.get_valid_filenames("input_load_symbols")
     valid_parameters = VerifyFormParameters.get_valid_parameters()
-    # genesearch_code(valid_parameters["input_generated_query"])
-    response = {
-        "input": {"files": secure_filenames, "parameters": valid_parameters}}
-    # results = retriever.results_query(
-    #     valid_parameters["input_generated_query"])
-    # print(results)
-    # mindate en maxdate  YYYY/MM/DD 2021/05/01
-    # return render_template("template_results.html", results=results)
-    # return render_template("template_results.html", test=test)
-    return jsonify(response)
+
+    try:
+        searcher = GeneSearcher()
+        count = searcher.fetch_results(valid_parameters)
+        if count < 1:
+            response = {"message": "No articles found! Adjust your search parameters and try again.",
+                        "type": "info"}
+        else:
+            # results = searcher.results_query()
+            # response = render_template("template_results.html", results=results)
+            if count == 1:
+                response = {"message": f"Found {count} article!",
+                            "type": "info"}
+            else:
+                response = {"message": f"Found {count} articles!",
+                            "type": "info"}
+        return jsonify(response)
+    except (NoDateAfterSpecified, NoDateBeforeSpecified) as e:
+        response = {"message": str(e),
+                    "type": "warning"}
+        return jsonify(response)
 
 
 @blueprint_api.route("/update_genepanel", methods=["POST"])
@@ -91,6 +102,8 @@ class VerifyFormParameters:
         for parameter_key in request.form.keys():
             submitted_value = request.form[parameter_key].strip()
             if submitted_value != "":
+                if "date" in parameter_key:
+                    submitted_value = datetime.strptime(submitted_value, "%Y-%m-%d")
                 verified_values[parameter_key] = submitted_value
         if len(verified_values) > 0:
             return verified_values
