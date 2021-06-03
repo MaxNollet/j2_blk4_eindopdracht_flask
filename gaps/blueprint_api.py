@@ -42,7 +42,7 @@ def query_builder_submit():
                 response = {"message": f"Found {count} articles!",
                             "type": "info"}
         return jsonify(response)
-    except (NoDateAfterSpecified, NoDateBeforeSpecified) as e:
+    except (NoQuerySpecified, NoDateAfterSpecified, NoDateBeforeSpecified) as e:
         response = {"message": str(e),
                     "type": "warning"}
         return jsonify(response)

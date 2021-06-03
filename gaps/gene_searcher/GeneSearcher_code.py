@@ -67,6 +67,8 @@ class GeneSearcher:
                 )
             self.search_results = search_results
             return int(search_results["Count"])
+        else:
+            raise NoQuerySpecified
 
     def results_query(self):
         ssl._create_default_https_context = ssl._create_unverified_context
@@ -360,6 +362,13 @@ class DataArticle:
     # journal : Journal
     genes: dict = field(default_factory=dict)
     diseases: dict = field(default_factory=dict)
+
+
+class NoQuerySpecified(Exception):
+    """Exception for when no query is specified."""
+    def __init__(self):
+        super().__init__("No query specified! Can't perform a search when "
+                         "no query is specified.")
 
 
 class NoDateAfterSpecified(Exception):
