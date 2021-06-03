@@ -24,7 +24,7 @@
 }
 
 .padding_below_section {
-  padding-bottom: 3em;
+  padding-bottom: 3rem;
 }
 
 .section_header {
@@ -41,5 +41,9 @@
 
 .active {
   border-bottom-color: initial;
+}
+
+#spinner_submit_button {
+  margin-right: 0.3rem;
 }
 
