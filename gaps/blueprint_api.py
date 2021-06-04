@@ -26,6 +26,8 @@ def query_builder_submit():
     secure_filenames = VerifyFormParameters.get_valid_filenames("input_load_symbols")
     valid_parameters = VerifyFormParameters.get_valid_parameters()
 
+    print(secure_filenames)
+
     try:
         searcher = GeneSearcher()
         count = searcher.fetch_results(valid_parameters)

@@ -378,7 +378,7 @@ class NoDateAfterSpecified(Exception):
 
     def __init__(self):
         super().__init__("No 'date after' specified! 'Date after'-parameter "
-                         "is required when date before-parameter is specified.")
+                         "is required when 'date before'-parameter is specified.")
 
 
 class NoDateBeforeSpecified(Exception):
@@ -388,7 +388,7 @@ class NoDateBeforeSpecified(Exception):
 
     def __init__(self):
         super().__init__("No 'date before' specified! 'Date before'-parameter "
-                         "is required when date after-parameter is specified.")
+                         "is required when 'date after'-parameter is specified.")
 
 
 if __name__ == "__main__":
