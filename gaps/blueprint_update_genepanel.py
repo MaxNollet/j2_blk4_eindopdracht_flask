@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template
+from sqlalchemy.exc import OperationalError
 
 from gaps.models import db, Gene, Alias, Genepanel, t_gene_alias
 from sqlalchemy import func
@@ -13,7 +14,7 @@ def update_genepanel():
     """A function which handles requests for the '/update_genepanel'
        -route for the webapp.
     """
-    update_genepanel_v2()
+    # update_genepanel_v2()
     # test = Alias.query.join(t_gene_alias).join(Alias).filter(t_gene_alias.c.alias_id == Alias.id).all()
     # print(test)
     # print(db.session.query(func.count(Gene.id)).group_by(Gene.genepanels).all())
@@ -21,8 +22,15 @@ def update_genepanel():
     # print(f"Genes: {count_genes}")
     # print(f"Aliases: {count_aliases}")
     # print(f"Genepanels: {count_genepanels}")
-    return render_template("template_update_genepanel.html",
-                           active_nav="genepanel",
-                           unique_genes=Gene.query.count(),
-                           unique_aliases=Alias.query.count(),
-                           unique_genepanels=Genepanel.query.count())
+    try:
+        genes = Gene.query.count()
+        aliases = Alias.query.count()
+        genepanels = Genepanel.query.count()
+        return render_template("template_update_genepanel.html",
+                               active_nav="genepanel",
+                               unique_genes=genes,
+                               unique_aliases=aliases,
+                               unique_genepanels=genepanels)
+    except OperationalError:
+        return render_template("template_update_genepanel.html",
+                               active_nav="genepanel")
