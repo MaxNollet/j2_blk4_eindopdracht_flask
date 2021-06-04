@@ -4,10 +4,7 @@ from typing import Tuple, Dict
 from flask import Blueprint, request, jsonify
 from werkzeug.utils import secure_filename
 
-# from gaps.gene_searcher import GeneSearcher_code as retriever
 from gaps.gene_searcher import *
-
-# from gene_searcher.GeneSearcher_code import NoDateBeforeSpecified, NoDateAfterSpecified
 
 blueprint_api = Blueprint("blueprint_api", __name__)
 
@@ -35,7 +32,7 @@ def query_builder_submit():
             response = {"message": "No articles found! Adjust your search parameters and try again.",
                         "type": "info"}
         else:
-            # results = searcher.results_query()
+            results = searcher.results_query()
             # response = render_template("template_results.html", results=results)
             if count == 1:
                 response = {"message": f"Found {count} article!",
