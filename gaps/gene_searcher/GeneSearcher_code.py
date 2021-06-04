@@ -52,7 +52,6 @@ def results_query(query):
 
     search_results = insert_db()
 
-
     for art in articles:
         results.append({"article": {"title": art.article.title,
                                     "pubmed_id": art.article.pubmed_id,
@@ -65,7 +64,8 @@ def results_query(query):
                                             "pubmed_id": art.article.pubmed_id,
                                             "doi": art.article.doi,
                                             "publication_date": art.article.publication_date,
-                                            "abstract": art.article.abstract})
+                                            "abstract": art.article.abstract,
+                                            "journal_id": art.article.journal.name})
         search_results.journal_list.append(
             # {"name": art.article.journal.name, "id": art.article.journal.id})
             {"name": art.article.journal.name})
@@ -415,6 +415,8 @@ class insert_db:
     genes_list: list = field(default_factory=list)
     journal_list: list = field(default_factory=list)
     article_gene: list = field(default_factory=list)
+    disease_list: list = field(default_factory=list)
+
     # test
     journal_pk_list: list = field(default_factory=list)
 

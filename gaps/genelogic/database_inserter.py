@@ -95,6 +95,9 @@ class DatabaseInserter(StatementGroups):
 
         print("hi")
         # print(self.ids["id"])
+        for article in search_results.article_list:
+            og = article["journal_id"]
+            article["journal_id"] = self.ids["id"][og]
 
         self.ids["article_id"] = self.insert_values("article",
                                                     search_results.article_list,
