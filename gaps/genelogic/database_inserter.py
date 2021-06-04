@@ -90,7 +90,7 @@ class DatabaseInserter(StatementGroups):
         pk_journal = list()
         print(search_results.journal_pk_list)
         self.ids["id"] = self.insert_values("journal",
-                                            search_results.journal_list)
+                                            search_results.journal_list, True)
         print(self.ids["id"])
 
         print("hi")

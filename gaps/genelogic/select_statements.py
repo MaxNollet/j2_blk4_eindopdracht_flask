@@ -93,7 +93,7 @@ class SelectStatements:
             Article.doi.in_(bindparam("values")))
 
     @staticmethod
-    @statement_group(table="journal", column_as_key="id")
+    @statement_group(table="journal", column_as_key="name")
     def _select_journal_id():
         print(select(Journal.id).where(Journal.name.in_(bindparam("values"))))
-        return select(Journal.id).where(Journal.name.in_(bindparam("values")))
+        return select(Journal.name, Journal.id).where(Journal.name.in_(bindparam("values")))

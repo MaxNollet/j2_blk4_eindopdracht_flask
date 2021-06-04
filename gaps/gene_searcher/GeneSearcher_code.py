@@ -67,7 +67,8 @@ def results_query(query):
                                             "publication_date": art.article.publication_date,
                                             "abstract": art.article.abstract})
         search_results.journal_list.append(
-            {"name": art.article.journal.name, "id": art.article.journal.id})
+            # {"name": art.article.journal.name, "id": art.article.journal.id})
+            {"name": art.article.journal.name})
         search_results.journal_pk_list.append({"id": art.article.journal.id})
 
         for id, gene in art.genes.items():
