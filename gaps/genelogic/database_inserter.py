@@ -87,17 +87,27 @@ class DatabaseInserter(StatementGroups):
 
     def insert_search_results(self, search_results):
         relation_genes_article = list()
+        pk_journal = list()
+        print(search_results.journal_pk_list)
+        self.ids["id"] = self.insert_values("journal",
+                                            search_results.journal_list)
+        print(self.ids["id"])
+
+        print("hi")
+        # print(self.ids["id"])
 
         self.ids["article_id"] = self.insert_values("article",
-                                                 search_results.article_list,
-                                                 True)
+                                                    search_results.article_list,
+                                                    True)
         self.ids["gene_id"] = self.insert_values("gene",
-                                              search_results.genes_list, True)
+                                                 search_results.genes_list,
+                                                 True)
 
-        t = self.combine(search_results.article_gene, ("article_id", "gene_id"))
+        t = self.combine(search_results.article_gene,
+                         ("article_id", "gene_id"))
         self.insert_values(table_name="article_gene", values=t)
 
-        self.insert_values("journal", search_results.journal_list)
+        # self.ids["id"] = self.insert_values("article", search_results.journal_pk_list)
 
         self.session.commit()
 

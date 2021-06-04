@@ -66,7 +66,9 @@ def results_query(query):
                                             "doi": art.article.doi,
                                             "publication_date": art.article.publication_date,
                                             "abstract": art.article.abstract})
-        search_results.journal_list.append({"name": art.article.journal.name})
+        search_results.journal_list.append(
+            {"name": art.article.journal.name, "id": art.article.journal.id})
+        search_results.journal_pk_list.append({"id": art.article.journal.id})
 
         for id, gene in art.genes.items():
             if ";" not in id:
@@ -412,6 +414,8 @@ class insert_db:
     genes_list: list = field(default_factory=list)
     journal_list: list = field(default_factory=list)
     article_gene: list = field(default_factory=list)
+    # test
+    journal_pk_list: list = field(default_factory=list)
 
 
 # def alias_search_hgnc():
