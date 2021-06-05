@@ -7,6 +7,8 @@ from xml.etree import ElementTree as etree
 import requests
 from Bio import Entrez
 
+from gaps.genelogic.database_inserter import DatabaseInserter
+
 from gaps.models import Article, Journal
 
 Entrez.email = environ.get("EMAIL_ENTREZ")
@@ -29,6 +31,7 @@ def main():
 class GeneSearcher:
     def __init__(self):
         self.search_results = None
+        self.db = insert_db()
 
     def fetch_results(self, parameters: dict) -> int:
         """A method which queries PubMed and returns the count
@@ -74,14 +77,48 @@ class GeneSearcher:
         ssl._create_default_https_context = ssl._create_unverified_context
         articles = self.query_pubmed()
         results = []  # results from pubmed en pubtator
-        for art in articles:
-            results.append({"article": {"title": art.article.title,
-                                        "pubmed_id": art.article.pubmed_id,
-                                        "doi": art.article.doi,
-                                        "publication_date": art.article.publication_date,
-                                        "abstract": art.article.abstract,
-                                        "journal": art.article.journal.name},
-                            "genes": art.genes, "diseases": art.diseases})
+
+        search_results = insert_db()
+        print(search_results, "-=-=")
+        # for art in articles:
+        #     print("=-=-=", art)
+        #     results.append({"article": {"title": art.article.title,
+        #                                 "pubmed_id": art.article.pubmed_id,
+        #                                 "doi": art.article.doi,
+        #                                 "publication_date": art.article.publication_date,
+        #                                 "abstract": art.article.abstract,
+        #                                 "journal": art.article.journal.name},
+        #                     "genes": art.genes, "diseases": art.diseases})
+        #     search_results.article_list.append({"title": art.article.title,
+        #                                         "pubmed_id": art.article.pubmed_id,
+        #                                         "doi": art.article.doi,
+        #                                         "publication_date": art.article.publication_date,
+        #                                         "abstract": art.article.abstract,
+        #                                         "journal_id": art.article.journal.name})
+        #     search_results.journal_list.append(
+        #         # {"name": art.article.journal.name, "id": art.article.journal.id})
+        #         {"name": art.article.journal.name})
+        #     search_results.journal_pk_list.append(
+        #         {"id": art.article.journal.id})
+        #
+        #     for id, gene in art.genes.items():
+        #         if ";" not in id:
+        #             search_results.genes_list.append(
+        #                 {"ncbi_gene_id": int(id), "hgnc_symbol": str(gene),
+        #                  "in_genepanel": False})
+        #             search_results.article_gene.append(
+        #                 # Hier moeten de keys de namen van de kolommen bevatten
+        #                 # waar de waardes in moeten komen te staan in de gewenste
+        #                 # tabel.
+        #                 {"article_id": art.article.doi, "gene_id": gene})
+
+        print(self.db, "self.db")
+        print(self.db.disease_list, "disease list")
+        print(self.db.genes_list, "genes_list")
+        print(self.db.article_gene, "article gene")
+        db = DatabaseInserter()
+        # db.insert_search_results(search_results)
+        db.insert_search_results(self.db)
 
         return results  # list with dict per article
 
@@ -161,17 +198,17 @@ class GeneSearcher:
                         "Journal").get("Title")
                 # print(title, "\n", pubmed_id, "\n", doi, "\n", publication_date,
                 #       "\n", abstract, "\n", journal_name)  # example
-                art = Article(title=title, pubmed_id=pubmed_id, doi=doi,
-                              publication_date=publication_date,
-                              abstract=abstract,
-                              journal=Journal(name=journal_name))
-                # journal = Journal(name=journal_name)
-                articles.append(DataArticle(article=art))
-                # except (TypeError, KeyError):
-                #     print("Element not available")
+                self.db.article_list.append({"title": title,
+                                             "pubmed_id": pubmed_id,
+                                             "doi": doi, "publication_date"
+                                             : publication_date, "abstract"
+                                             : abstract, "journal_id":
+                                                 journal_name})
         # url_maker(articles)
-        articles = self.pubtator_output(articles)
-        return articles  # articles list with DataArticle complete
+        # articles = self.pubtator_output()
+        self.pubtator_output()  # output wordt meteen aan self.db toegevoegd
+        print(articles)
+        # return articles  # articles list with DataArticle complete
         # except None:  # only get None
         #     print(
         #         "The Entrez package is currently offline, please try again later.")
@@ -221,7 +258,8 @@ class GeneSearcher:
         # complete_url is url for pubtator from pubtator API
         return complete_url
 
-    def pubtator_output(self, articles):
+    # def pubtator_output(self, articles):
+    def pubtator_output(self):
         """
         Uses the URL made in url_maker to look up genes on pubtator.
         :param complete_url: string of the url used as input for Pubtator.
@@ -229,33 +267,39 @@ class GeneSearcher:
         :return: articles updated with genes from pubtator
         """
         idlist = []
-        for article in articles:
-            # print(article.article.pubmed_id, "pbid")
-            idlist.append(str(article.article.pubmed_id))
+        for article in self.db.article_list:
+            idlist.append(str(article["pubmed_id"]))
         url = self.url_maker(idlist)  # url for all the articles pubmed found
         print(url)
         result = requests.get(url)  # get xml-page pubtator
         if result.status_code == 200:
             print("Request succesful.")
             data = self.parse_results(result)
-            if len(data) == len(articles):  # doesn't cont. if something is wrong
-                for art in articles:
-                    # genes moet waarschijnlijk dict worden ipv genes
-                    # print(data)
-                    art.genes = data[art.article.pubmed_id][0]  # genes dict
-                    art.diseases = data[art.article.pubmed_id][1]  # diseases
-                    # print(data[art.article.pubmed_id])
-
-                    # if data[art.article.pubmed_id].keys()[:4] == "MESH":
-                    #     art.diseaes
-                    # art.genes = data[art.article.pubmed_id]  # added to DataArticle
-                    # print(data[art.article.pubmed_id])
-                    # not the article object it self yet
-            # for a in articles:
-            # print(a) # check
+            if len(data) == len(idlist):  # doesn't cont. if something is wrong
+                for index, article in enumerate(
+                        idlist):  # article is a int pubmed_id
+                    for id, gene in data[str(article)][0].items():
+                        if ";" not in id:
+                            self.db.genes_list.append({"ncbi_gene_id": int(id),
+                                                       "hgnc_symbol": str(
+                                                           gene),
+                                                       "in_genepanel": False})
+                            self.db.article_gene.append(
+                                {"article_id": article, "gene_id": int(id)})
+                            # self.db.genes_list.append([art.article.pubmed_id][0]) # genes dict
+                            # self.db.genes_list.append(data[str(article)]) # list with genes
+                    for id, disease in data[str(article)][1].items():
+                        self.db.disease_list.append(
+                            {"mesh_id": id[5:], "diseas": disease})
+                        self.db.article_disease.append(
+                            {"disease_mesh_id": id[5:], "article_id": article})
+            print(self.db.article_disease, "article_disease\n")
+            print(self.db.disease_list, "diseases\n")
+            print(self.db.genes_list, "genes\n")
+            print(self.db.article_gene, "article_gene\n")
         else:
             print("Request not succesful.")
-        return articles  # updated DataArticle with genes from pubtator
+        # return articles  # updated DataArticle with genes from pubtator
 
     def anno_document(self, documents):
         """
@@ -364,8 +408,22 @@ class DataArticle:
     diseases: dict = field(default_factory=dict)
 
 
+@dataclass
+class insert_db:
+    article_list: list = field(default_factory=list)
+    genes_list: list = field(default_factory=list)
+    journal_list: list = field(default_factory=list)
+    article_gene: list = field(default_factory=list)
+    disease_list: list = field(default_factory=list)
+    article_disease: list = field(default_factory=list)
+
+    # test
+    journal_pk_list: list = field(default_factory=list)
+
+
 class NoQuerySpecified(Exception):
     """Exception for when no query is specified."""
+
     def __init__(self):
         super().__init__("No query specified! Can't perform a search when "
                          "no query is specified.")
