@@ -8,8 +8,7 @@ import requests
 from Bio import Entrez
 
 from gaps.genelogic.database_inserter import DatabaseInserter
-
-from gaps.models import Article, Journal
+from gaps.models import Article
 
 Entrez.email = environ.get("EMAIL_ENTREZ")
 Entrez.email = "mjh.nollet@student.han.nl"
@@ -137,16 +136,16 @@ class GeneSearcher:
         # db.insert_search_results(search_results)
         db.insert_search_results(self.db)
 
-            for id, gene in art.genes.items():
-                if ";" not in id:
-                    search_results.genes_list.append(
-                        {"ncbi_gene_id": int(id), "hgnc_symbol": str(gene),
-                         "in_genepanel": False})
-                    search_results.article_gene.append(
-                        # Hier moeten de keys de namen van de kolommen bevatten
-                        # waar de waardes in moeten komen te staan in de gewenste
-                        # tabel.
-                        {"article_id": art.article.doi, "gene_id": gene})
+        for id, gene in art.genes.items():
+            if ";" not in id:
+                search_results.genes_list.append(
+                    {"ncbi_gene_id": int(id), "hgnc_symbol": str(gene),
+                     "in_genepanel": False})
+                search_results.article_gene.append(
+                    # Hier moeten de keys de namen van de kolommen bevatten
+                    # waar de waardes in moeten komen te staan in de gewenste
+                    # tabel.
+                    {"article_id": art.article.doi, "gene_id": gene})
 
         db = DatabaseInserter()
         db.insert_search_results(search_results)
