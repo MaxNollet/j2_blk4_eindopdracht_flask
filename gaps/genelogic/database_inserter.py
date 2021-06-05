@@ -1,17 +1,16 @@
-import os
 import time
 from typing import List, Mapping, Tuple
 
 from sqlalchemy.orm import Session
 
-from gaps.genelogic import genepanelreader, SelectStatements, InsertStatements, StatementGroups
-from gaps.genelogic.statement_groups import InsertStatementNotDefined, SelectStatementNotDefined,\
-    ColumnAsKeyNotDefined, StatementGroupNotDefined
+from gaps.genelogic.statement_groups import StatementGroups
 from gaps.models import db
-from genelogic.genepanelreader import GenepanelReader, GenepanelContent
+from gaps.genelogic.genepanelreader import GenepanelContent
+from gaps.genelogic.statement_groups import InsertStatementNotDefined, SelectStatementNotDefined, ColumnAsKeyNotDefined, \
+    StatementGroupNotDefined
 
 
-class DatabaseInserter(StatementGroups, SelectStatements, InsertStatements):
+class DatabaseInserter(StatementGroups):
     """A class which contains several methods for inserting
        values into the database. This class extends the classes
        SelectStatements and InsertStatements to rely on statements
@@ -33,10 +32,12 @@ class DatabaseInserter(StatementGroups, SelectStatements, InsertStatements):
 
     def insert_genepanel(self, file_content: GenepanelContent):
         starttijd = time.perf_counter()
-        self.ids["inheritance_type_id"] = self.insert_values("inheritance_type", file_content.all_inheritace_types, True)
+        self.ids["inheritance_type_id"] = self.insert_values("inheritance_type", file_content.all_inheritace_types,
+                                                             True)
         self.ids["genepanel_id"] = self.insert_values("genepanel", file_content.all_genepanels, True)
         self.ids["alias_id"] = self.insert_values("alias", file_content.all_aliases, True)
-        self.ids["genepanel_symbol_id"] = self.insert_values("genepanel_symbol", file_content.all_genepanel_symbols, True)
+        self.ids["genepanel_symbol_id"] = self.insert_values("genepanel_symbol", file_content.all_genepanel_symbols,
+                                                             True)
         # Opgehaalde primary keys gebruiken om relatie te updaten.
         # print(self.ids["genepanel_symbol_id"])
         for gene in file_content.all_genes:
@@ -100,17 +101,3 @@ class DatabaseInserter(StatementGroups, SelectStatements, InsertStatements):
                 original_value = combo[key]
                 combo[key] = self.ids[key][original_value]
         return original_combinations
-
-
-def update_genepanel_v2():
-    """A function which inserts every line of a file
-       into the database.
-    """
-    print("Triggered")
-    path = os.path.join(os.path.dirname(__file__), "GenPanelOverzicht_DG-3.1.0_HAN_original_tsv.txt")
-    if os.path.exists(path):
-        genepanel_content = GenepanelReader(path).get_genepanel_data()
-        print("Executing . . .")
-        inserter = DatabaseInserter()
-        inserter.insert_genepanel(genepanel_content)
-        print("Done")

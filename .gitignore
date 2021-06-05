@@ -249,3 +249,6 @@ modules.xml
 # Files related to the AI-branches.
 logs/*
 *dataset.txt
+
+# Folder for uploading files.
+file_uploads/
