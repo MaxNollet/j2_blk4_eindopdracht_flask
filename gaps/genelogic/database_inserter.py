@@ -88,6 +88,11 @@ class DatabaseInserter(StatementGroups):
     def insert_search_results(self, search_results):
         relation_genes_article = list()
         pk_journal = list()
+
+        self.ids["query_id"] = self.insert_values("query",
+                                                  search_results.query_list,
+                                                  True)
+        # klopt query_id om ze in te voeren?
         print(search_results.journal_pk_list)
         self.ids["id"] = self.insert_values("journal",
                                             search_results.journal_list, True)
@@ -109,6 +114,10 @@ class DatabaseInserter(StatementGroups):
         t = self.combine(search_results.article_gene,
                          ("article_id", "gene_id"))
         self.insert_values(table_name="article_gene", values=t)
+
+        # tussen tabel query_gene invullen:
+        quge = self.combine(search_results, ("query_id", "gene_id"))
+        self.insert_values(table_name="query_gene", values=quge)
 
         # self.ids["id"] = self.insert_values("article", search_results.journal_pk_list)
 

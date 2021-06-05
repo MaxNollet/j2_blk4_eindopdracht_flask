@@ -5,6 +5,7 @@ from os import environ
 from xml.etree import ElementTree as etree
 
 import requests
+import uuid
 from Bio import Entrez
 
 from gaps.genelogic.database_inserter import DatabaseInserter
@@ -31,6 +32,9 @@ def main():
 class GeneSearcher:
     def __init__(self):
         self.search_results = None
+        query = uuid.uuid4()  # voor het geval dat die elke keer
+        # een nieuwe uuid id aanmaakt
+        self.uuid_query = query
         self.db = insert_db()
 
     def fetch_results(self, parameters: dict) -> int:
@@ -46,11 +50,15 @@ class GeneSearcher:
         min_date: datetime = parameters.get("input_date_after")
         max_date: datetime = parameters.get("input_date_before")
         if query is not None:
+            self.db.query_list.append({"id": self.uuid_query, "query": query})
+            # options_id moet nog verwerkt worden
             if any(date is not None for date in (min_date, max_date)):
                 if min_date is None:
                     raise NoDateAfterSpecified()
                 if max_date is None:
                     raise NoDateBeforeSpecified()
+                self.db.query_options_list.append(
+                    {"date_before": min_date, "date_after": max_date})
                 search_results = Entrez.read(
                     Entrez.esearch(
                         db="pubmed",
@@ -204,6 +212,14 @@ class GeneSearcher:
                                              : publication_date, "abstract"
                                              : abstract, "journal_id":
                                                  journal_name})
+                self.db.journal_list.append({"name": journal_name})
+                self.db.journal_pk_list.append({
+                                                   "id": journal_name})  # id nog niet beschikbaar moet overschreven worden
+                #     search_results.journal_list.append(
+                #         # {"name": art.article.journal.name, "id": art.article.journal.id})
+                #         {"name": art.article.journal.name})
+                #     search_results.journal_pk_list.append(
+                #         {"id": art.article.journal.id})
         # url_maker(articles)
         # articles = self.pubtator_output()
         self.pubtator_output()  # output wordt meteen aan self.db toegevoegd
@@ -276,8 +292,8 @@ class GeneSearcher:
             print("Request succesful.")
             data = self.parse_results(result)
             if len(data) == len(idlist):  # doesn't cont. if something is wrong
-                for index, article in enumerate(
-                        idlist):  # article is a int pubmed_id
+                for article in idlist:  # article is a int pubmed_id
+                    # 0 is always gene, 1 is always diseases
                     for id, gene in data[str(article)][0].items():
                         if ";" not in id:
                             self.db.genes_list.append({"ncbi_gene_id": int(id),
@@ -286,13 +302,15 @@ class GeneSearcher:
                                                        "in_genepanel": False})
                             self.db.article_gene.append(
                                 {"article_id": article, "gene_id": int(id)})
-                            # self.db.genes_list.append([art.article.pubmed_id][0]) # genes dict
-                            # self.db.genes_list.append(data[str(article)]) # list with genes
+                            self.db.query_gene.append(
+                                {"query_id": self.uuid_query,
+                                 "gene_id": int(id)})
                     for id, disease in data[str(article)][1].items():
                         self.db.disease_list.append(
                             {"mesh_id": id[5:], "diseas": disease})
                         self.db.article_disease.append(
                             {"disease_mesh_id": id[5:], "article_id": article})
+
             print(self.db.article_disease, "article_disease\n")
             print(self.db.disease_list, "diseases\n")
             print(self.db.genes_list, "genes\n")
@@ -416,6 +434,10 @@ class insert_db:
     article_gene: list = field(default_factory=list)
     disease_list: list = field(default_factory=list)
     article_disease: list = field(default_factory=list)
+
+    query_list: list = field(default_factory=list)
+    query_options_list: list = field(default_factory=list)
+    query_gene: list = field(default_factory=list)
 
     # test
     journal_pk_list: list = field(default_factory=list)

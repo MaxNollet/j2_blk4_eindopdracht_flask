@@ -4,7 +4,8 @@ from sqlalchemy.dialects.postgresql import insert
 from gaps.genelogic import statement_group
 from gaps.models import Gene, Alias, GenepanelSymbol, Genepanel, \
     InheritanceType, t_gene_alias, t_genepanel_gene, \
-    t_genepanel_inheritance, Article, Journal, t_article_gene, Query
+    t_genepanel_inheritance, Article, Journal, t_article_gene, Query, Disease, \
+    t_query_gene
 
 
 class InsertStatements:
@@ -115,12 +116,17 @@ class InsertStatements:
     def _insert_article_gene():
         return insert(t_article_gene).on_conflict_do_nothing()
 
-    # @staticmethod
-    # @statement_group(table="disease")
-    # def _insert_disease():
-    #     return insert(Disease).on_conflict_do_nothing
+    @staticmethod
+    @statement_group(table="disease")
+    def _insert_disease():
+        return insert(Disease).on_conflict_do_nothing()
 
     @staticmethod
     @statement_group(table="query")
     def _insert_query():
         return insert(Query).on_conflict_do_nothing()
+
+    @staticmethod
+    @statement_group(table="query_gene")
+    def insert_query_gene():
+        return insert(t_query_gene).on_conflict_do_nothing()

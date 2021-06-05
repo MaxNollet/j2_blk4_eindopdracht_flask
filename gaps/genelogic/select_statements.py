@@ -2,7 +2,7 @@ from sqlalchemy import select, bindparam
 
 from gaps.genelogic import statement_group
 from gaps.models import Gene, Alias, GenepanelSymbol, Genepanel, \
-    InheritanceType, Article, Journal
+    InheritanceType, Article, Journal, Query
 
 
 class SelectStatements:
@@ -96,4 +96,11 @@ class SelectStatements:
     @statement_group(table="journal", column_as_key="name")
     def _select_journal_id():
         print(select(Journal.id).where(Journal.name.in_(bindparam("values"))))
-        return select(Journal.name, Journal.id).where(Journal.name.in_(bindparam("values")))
+        return select(Journal.name, Journal.id).where(
+            Journal.name.in_(bindparam("values")))
+
+    @staticmethod
+    @statement_group(table="query", column_as_key="query")
+    def _select_query_id():
+        return select(Query.id, Query.query).where(
+            Query.query.in_(bindparam("values")))
