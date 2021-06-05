@@ -3,11 +3,11 @@ from typing import List, Mapping, Tuple
 
 from sqlalchemy.orm import Session
 
-from gaps.genelogic.statement_groups import StatementGroups
-from gaps.models import db
 from gaps.genelogic.genepanelreader import GenepanelContent
 from gaps.genelogic.statement_groups import InsertStatementNotDefined, SelectStatementNotDefined, ColumnAsKeyNotDefined, \
     StatementGroupNotDefined
+from gaps.genelogic.statement_groups import StatementGroups
+from gaps.models import db
 
 
 class DatabaseInserter(StatementGroups):
@@ -59,10 +59,10 @@ class DatabaseInserter(StatementGroups):
         relation_genes_article = list()
 
         self.ids["article_id"] = self.insert_values("article",
-                                                 search_results.article_list,
-                                                 True)
+                                                    search_results.article_list,
+                                                    True)
         self.ids["gene_id"] = self.insert_values("gene",
-                                              search_results.genes_list, True)
+                                                 search_results.genes_list, True)
 
         t = self.combine(search_results.article_gene, ("article_id", "gene_id"))
         self.insert_values(table_name="article_gene", values=t)

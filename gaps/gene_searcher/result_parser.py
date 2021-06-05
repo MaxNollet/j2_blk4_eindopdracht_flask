@@ -1,10 +1,12 @@
-from dataclasses import dataclass, field
-from xml.etree import ElementTree as etree
-from os import environ
-import requests
 import ssl
+from dataclasses import dataclass, field
+from os import environ
+from xml.etree import ElementTree as etree
+
+import requests
 from Bio import Entrez
-from gaps.models import Article, Journal, Gene
+
+from gaps.models import Article, Journal
 
 Entrez.email = environ.get("EMAIL_ENTREZ")
 Entrez.email = "mjh.nollet@student.han.nl"
@@ -194,7 +196,8 @@ def parse_results(result):
                     genes[iden] = gi[1]
         article_and_genes[id] = genes
     print(article_and_genes)
-    return article_and_genes      #dict key = articleID, value = dictionary{Key = ncbiID, value = Gene}
+    return article_and_genes  # dict key = articleID, value = dictionary{Key = ncbiID, value = Gene}
+
 
 def article(id_list):
     """

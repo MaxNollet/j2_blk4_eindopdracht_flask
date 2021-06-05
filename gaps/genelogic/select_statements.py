@@ -1,6 +1,6 @@
 from sqlalchemy import select, bindparam
 
-from gaps.genelogic import statement_group
+from gaps.genelogic.statement_groups import statement_group
 from gaps.models import Gene, Alias, GenepanelSymbol, Genepanel, \
     InheritanceType, Article
 

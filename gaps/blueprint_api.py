@@ -28,8 +28,8 @@ def query_builder_submit():
     valid_parameters = VerifyFormParameters.get_valid_parameters()
     upload_path = current_app.config['UPLOAD_PATH']
     try:
-        filenames = tuple(secure_filenames.keys())
-        if len(filenames) > 0:
+        if secure_filenames:
+            filenames = tuple(secure_filenames.keys())
             filename = filenames[0]
             file_location = os.path.join(upload_path, filename)
             secure_filenames[filename].save(file_location)
@@ -52,8 +52,9 @@ def query_builder_submit():
         response = {"message": str(e),
                     "type": "warning"}
     finally:
-        for filename in secure_filenames.keys():
-            os.remove(os.path.join(upload_path, filename))
+        if secure_filenames:
+            for filename in secure_filenames.keys():
+                os.remove(os.path.join(upload_path, filename))
     return jsonify(response)
 
 
@@ -70,8 +71,8 @@ def update_genepanel_submit():
     secure_filenames = VerifyFormParameters.get_valid_filenames("input_upload_genepanel")
     upload_path = current_app.config['UPLOAD_PATH']
     try:
-        filenames = tuple(secure_filenames.keys())
-        if len(filenames) > 0:
+        if secure_filenames:
+            filenames = tuple(secure_filenames.keys())
             filename = filenames[0]
             file_location = os.path.join(upload_path, filename)
             secure_filenames[filename].save(file_location)
@@ -87,8 +88,9 @@ def update_genepanel_submit():
         response = {"message": str(e),
                     "type": "danger"}
     finally:
-        for filename in secure_filenames.keys():
-            os.remove(os.path.join(upload_path, filename))
+        if secure_filenames:
+            for filename in secure_filenames.keys():
+                os.remove(os.path.join(upload_path, filename))
     return jsonify(response)
 
 
