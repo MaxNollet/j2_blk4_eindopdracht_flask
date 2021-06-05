@@ -26,10 +26,13 @@ def query_builder_submit():
     """
     secure_filenames = VerifyFormParameters.get_valid_filenames("input_load_symbols")
     valid_parameters = VerifyFormParameters.get_valid_parameters()
-
-    print(secure_filenames)
-
+    upload_path = current_app.config['UPLOAD_PATH']
     try:
+        filenames = tuple(secure_filenames.keys())
+        if len(filenames) > 0:
+            filename = filenames[0]
+            file_location = os.path.join(upload_path, filename)
+            secure_filenames[filename].save(file_location)
         searcher = GeneSearcher()
         count = searcher.fetch_results(valid_parameters)
         if count < 1:
@@ -48,7 +51,10 @@ def query_builder_submit():
     except (NoQuerySpecified, NoDateAfterSpecified, NoDateBeforeSpecified) as e:
         response = {"message": str(e),
                     "type": "warning"}
-        return jsonify(response)
+    finally:
+        for filename in secure_filenames.keys():
+            os.remove(os.path.join(upload_path, filename))
+    return jsonify(response)
 
 
 @blueprint_api.route("/update_genepanel", methods=["POST"])
@@ -63,9 +69,10 @@ def update_genepanel_submit():
     """
     secure_filenames = VerifyFormParameters.get_valid_filenames("input_upload_genepanel")
     upload_path = current_app.config['UPLOAD_PATH']
-    response = dict()
     try:
-        for filename in secure_filenames.keys():
+        filenames = tuple(secure_filenames.keys())
+        if len(filenames) > 0:
+            filename = filenames[0]
             file_location = os.path.join(upload_path, filename)
             secure_filenames[filename].save(file_location)
             genepanel_data = GenepanelReader(filename=file_location).get_genepanel_data()
@@ -73,6 +80,9 @@ def update_genepanel_submit():
             response = {"message": "Genepanels updated successfully! Refresh the page to "
                                    "see the new statistics about the updated geneanels.",
                         "type": "success"}
+        else:
+            response = {"message": "No file uploaded! Could not update genepanels.",
+                        "type": "danger"}
     except GenepanelColumnNotFound as e:
         response = {"message": str(e),
                     "type": "danger"}
