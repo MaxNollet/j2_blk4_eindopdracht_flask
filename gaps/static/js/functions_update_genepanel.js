@@ -12,7 +12,15 @@ window.onload = function () {
     document.getElementById("form_update_genepanel")
         .addEventListener("submit", SubmitGenepanel)
 }
-
+/**
+ * A function which sends an AJAJ-request to the server so
+ * that a genepanel can be updated. Possible errors are
+ * displayed in an appropriate message-box so the user
+ * can act accordingly.
+ *
+ * @author Max Nollet
+ * @param event Default submit-event from submitting the form.
+ */
 function SubmitGenepanel(event) {
     event.preventDefault();
     RemoveChilds("alert_box");

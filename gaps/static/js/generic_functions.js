@@ -92,6 +92,17 @@ function RemoveChilds(target) {
     }
 }
 
+/**
+ * A function which enables or disables a button and updates
+ * its text and status indicator accordingly.
+ *
+ * @author Max Nollet
+ * @param disable Enable or disable the button.
+ * @param target Name of the button to be disabled/enabled,
+ *               used to search the button.
+ * @param original_text Original text of the button to put back
+ *                      when enabling the button again.
+ * */
 function ToggleDisableSubmitButton(disable, target, original_text) {
     const submit_button = document.getElementById(target);
     const spinner = submit_button.querySelector("#spinner_submit_button");
@@ -107,6 +118,18 @@ function ToggleDisableSubmitButton(disable, target, original_text) {
     }
 }
 
+/**
+ * A function which handles various HTML status codes and
+ * displays messages from the server. In case a status code
+ * other than 200 is received, the function tries to display
+ * a helpful message so the user can act accordingly.
+ *
+ * @author Max Nollet
+ * @param response Response-object containing information
+ *                 about the response.
+ * @param target_element_messages Target element to display
+ *                                messages in.
+ * */
 function ResponseHandler(response, target_element_messages) {
     if (response.readyState === 4) {
         let response_message;

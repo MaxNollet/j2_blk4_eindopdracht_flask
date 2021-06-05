@@ -97,7 +97,16 @@ function OnQueryChange() {
     element_add.disabled = element_query.value.trim() === "";
 }
 
-/***/
+/**
+ * A function which sends an AJAJ-request to the server so
+ * that a query can be quickly evaluated without clearing
+ * values entered into the form. Possible errors are
+ * displayed in an appropriate message-box so the user can
+ * act accordingly.
+ *
+ * @author Max nollet
+ * @param event Default submit-event from submitting the form.
+ * */
 function SubmitQuery(event) {
     event.preventDefault();
     RemoveChilds("alert_box");
@@ -105,11 +114,9 @@ function SubmitQuery(event) {
     ToggleDisableSubmitButton(true, "button_submit", original_text);
 
     const form_element = document.getElementById("input_form");
-
     const target_url = form_element.getAttribute("action");
     const request = new XMLHttpRequest();
     request.open("POST", target_url, true);
-    // request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     request.onreadystatechange = function () {
         ResponseHandler(this, "alert_box");
         ToggleDisableSubmitButton(false, "button_submit", "Search genes");
