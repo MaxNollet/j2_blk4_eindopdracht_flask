@@ -5,6 +5,9 @@ from gaps.genelogic import statement_group
 from gaps.models import Gene, Alias, GenepanelSymbol, Genepanel, \
     InheritanceType, t_gene_alias, t_genepanel_gene, \
     t_genepanel_inheritance, Article, Journal, t_article_gene
+from gaps.genelogic.statement_groups import statement_group
+from gaps.models import Gene, Alias, GenepanelSymbol, Genepanel, InheritanceType, t_gene_alias, t_genepanel_gene, \
+    GenepanelInheritance
 
 
 class InsertStatements:
@@ -98,7 +101,7 @@ class InsertStatements:
 
         :return Insert-statement for the genepanel_inheritance-table (Insert).
         """
-        return insert(t_genepanel_inheritance).on_conflict_do_nothing()
+        return insert(GenepanelInheritance).on_conflict_do_nothing()
 
     @staticmethod
     @statement_group(table="article")

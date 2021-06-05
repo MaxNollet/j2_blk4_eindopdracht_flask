@@ -1,7 +1,14 @@
-from flask import Blueprint, request, jsonify, render_template
-from typing import Tuple, Dict
+import os.path
+import random
+from datetime import datetime
+from typing import Dict
+
+from flask import Blueprint, request, jsonify, current_app, abort
+from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
-from gaps.gene_searcher import GeneSearcher_code as retriever
+
+from gaps.gene_searcher import *
+from genelogic import GenepanelReader, DatabaseInserter, GenepanelColumnNotFound
 
 blueprint_api = Blueprint("blueprint_api", __name__)
 
@@ -17,19 +24,37 @@ def query_builder_submit():
 
     :return JSON-response containing valid values (JSON).
     """
-    # main()
-    secure_filenames = VerifyFormParameters.get_valid_filenames(
-        "input_load_symbols")
+    secure_filenames = VerifyFormParameters.get_valid_filenames("input_load_symbols")
     valid_parameters = VerifyFormParameters.get_valid_parameters()
-    # genesearch_code(valid_parameters["input_generated_query"])
-    response = {
-        "input": {"files": secure_filenames, "parameters": valid_parameters}}
-    results = retriever.results_query(
-        valid_parameters["input_generated_query"])
-    print(results)
-    # mindate en maxdate  YYYY/MM/DD 2021/05/01
-    return render_template("template_results.html", results=results)
-    # return jsonify(response)
+    upload_path = current_app.config['UPLOAD_PATH']
+    try:
+        filenames = tuple(secure_filenames.keys())
+        if len(filenames) > 0:
+            filename = filenames[0]
+            file_location = os.path.join(upload_path, filename)
+            secure_filenames[filename].save(file_location)
+        searcher = GeneSearcher()
+        count = searcher.fetch_results(valid_parameters)
+        if count < 1:
+            response = {"message": "No articles found! Adjust your search parameters and try again.",
+                        "type": "info"}
+        else:
+            results = searcher.results_query()
+            # response = render_template("template_results.html", results=results)
+            if count == 1:
+                response = {"message": f"Found {count} article!",
+                            "type": "info"}
+            else:
+                response = {"message": f"Found {count} articles!",
+                            "type": "info"}
+        return jsonify(response)
+    except (NoQuerySpecified, NoDateAfterSpecified, NoDateBeforeSpecified) as e:
+        response = {"message": str(e),
+                    "type": "warning"}
+    finally:
+        for filename in secure_filenames.keys():
+            os.remove(os.path.join(upload_path, filename))
+    return jsonify(response)
 
 
 @blueprint_api.route("/update_genepanel", methods=["POST"])
@@ -43,7 +68,27 @@ def update_genepanel_submit():
     :return JSON-response containing valid values (JSON).
     """
     secure_filenames = VerifyFormParameters.get_valid_filenames("input_upload_genepanel")
-    response = {"input": {"files": secure_filenames}}
+    upload_path = current_app.config['UPLOAD_PATH']
+    try:
+        filenames = tuple(secure_filenames.keys())
+        if len(filenames) > 0:
+            filename = filenames[0]
+            file_location = os.path.join(upload_path, filename)
+            secure_filenames[filename].save(file_location)
+            genepanel_data = GenepanelReader(filename=file_location).get_genepanel_data()
+            DatabaseInserter().insert_genepanel(genepanel_data)
+            response = {"message": "Genepanels updated successfully! Refresh the page to "
+                                   "see the new statistics about the updated geneanels.",
+                        "type": "success"}
+        else:
+            response = {"message": "No file uploaded! Could not update genepanels.",
+                        "type": "danger"}
+    except GenepanelColumnNotFound as e:
+        response = {"message": str(e),
+                    "type": "danger"}
+    finally:
+        for filename in secure_filenames.keys():
+            os.remove(os.path.join(upload_path, filename))
     return jsonify(response)
 
 
@@ -54,24 +99,29 @@ class VerifyFormParameters:
     """
 
     @staticmethod
-    def get_valid_filenames(file_upload_field: str) -> Tuple[str]:
+    def get_valid_filenames(file_upload_field: str) -> Dict[str, FileStorage]:
         """A method which secures filenames from requests
            and returns the secured filenames for safe
            storage and processing of the files.
 
         :param file_upload_field Field to check containing
                                  possible filenames (str).
-        :return Secured filenames (tuple(str)).
+        :return Secured filenames (Dict[str, FileStorage]).
         """
         if file_upload_field in request.files:
             uploaded_files = request.files.getlist(file_upload_field)
-            filenames = list()
+            filenames = dict()
             for uploaded_file in uploaded_files:
-                filename = secure_filename(uploaded_file.filename)
-                if filename != "":
-                    filenames.append(filename)
+                if uploaded_file.filename != "":
+                    file_extension = os.path.splitext(uploaded_file.filename)[1]
+                    if file_extension in current_app.config["UPLOAD_EXTENSIONS"]:
+                        filename = secure_filename(uploaded_file.filename)
+                        if filename != "":
+                            filenames[f"{random.randint(0, 9000)}_{filename}"] = uploaded_file
+                    else:
+                        abort(400)
             if len(filenames) > 0:
-                return tuple(filenames)
+                return filenames
 
     @staticmethod
     def get_valid_parameters() -> Dict[str, str]:
@@ -86,6 +136,8 @@ class VerifyFormParameters:
         for parameter_key in request.form.keys():
             submitted_value = request.form[parameter_key].strip()
             if submitted_value != "":
+                if "date" in parameter_key:
+                    submitted_value = datetime.strptime(submitted_value, "%Y-%m-%d")
                 verified_values[parameter_key] = submitted_value
         if len(verified_values) > 0:
             return verified_values

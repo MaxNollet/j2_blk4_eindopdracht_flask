@@ -1,9 +1,7 @@
 from flask import Blueprint, render_template
+from sqlalchemy.exc import OperationalError
 
-from gaps.models import db, Gene, Alias, Genepanel, t_gene_alias
-from sqlalchemy import func
-
-from gaps.genelogic.database_inserter import update_genepanel_v2
+from gaps.models import Gene, Alias, Genepanel
 
 blueprint_update_genepanel = Blueprint("blueprint_update_genepanel", __name__)
 
@@ -21,8 +19,15 @@ def update_genepanel():
     # print(f"Genes: {count_genes}")
     # print(f"Aliases: {count_aliases}")
     # print(f"Genepanels: {count_genepanels}")
-    return render_template("template_update_genepanel.html",
-                           active_nav="genepanel",
-                           unique_genes=Gene.query.count(),
-                           unique_aliases=Alias.query.count(),
-                           unique_genepanels=Genepanel.query.count())
+    try:
+        genes = Gene.query.count()
+        aliases = Alias.query.count()
+        genepanels = Genepanel.query.count()
+        return render_template("template_update_genepanel.html",
+                               active_nav="genepanel",
+                               unique_genes=genes,
+                               unique_aliases=aliases,
+                               unique_genepanels=genepanels)
+    except OperationalError:
+        return render_template("template_update_genepanel.html",
+                               active_nav="genepanel")

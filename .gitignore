@@ -251,3 +251,5 @@ logs/*
 *dataset.txt
 
 test.py
+# Folder for uploading files.
+file_uploads/
