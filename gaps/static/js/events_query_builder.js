@@ -35,4 +35,6 @@ window.onload = function () {
         .addEventListener("reset", function () {
             OpenNewTab(this.id, "input_form");
         });
+    document.getElementById("input_form")
+        .addEventListener("submit", Submit);
 }
