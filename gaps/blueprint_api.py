@@ -63,16 +63,19 @@ def update_genepanel_submit():
     """
     secure_filenames = VerifyFormParameters.get_valid_filenames("input_upload_genepanel")
     upload_path = current_app.config['UPLOAD_PATH']
+    response = dict()
     try:
         for filename in secure_filenames.keys():
             file_location = os.path.join(upload_path, filename)
             secure_filenames[filename].save(file_location)
             genepanel_data = GenepanelReader(filename=file_location).get_genepanel_data()
             DatabaseInserter().insert_genepanel(genepanel_data)
+            response = {"message": "Genepanels updated successfully! Refresh the page to "
+                                   "see the new statistics about the updated geneanels.",
+                        "type": "success"}
     finally:
         for filename in secure_filenames.keys():
             os.remove(os.path.join(upload_path, filename))
-    response = {"input": {"files": str(secure_filenames)}}
     return jsonify(response)
 
 
@@ -96,13 +99,14 @@ class VerifyFormParameters:
             uploaded_files = request.files.getlist(file_upload_field)
             filenames = dict()
             for uploaded_file in uploaded_files:
-                file_extension = os.path.splitext(uploaded_file.filename)[1]
-                if file_extension in current_app.config["UPLOAD_EXTENSIONS"]:
-                    filename = secure_filename(uploaded_file.filename)
-                    if filename != "":
-                        filenames[f"{random.randint(0, 9000)}_{filename}"] = uploaded_file
-                else:
-                    abort(400)
+                if uploaded_file.filename != "":
+                    file_extension = os.path.splitext(uploaded_file.filename)[1]
+                    if file_extension in current_app.config["UPLOAD_EXTENSIONS"]:
+                        filename = secure_filename(uploaded_file.filename)
+                        if filename != "":
+                            filenames[f"{random.randint(0, 9000)}_{filename}"] = uploaded_file
+                    else:
+                        abort(400)
             if len(filenames) > 0:
                 return filenames
 
