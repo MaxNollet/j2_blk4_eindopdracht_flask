@@ -1,4 +1,45 @@
 /**
+ * A function which adds several event triggers to
+ * elements in the interface.
+ *
+ * @author Max Nollet
+ * */
+window.onload = function () {
+    // Listener for input search term.
+    document.getElementById("input_search_term")
+        .addEventListener("keypress", function (event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                document.getElementById("button_add_item").click();
+            }
+        });
+    // Listener for button to add the search term to the query.
+    document.getElementById("button_add_item")
+        .addEventListener("click", QueryBuilder);
+    // Listener for changes in the query-field.
+    document.getElementById("input_generated_query")
+        .addEventListener("input", OnQueryChange);
+    OnQueryChange();
+    // Listener for button to clear the chosen file.
+    document.getElementById("button_clear_file")
+        .addEventListener("click", function () {
+            ClearFile("input_load_symbols")
+        });
+    // Listener for checkbox to open results in a new tab.
+    document.getElementById("check_new_tab")
+        .addEventListener("click", function () {
+            OpenNewTab(this.id, "input_form");
+        });
+    // Listener for reset of the form to reset open in new tab.
+    document.getElementById("input_form")
+        .addEventListener("reset", function () {
+            OpenNewTab(this.id, "input_form");
+        });
+    document.getElementById("input_form")
+        .addEventListener("submit", SubmitQuery);
+}
+
+/**
  * A function which retrieves values from the interface
  * and uses these values to update the interface with a
  * new query.
@@ -56,26 +97,12 @@ function OnQueryChange() {
     element_add.disabled = element_query.value.trim() === "";
 }
 
-function ToggleDisableSubmitButton(disable) {
-    const submit_button = document.getElementById("button_submit");
-    const spinner = document.getElementById("spinner_submit_button");
-    const button_text = document.getElementById("text_submit_button");
-    if (disable === true) {
-        submit_button.setAttribute("disabled", "true");
-        spinner.removeAttribute("hidden");
-        button_text.innerText = "Processing...";
-    } else {
-        button_text.innerText = "Search genes";
-        spinner.setAttribute("hidden", "true");
-        submit_button.removeAttribute("disabled");
-    }
-}
-
 /***/
-function Submit(event) {
+function SubmitQuery(event) {
     event.preventDefault();
     RemoveChilds("alert_box");
-    ToggleDisableSubmitButton(true);
+    const original_text = document.getElementById("button_submit").innerText;
+    ToggleDisableSubmitButton(true, "button_submit", original_text);
 
     const form_element = document.getElementById("input_form");
 
@@ -84,30 +111,8 @@ function Submit(event) {
     request.open("POST", target_url, true);
     // request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     request.onreadystatechange = function () {
-        if (this.readyState === 4) {
-            let response_message = "";
-            let message_type = "";
-            switch (this.status) {
-                case 200:
-                    const results = JSON.parse(this.responseText);
-                    response_message = results.message;
-                    message_type = results.type;
-                    break;
-                case 0:
-                    response_message = `Could not contact the server! Is the server running and are you ` +
-                        `connected to the internet? Please contact your system administrator regarding ` +
-                        `this issue with the following status code: <i>HTML status code ${this.status}</i>.`;
-                    message_type = "danger"
-                    break;
-                default:
-                    response_message = `Something went wrong on the server! Please contact your system administrator ` +
-                        `regarding this issue with the following status code: <i>HTML status code ${this.status}</i>.`
-                    message_type = "danger"
-                    break
-            }
-            MessageBuilder("alert_box", message_type, response_message);
-            ToggleDisableSubmitButton(false);
-        }
+        ResponseHandler(this, "alert_box");
+        ToggleDisableSubmitButton(false, "button_submit", "Search genes");
     };
     request.send(new FormData(form_element));
 }
