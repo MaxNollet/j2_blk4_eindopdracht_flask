@@ -1,4 +1,5 @@
 from gaps.genelogic.database_inserter import DatabaseInserter
+from gaps.genelogic.genepanelreader import GenepanelColumnNotFound
 from gaps.genelogic.genepanelreader import GenepanelContent
 from gaps.genelogic.genepanelreader import GenepanelReader
 from gaps.genelogic.insert_statements import InsertStatements

@@ -8,7 +8,7 @@ from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 
 from gaps.gene_searcher import *
-from gaps.genelogic import GenepanelReader, DatabaseInserter
+from genelogic import GenepanelReader, DatabaseInserter, GenepanelColumnNotFound
 
 blueprint_api = Blueprint("blueprint_api", __name__)
 
@@ -73,6 +73,9 @@ def update_genepanel_submit():
             response = {"message": "Genepanels updated successfully! Refresh the page to "
                                    "see the new statistics about the updated geneanels.",
                         "type": "success"}
+    except GenepanelColumnNotFound as e:
+        response = {"message": str(e),
+                    "type": "danger"}
     finally:
         for filename in secure_filenames.keys():
             os.remove(os.path.join(upload_path, filename))

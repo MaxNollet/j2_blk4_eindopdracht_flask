@@ -91,7 +91,10 @@ class GenepanelReader:
         """
         values = line.strip().split(self._delimiter)
         for column_name in self._column_names:
-            self._column_indexes[column_name] = values.index(column_name)
+            try:
+                self._column_indexes[column_name] = values.index(column_name)
+            except ValueError:
+                raise GenepanelColumnNotFound(column_name)
         return None
 
     def _extract_genepanel_symbol(self, values: List[str]) -> str:
@@ -219,3 +222,14 @@ class GenepanelReader:
         :return All read values from a genepanel-file (GenepanelContent).
         """
         return self._data
+
+
+class GenepanelColumnNotFound(Exception):
+    """An exception when a specific column cannot be found in the
+       file that had been uploaded by the user. Instead of
+       providing a 'ValueError' this custom exception aims
+       to help specify which column is missing from the file.
+    """
+    def __init__(self, column_name: str):
+        super().__init__(f"The column '{column_name}' was not found in the file "
+                         f"that had been uploaded! Could not update genepanels.")
