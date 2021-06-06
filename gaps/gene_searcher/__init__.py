@@ -1,2 +1,3 @@
-from gaps.gene_searcher.GeneSearcher_code import GeneSearcher, NoQuerySpecified, NoDateAfterSpecified, \
-    NoDateBeforeSpecified
+from gaps.gene_searcher.query_processor import GeneSearcher, NoQuerySpecified, \
+    NoDateAfterSpecified, \
+    NoDateBeforeSpecified, MalformedQuery, IncorrectArticleFound, NoGeneFound

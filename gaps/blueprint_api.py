@@ -49,7 +49,8 @@ def query_builder_submit():
                 response = {"message": f"Found {count} articles!",
                             "type": "info"}
         return jsonify(response)
-    except (NoQuerySpecified, NoDateAfterSpecified, NoDateBeforeSpecified) as e:
+    except (NoQuerySpecified, NoDateAfterSpecified, NoDateBeforeSpecified,
+            MalformedQuery, IncorrectArticleFound, NoGeneFound) as e:
         response = {"message": str(e),
                     "type": "warning"}
     finally:
