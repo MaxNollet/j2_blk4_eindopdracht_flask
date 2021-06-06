@@ -9,8 +9,7 @@ import uuid
 from Bio import Entrez
 
 from gaps.genelogic.database_inserter import DatabaseInserter
-
-from gaps.models import Article, Journal
+from gaps.models import Article
 
 Entrez.email = environ.get("EMAIL_ENTREZ")
 Entrez.email = "mjh.nollet@student.han.nl"
@@ -87,6 +86,23 @@ class GeneSearcher:
         results = []  # results from pubmed en pubtator
 
         search_results = insert_db()
+
+        for art in articles:
+            results.append({"article": {"title": art.article.title,
+                                        "pubmed_id": art.article.pubmed_id,
+                                        "doi": art.article.doi,
+                                        "publication_date": art.article.publication_date,
+                                        "abstract": art.article.abstract,
+                                        "journal": art.article.journal.name},
+                            "genes": art.genes, "diseases": art.diseases})
+            search_results.article_list.append({"title": art.article.title,
+                                                "pubmed_id": art.article.pubmed_id,
+                                                "doi": art.article.doi,
+                                                "publication_date": art.article.publication_date,
+                                                "abstract": art.article.abstract})
+            search_results.journal_list.append({"name": art.article.journal.name})
+
+        search_results = insert_db()
         print(search_results, "-=-=")
         # for art in articles:
         #     print("=-=-=", art)
@@ -128,6 +144,19 @@ class GeneSearcher:
         # db.insert_search_results(search_results)
         db.insert_search_results(self.db)
 
+        for id, gene in art.genes.items():
+            if ";" not in id:
+                search_results.genes_list.append(
+                    {"ncbi_gene_id": int(id), "hgnc_symbol": str(gene),
+                     "in_genepanel": False})
+                search_results.article_gene.append(
+                    # Hier moeten de keys de namen van de kolommen bevatten
+                    # waar de waardes in moeten komen te staan in de gewenste
+                    # tabel.
+                    {"article_id": art.article.doi, "gene_id": gene})
+
+        db = DatabaseInserter()
+        db.insert_search_results(search_results)
         return results  # list with dict per article
 
     def query_validator(self, query):
@@ -251,6 +280,40 @@ class GeneSearcher:
                         concatinated += f"-{day}"
             return concatinated
         return None
+        articles = self.pubtator_output(articles)
+        return articles  # articles list with DataArticle complete
+        # except None:  # only get None
+        #     print(
+        #         "The Entrez package is currently offline, please try again later.")
+
+    def extract_date(self, record: dict):
+        """A method which safely extracts a publication date
+           from an article.
+
+        :param record Article possibly containing a publication date (Dict).
+        :return Extracted date from the article if available.
+        """
+
+        pub_date = record.get("MedlineCitation").get("Article").get("Journal").get(
+            "JournalIssue").get("PubDate")
+        if pub_date is not None:
+            year = pub_date.get("Year")
+            month = pub_date.get("Month")
+            day = pub_date.get("Day")
+            concatinated = "Not available"
+            # x = datetime.datetime(int(year), int(month), int(day))
+            if year is not None:
+                concatinated = year
+                date = datetime.strptime(concatinated, "%Y")
+                if month is not None:
+                    concatinated += f"-{month}"
+                    date = datetime.strptime(concatinated, "%Y-%m")
+                if day is not None:
+                    concatinated += f"-{day}"
+                    print(concatinated)
+                    date = datetime.strptime(concatinated, "%Y-%m-%d")
+                return date
+            return None
 
     def url_maker(self, idlist):
         """
@@ -424,6 +487,14 @@ class DataArticle:
     # journal : Journal
     genes: dict = field(default_factory=dict)
     diseases: dict = field(default_factory=dict)
+
+
+class NoQuerySpecified(Exception):
+    """Exception for when no query is specified."""
+
+    def __init__(self):
+        super().__init__("No query specified! Can't perform a search when "
+                         "no query is specified.")
 
 
 @dataclass

@@ -91,3 +91,78 @@ function RemoveChilds(target) {
         target_element.removeChild(target_element.firstChild)
     }
 }
+
+/**
+ * A function which enables or disables a button and updates
+ * its text and status indicator accordingly.
+ *
+ * @author Max Nollet
+ * @param disable Enable or disable the button.
+ * @param target Name of the button to be disabled/enabled,
+ *               used to search the button.
+ * @param original_text Original text of the button to put back
+ *                      when enabling the button again.
+ * */
+function ToggleDisableSubmitButton(disable, target, original_text) {
+    const submit_button = document.getElementById(target);
+    const spinner = submit_button.querySelector("#spinner_submit_button");
+    const button_text = submit_button.querySelector("#text_submit_button");
+    if (disable === true) {
+        submit_button.setAttribute("disabled", "true");
+        spinner.removeAttribute("hidden");
+        button_text.innerText = "Processing...";
+    } else {
+        button_text.innerText = original_text;
+        spinner.setAttribute("hidden", "true");
+        submit_button.removeAttribute("disabled");
+    }
+}
+
+/**
+ * A function which handles various HTML status codes and
+ * displays messages from the server. In case a status code
+ * other than 200 is received, the function tries to display
+ * a helpful message so the user can act accordingly.
+ *
+ * @author Max Nollet
+ * @param response Response-object containing information
+ *                 about the response.
+ * @param target_element_messages Target element to display
+ *                                messages in.
+ * */
+function ResponseHandler(response, target_element_messages) {
+    if (response.readyState === 4) {
+        let response_message;
+        let message_type;
+        switch (response.status) {
+            case 200:
+                const results = JSON.parse(response.responseText);
+                response_message = results.message;
+                message_type = results.type;
+                break;
+            case 0:
+                response_message = `Could not contact the server! Is the server running and are you ` +
+                    `connected to the internet? Please contact your system administrator regarding ` +
+                    `this issue with the following status code: <i>HTML status code ${response.status}</i>.`;
+                message_type = "danger";
+                break;
+            case 400:
+                response_message = "The extension of the file you are trying to upload is not supported! " +
+                    "Only files with the following extensions are supported: <i>.txt</i>, <i>.csv</i> " +
+                    "and <i>.tsv</i>.";
+                message_type = "danger";
+                break;
+            case 413:
+                response_message = "The file you are trying to upload is too large! Shrink the file or " +
+                    "contact your system administrator to change the maximum upload size for files.";
+                message_type = "danger";
+                break;
+            default:
+                response_message = `Something went wrong on the server! Please contact your system administrator ` +
+                    `regarding this issue with the following status code: <i>HTML status code ${response.status}</i>.`;
+                message_type = "danger";
+                break
+        }
+        MessageBuilder(target_element_messages, message_type, response_message);
+    }
+}

@@ -1,10 +1,14 @@
+import os.path
+import random
 from datetime import datetime
-from typing import Tuple, Dict
+from typing import Dict
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app, abort
+from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 
 from gaps.gene_searcher import *
+from genelogic import GenepanelReader, DatabaseInserter, GenepanelColumnNotFound
 
 blueprint_api = Blueprint("blueprint_api", __name__)
 
@@ -22,10 +26,13 @@ def query_builder_submit():
     """
     secure_filenames = VerifyFormParameters.get_valid_filenames("input_load_symbols")
     valid_parameters = VerifyFormParameters.get_valid_parameters()
-
-    print(secure_filenames)
-
+    upload_path = current_app.config['UPLOAD_PATH']
     try:
+        if secure_filenames:
+            filenames = tuple(secure_filenames.keys())
+            filename = filenames[0]
+            file_location = os.path.join(upload_path, filename)
+            secure_filenames[filename].save(file_location)
         searcher = GeneSearcher()
         count = searcher.fetch_results(valid_parameters)
         if count < 1:
@@ -44,7 +51,11 @@ def query_builder_submit():
     except (NoQuerySpecified, NoDateAfterSpecified, NoDateBeforeSpecified) as e:
         response = {"message": str(e),
                     "type": "warning"}
-        return jsonify(response)
+    finally:
+        if secure_filenames:
+            for filename in secure_filenames.keys():
+                os.remove(os.path.join(upload_path, filename))
+    return jsonify(response)
 
 
 @blueprint_api.route("/update_genepanel", methods=["POST"])
@@ -58,7 +69,28 @@ def update_genepanel_submit():
     :return JSON-response containing valid values (JSON).
     """
     secure_filenames = VerifyFormParameters.get_valid_filenames("input_upload_genepanel")
-    response = {"input": {"files": secure_filenames}}
+    upload_path = current_app.config['UPLOAD_PATH']
+    try:
+        if secure_filenames:
+            filenames = tuple(secure_filenames.keys())
+            filename = filenames[0]
+            file_location = os.path.join(upload_path, filename)
+            secure_filenames[filename].save(file_location)
+            genepanel_data = GenepanelReader(filename=file_location).get_genepanel_data()
+            DatabaseInserter().insert_genepanel(genepanel_data)
+            response = {"message": "Genepanels updated successfully! Refresh the page to "
+                                   "see the new statistics about the updated geneanels.",
+                        "type": "success"}
+        else:
+            response = {"message": "No file uploaded! Could not update genepanels.",
+                        "type": "danger"}
+    except GenepanelColumnNotFound as e:
+        response = {"message": str(e),
+                    "type": "danger"}
+    finally:
+        if secure_filenames:
+            for filename in secure_filenames.keys():
+                os.remove(os.path.join(upload_path, filename))
     return jsonify(response)
 
 
@@ -69,24 +101,29 @@ class VerifyFormParameters:
     """
 
     @staticmethod
-    def get_valid_filenames(file_upload_field: str) -> Tuple[str]:
+    def get_valid_filenames(file_upload_field: str) -> Dict[str, FileStorage]:
         """A method which secures filenames from requests
            and returns the secured filenames for safe
            storage and processing of the files.
 
         :param file_upload_field Field to check containing
                                  possible filenames (str).
-        :return Secured filenames (tuple(str)).
+        :return Secured filenames (Dict[str, FileStorage]).
         """
         if file_upload_field in request.files:
             uploaded_files = request.files.getlist(file_upload_field)
-            filenames = list()
+            filenames = dict()
             for uploaded_file in uploaded_files:
-                filename = secure_filename(uploaded_file.filename)
-                if filename != "":
-                    filenames.append(filename)
+                if uploaded_file.filename != "":
+                    file_extension = os.path.splitext(uploaded_file.filename)[1]
+                    if file_extension in current_app.config["UPLOAD_EXTENSIONS"]:
+                        filename = secure_filename(uploaded_file.filename)
+                        if filename != "":
+                            filenames[f"{random.randint(0, 9000)}_{filename}"] = uploaded_file
+                    else:
+                        abort(400)
             if len(filenames) > 0:
-                return tuple(filenames)
+                return filenames
 
     @staticmethod
     def get_valid_parameters() -> Dict[str, str]:

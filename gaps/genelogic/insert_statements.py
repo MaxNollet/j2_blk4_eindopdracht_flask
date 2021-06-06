@@ -1,11 +1,7 @@
-from sqlalchemy import bindparam
 from sqlalchemy.dialects.postgresql import insert
 
-from gaps.genelogic import statement_group
-from gaps.models import Gene, Alias, GenepanelSymbol, Genepanel, \
-    InheritanceType, t_gene_alias, t_genepanel_gene, \
-    t_genepanel_inheritance, Article, Journal, t_article_gene, Query, Disease, \
-    t_query_gene
+from gaps.genelogic.statement_groups import statement_group
+from gaps.models import *
 
 
 class InsertStatements:

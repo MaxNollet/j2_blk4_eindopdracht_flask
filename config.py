@@ -10,9 +10,13 @@ class Config(object):
        for all configurations.
     """
     SECRET_KEY = environ.get("SECRET_KEY")
-    # Config for the database
+    # Config for the database.
     SQLALCHEMY_DATABASE_URI = environ.get("SQLALCHEMY_DATABASE_URI")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    # Config for file uploads.
+    MAX_CONTENT_LENGTH = 1024 * 1024 * 10
+    UPLOAD_EXTENSIONS = [".txt", ".csv", ".tsv"]
+    UPLOAD_PATH = "file_uploads"
 
 
 class Production(Config):
@@ -22,7 +26,7 @@ class Production(Config):
     FLASK_ENV = "production"
     DEBUG = False
     TESTING = False
-    # Config for the database
+    # Config for the database.
     SQLALCHEMY_ECHO = False
 
 
@@ -33,7 +37,7 @@ class Development(Config):
     FLASK_ENV = "development"
     DEBUG = True
     TESTING = False
-    # Config for the database
+    # Config for the database.
     SQLALCHEMY_ECHO = False
 
 
@@ -41,5 +45,5 @@ class Testing(Config):
     FLASK_ENV = "development"
     DEBUG = True
     TESTING = True
-    # Config for the database
+    # Config for the database.
     SQLALCHEMY_ECHO = True
