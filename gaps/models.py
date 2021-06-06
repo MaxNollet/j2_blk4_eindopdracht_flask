@@ -166,7 +166,7 @@ class Query(Model):
     __tablename__ = 'query'
     __table_args__ = {'schema': 'eindopdracht'}
 
-    id = Column(UUID, primary_key=True)
+    id = Column(UUID(as_uuid=True), primary_key=True)
     query = Column(Text, nullable=False, unique=True)
     options_id = Column(ForeignKey('eindopdracht.options.id'))
 
