@@ -8,7 +8,8 @@ from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 
 from gaps.gene_searcher import *
-from genelogic import GenepanelReader, DatabaseInserter, GenepanelColumnNotFound
+from gaps.genelogic import GenepanelReader, DatabaseInserter, \
+    GenepanelColumnNotFound
 
 blueprint_api = Blueprint("blueprint_api", __name__)
 

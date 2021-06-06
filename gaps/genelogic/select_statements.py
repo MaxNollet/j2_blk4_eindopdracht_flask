@@ -102,5 +102,5 @@ class SelectStatements:
     @staticmethod
     @statement_group(table="query", column_as_key="query")
     def _select_query_id():
-        return select(Query.id, Query.query).where(
+        return select(Query.query, Query.id).where(
             Query.query.in_(bindparam("values")))

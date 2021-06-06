@@ -80,7 +80,9 @@ class DatabaseInserter(StatementGroups):
         self.ids["gene_id"] = self.insert_values("gene",
                                                  search_results.genes_list,
                                                  True)
-
+        self.ids["disease"] = self.insert_values("disease",
+                                                 search_results.disease_list,
+                                                 True)
         t = self.combine(search_results.article_gene,
                          ("article_id", "gene_id"))
         self.insert_values(table_name="article_gene", values=t)

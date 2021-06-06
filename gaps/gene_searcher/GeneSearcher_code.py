@@ -85,25 +85,25 @@ class GeneSearcher:
         articles = self.query_pubmed()
         results = []  # results from pubmed en pubtator
 
-        search_results = insert_db()
-
-        for art in articles:
-            results.append({"article": {"title": art.article.title,
-                                        "pubmed_id": art.article.pubmed_id,
-                                        "doi": art.article.doi,
-                                        "publication_date": art.article.publication_date,
-                                        "abstract": art.article.abstract,
-                                        "journal": art.article.journal.name},
-                            "genes": art.genes, "diseases": art.diseases})
-            search_results.article_list.append({"title": art.article.title,
-                                                "pubmed_id": art.article.pubmed_id,
-                                                "doi": art.article.doi,
-                                                "publication_date": art.article.publication_date,
-                                                "abstract": art.article.abstract})
-            search_results.journal_list.append({"name": art.article.journal.name})
-
-        search_results = insert_db()
-        print(search_results, "-=-=")
+        # search_results = insert_db()
+        #
+        # for art in articles:
+        #     results.append({"article": {"title": art.article.title,
+        #                                 "pubmed_id": art.article.pubmed_id,
+        #                                 "doi": art.article.doi,
+        #                                 "publication_date": art.article.publication_date,
+        #                                 "abstract": art.article.abstract,
+        #                                 "journal": art.article.journal.name},
+        #                     "genes": art.genes, "diseases": art.diseases})
+        #     search_results.article_list.append({"title": art.article.title,
+        #                                         "pubmed_id": art.article.pubmed_id,
+        #                                         "doi": art.article.doi,
+        #                                         "publication_date": art.article.publication_date,
+        #                                         "abstract": art.article.abstract})
+        #     search_results.journal_list.append({"name": art.article.journal.name})
+        #
+        # search_results = insert_db()
+        # print(search_results, "-=-=")
         # for art in articles:
         #     print("=-=-=", art)
         #     results.append({"article": {"title": art.article.title,
@@ -144,19 +144,19 @@ class GeneSearcher:
         # db.insert_search_results(search_results)
         db.insert_search_results(self.db)
 
-        for id, gene in art.genes.items():
-            if ";" not in id:
-                search_results.genes_list.append(
-                    {"ncbi_gene_id": int(id), "hgnc_symbol": str(gene),
-                     "in_genepanel": False})
-                search_results.article_gene.append(
-                    # Hier moeten de keys de namen van de kolommen bevatten
-                    # waar de waardes in moeten komen te staan in de gewenste
-                    # tabel.
-                    {"article_id": art.article.doi, "gene_id": gene})
+        # for id, gene in art.genes.items():
+        #     if ";" not in id:
+        #         search_results.genes_list.append(
+        #             {"ncbi_gene_id": int(id), "hgnc_symbol": str(gene),
+        #              "in_genepanel": False})
+        #         search_results.article_gene.append(
+        #             # Hier moeten de keys de namen van de kolommen bevatten
+        #             # waar de waardes in moeten komen te staan in de gewenste
+        #             # tabel.
+        #             {"article_id": art.article.doi, "gene_id": gene})
 
-        db = DatabaseInserter()
-        db.insert_search_results(search_results)
+        # db = DatabaseInserter()
+        # db.insert_search_results(self.db)
         return results  # list with dict per article
 
     def query_validator(self, query):
@@ -345,10 +345,11 @@ class GeneSearcher:
         It contains the genes found in the articles
         :return: articles updated with genes from pubtator
         """
-        idlist = []
+        idlist = {}
         for article in self.db.article_list:
-            idlist.append(str(article["pubmed_id"]))
-        url = self.url_maker(idlist)  # url for all the articles pubmed found
+            idlist[article["pubmed_id"]] = str(article["doi"])
+        url = self.url_maker(
+            list(idlist.keys()))  # url for all the articles pubmed found
         print(url)
         result = requests.get(url)  # get xml-page pubtator
         if result.status_code == 200:
@@ -364,15 +365,17 @@ class GeneSearcher:
                                                            gene),
                                                        "in_genepanel": False})
                             self.db.article_gene.append(
-                                {"article_id": article, "gene_id": int(id)})
+                                {"article_id": idlist[article],
+                                 "gene_id": gene})
                             self.db.query_gene.append(
-                                {"query_id": self.uuid_query,
-                                 "gene_id": int(id)})
+                                {"query_id": self.db.query_list[0]["query"],
+                                 "gene_id": gene})
                     for id, disease in data[str(article)][1].items():
                         self.db.disease_list.append(
                             {"mesh_id": id[5:], "diseas": disease})
                         self.db.article_disease.append(
-                            {"disease_mesh_id": id[5:], "article_id": article})
+                            {"disease_mesh_id": id[5:],
+                             "article_id": idlist[article]})
 
             print(self.db.article_disease, "article_disease\n")
             print(self.db.disease_list, "diseases\n")
@@ -392,7 +395,7 @@ class GeneSearcher:
         """
 
         data_document = []
-        id = 0
+        id = 0  # if there is no ID's
         for document in documents.findall("passage"):
             for doc in document.findall("annotation"):
                 for anno in doc:
