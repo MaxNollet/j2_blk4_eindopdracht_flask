@@ -329,7 +329,6 @@ class GeneSearcher:
                 try:
                     if gene[0]["key"] == "identifier":
                         gene_id = gene[1]
-                        print(gene_id)
                         genes[gene_id] = ""
                     if gene[0]["key"] == "Identifier":  # mesh
                         gene_id = gene[1]
