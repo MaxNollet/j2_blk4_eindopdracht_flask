@@ -124,5 +124,15 @@ class InsertStatements:
 
     @staticmethod
     @statement_group(table="query_gene")
-    def insert_query_gene():
+    def _insert_query_gene():
         return insert(t_query_gene).on_conflict_do_nothing()
+
+    @staticmethod
+    @statement_group(table="article_disease")
+    def _insert_article_disease():
+        return insert(t_article_disease).on_conflict_do_nothing()
+
+    @staticmethod
+    @statement_group(table="option")
+    def _insert_options():
+        return insert(Option).on_conflict_do_nothing()

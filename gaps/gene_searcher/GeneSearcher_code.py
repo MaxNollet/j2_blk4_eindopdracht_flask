@@ -1,11 +1,11 @@
 import ssl
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
 from os import environ
 from xml.etree import ElementTree as etree
 
 import requests
-import uuid
 from Bio import Entrez
 
 from gaps.genelogic.database_inserter import DatabaseInserter
@@ -243,7 +243,7 @@ class GeneSearcher:
                                                  journal_name})
                 self.db.journal_list.append({"name": journal_name})
                 self.db.journal_pk_list.append({
-                                                   "id": journal_name})  # id nog niet beschikbaar moet overschreven worden
+                    "id": journal_name})  # id nog niet beschikbaar moet overschreven worden
                 #     search_results.journal_list.append(
                 #         # {"name": art.article.journal.name, "id": art.article.journal.id})
                 #         {"name": art.article.journal.name})
@@ -265,55 +265,37 @@ class GeneSearcher:
         :param record Article possibly containing a publication date (Dict).
         :return Extracted date from the article if available.
         """
+
         pub_date = record.get("MedlineCitation").get("Article").get("Journal").get(
             "JournalIssue").get("PubDate")
         if pub_date is not None:
-            year = pub_date.get("Year")
-            month = pub_date.get("Month")
-            day = pub_date.get("Day")
-            concatinated = "Not available"
-            if year is not None:
-                concatinated = year
-                if month is not None:
-                    concatinated += f"-{month}"
-                    if day is not None:
-                        concatinated += f"-{day}"
-            return concatinated
+            year: str = pub_date.get("Year")
+            month: str = pub_date.get("Month")
+            day: str = pub_date.get("Day")
+            date = None
+            if year and month and day:
+                concatenated = f"{year}-{month}-{day}"
+                if month.isalpha():
+                    date = datetime.strptime(concatenated, "%Y-%b-%d")
+                else:
+                    date = datetime.strptime(concatenated, "%Y-%m-%d")
+            elif year and month:
+                concatenated = f"{year}-{month}"
+                if month.isalpha():
+                    date = datetime.strptime(concatenated, "%Y-%b")
+                else:
+                    date = datetime.strptime(concatenated, "%Y-%m")
+            elif year:
+                date = datetime.strptime(year, "%Y")
+            else:
+                try:
+                    medline_date = pub_date.get("MedlineDate")
+                    if medline_date:
+                        date = datetime.strptime(medline_date.split("-")[0], "%Y-%b")
+                except ValueError:
+                    date = None
+            return date
         return None
-        articles = self.pubtator_output(articles)
-        return articles  # articles list with DataArticle complete
-        # except None:  # only get None
-        #     print(
-        #         "The Entrez package is currently offline, please try again later.")
-
-    def extract_date(self, record: dict):
-        """A method which safely extracts a publication date
-           from an article.
-
-        :param record Article possibly containing a publication date (Dict).
-        :return Extracted date from the article if available.
-        """
-
-        pub_date = record.get("MedlineCitation").get("Article").get("Journal").get(
-            "JournalIssue").get("PubDate")
-        if pub_date is not None:
-            year = pub_date.get("Year")
-            month = pub_date.get("Month")
-            day = pub_date.get("Day")
-            concatinated = "Not available"
-            # x = datetime.datetime(int(year), int(month), int(day))
-            if year is not None:
-                concatinated = year
-                date = datetime.strptime(concatinated, "%Y")
-                if month is not None:
-                    concatinated += f"-{month}"
-                    date = datetime.strptime(concatinated, "%Y-%m")
-                if day is not None:
-                    concatinated += f"-{day}"
-                    print(concatinated)
-                    date = datetime.strptime(concatinated, "%Y-%m-%d")
-                return date
-            return None
 
     def url_maker(self, idlist):
         """
@@ -370,11 +352,11 @@ class GeneSearcher:
                             self.db.query_gene.append(
                                 {"query_id": self.db.query_list[0]["query"],
                                  "gene_id": gene})
-                    for id, disease in data[str(article)][1].items():
+                    for id, disease in data[article][1].items():
                         self.db.disease_list.append(
-                            {"mesh_id": id[5:], "diseas": disease})
+                            {"mesh_id": id[5:], "disease": disease})
                         self.db.article_disease.append(
-                            {"disease_mesh_id": id[5:],
+                            {"disease_mesh_id": disease,
                              "article_id": idlist[article]})
 
             print(self.db.article_disease, "article_disease\n")
@@ -459,7 +441,7 @@ class GeneSearcher:
 
         for article_id in id_list:
             # For finding title, publication date, doi and pubmed ID
-            Entrez.email = "Your.Name.Here@example.org"
+            # Entrez.email = "Your.Name.Here@example.org"
             handle = Entrez.esummary(db="pubmed", id=article_id)
             record = Entrez.read(handle)
             # print(record)
@@ -490,14 +472,6 @@ class DataArticle:
     # journal : Journal
     genes: dict = field(default_factory=dict)
     diseases: dict = field(default_factory=dict)
-
-
-class NoQuerySpecified(Exception):
-    """Exception for when no query is specified."""
-
-    def __init__(self):
-        super().__init__("No query specified! Can't perform a search when "
-                         "no query is specified.")
 
 
 @dataclass

@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer, String, Table, Text, text
+from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer, String, Table, Text, text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -98,10 +98,13 @@ class Option(Model):
     """A class which maps to the table 'option'
        in the database.
     """
-    __tablename__ = 'options'
-    __table_args__ = {'schema': 'eindopdracht'}
+    __tablename__ = 'option'
+    __table_args__ = (
+        UniqueConstraint('date_after', 'date_before'),
+        {'schema': 'eindopdracht'}
+    )
 
-    id = Column(Integer, primary_key=True, server_default=text("nextval('eindopdracht.options_id_seq'::regclass)"))
+    id = Column(Integer, primary_key=True, server_default=text("nextval('eindopdracht.option_id_seq'::regclass)"))
     date_after = Column(Date, nullable=False)
     date_before = Column(Date, nullable=False)
 
@@ -168,7 +171,7 @@ class Query(Model):
 
     id = Column(UUID(as_uuid=True), primary_key=True)
     query = Column(Text, nullable=False, unique=True)
-    options_id = Column(ForeignKey('eindopdracht.options.id'))
+    options_id = Column(ForeignKey('eindopdracht.option.id'))
 
     options = relationship('Option')
     symbols = relationship('Symbol', secondary='eindopdracht.query_symbol')

@@ -62,37 +62,36 @@ class DatabaseInserter(StatementGroups):
         self.ids["query_id"] = self.insert_values("query",
                                                   search_results.query_list,
                                                   True)
-        # klopt query_id om ze in te voeren?
-        print(search_results.journal_pk_list)
-        self.ids["id"] = self.insert_values("journal",
-                                            search_results.journal_list, True)
-        print(self.ids["id"])
-
-        print("hi")
-        # print(self.ids["id"])
+        if search_results.query_options_list:
+            self.insert_values("option", search_results.query_options_list)
+        # Insert journals.
+        self.ids["id"] = self.insert_values("journal", search_results.journal_list, True)
         for article in search_results.article_list:
             og = article["journal_id"]
             article["journal_id"] = self.ids["id"][og]
-
         self.ids["article_id"] = self.insert_values("article",
                                                     search_results.article_list,
                                                     True)
-        self.ids["gene_id"] = self.insert_values("gene",
-                                                 search_results.genes_list,
-                                                 True)
-        self.ids["disease"] = self.insert_values("disease",
-                                                 search_results.disease_list,
-                                                 True)
-        t = self.combine(search_results.article_gene,
-                         ("article_id", "gene_id"))
-        self.insert_values(table_name="article_gene", values=t)
+        if search_results.genes_list:
+            self.ids["gene_id"] = self.insert_values("gene",
+                                                     search_results.genes_list,
+                                                     True)
+        if search_results.disease_list:
+            self.ids["disease_mesh_id"] = self.insert_values("disease",
+                                                     search_results.disease_list,
+                                                     True)
+        if search_results.article_gene:
+            t = self.combine(search_results.article_gene, ("article_id", "gene_id"))
+            self.insert_values(table_name="article_gene", values=t)
+        if search_results.query_gene:
+            quge = self.combine(search_results.query_gene, ("query_id", "gene_id"))
+            self.insert_values(table_name="query_gene", values=quge)
+        if search_results.article_disease:
 
-        # tussen tabel query_gene invullen:
-        quge = self.combine(search_results, ("query_id", "gene_id"))
-        self.insert_values(table_name="query_gene", values=quge)
-
-        # self.ids["id"] = self.insert_values("article", search_results.journal_pk_list)
-
+            article_disease = self.combine(search_results.article_disease, ("disease_mesh_id", "article_id"))
+            self.insert_values(table_name="article_disease", values=article_disease)
+        # if search_results.journal_pk_list:
+        #     self.ids["id"] = self.insert_values("article", search_results.journal_pk_list)
         self.session.commit()
 
     def insert_values(self, table_name: str, values: List[dict],
