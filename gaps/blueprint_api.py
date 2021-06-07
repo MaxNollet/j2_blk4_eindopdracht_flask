@@ -3,7 +3,7 @@ import random
 from datetime import datetime
 from typing import Dict
 
-from flask import Blueprint, request, jsonify, current_app, abort
+from flask import Blueprint, request, jsonify, current_app, abort, url_for
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 
@@ -40,14 +40,8 @@ def query_builder_submit():
             response = {"message": "No articles found! Adjust your search parameters and try again.",
                         "type": "info"}
         else:
-            results = searcher.results_query()
-            # response = render_template("template_results.html", results=results)
-            if count == 1:
-                response = {"message": f"Found {count} article!",
-                            "type": "info"}
-            else:
-                response = {"message": f"Found {count} articles!",
-                            "type": "info"}
+            searcher.results_query()
+            response = {"redirect": url_for("blueprint_results.results", query_id=searcher.uuid_query)}
         return jsonify(response)
     except (NoQuerySpecified, NoDateAfterSpecified, NoDateBeforeSpecified,
             MalformedQuery, IncorrectArticleFound, NoGeneFound) as e:

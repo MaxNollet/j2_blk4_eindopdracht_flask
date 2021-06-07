@@ -30,9 +30,8 @@ def main():
 class GeneSearcher:
     def __init__(self):
         self.search_results = None
-        query = uuid.uuid4()
         # creates a new uuid for each new search
-        self.uuid_query = query
+        self.uuid_query = uuid.uuid4()
         self.db = InsertDB()
 
     def fetch_results(self, parameters: dict) -> int:
@@ -49,37 +48,34 @@ class GeneSearcher:
         min_date: datetime = parameters.get("input_date_after")
         max_date: datetime = parameters.get("input_date_before")
         self.query_validator(query)
-        if query is not None:
-            self.db.query_list.append({"id": self.uuid_query, "query": query})
-            # options_id moet nog verwerkt worden TODO
-            if any(date is not None for date in (min_date, max_date)):
-                if min_date is None:  # if there isn't a min date
-                    raise NoDateAfterSpecified()
-                if max_date is None:
-                    raise NoDateBeforeSpecified()
-                self.db.query_options_list.append(  # structure for db
-                    {"date_before": min_date, "date_after": max_date})
-                search_results = Entrez.read(
-                    Entrez.esearch(
-                        db="pubmed",
-                        term=query,  # search pubmed with query
-                        usehistory="y",
-                        mindate=min_date.strftime("%Y/%m/%d"),
-                        maxdate=max_date.strftime("%Y/%m/%d")
-                    )
+        self.db.query_list.append({"id": self.uuid_query, "query": query})
+        # options_id moet nog verwerkt worden TODO
+        if any(date is not None for date in (min_date, max_date)):
+            if min_date is None:  # if there isn't a min date
+                raise NoDateAfterSpecified()
+            if max_date is None:
+                raise NoDateBeforeSpecified()
+            self.db.query_options_list.append(  # structure for db
+                {"date_before": min_date, "date_after": max_date})
+            search_results = Entrez.read(
+                Entrez.esearch(
+                    db="pubmed",
+                    term=query,  # search pubmed with query
+                    usehistory="y",
+                    mindate=min_date.strftime("%Y/%m/%d"),
+                    maxdate=max_date.strftime("%Y/%m/%d")
                 )
-            else:
-                search_results = Entrez.read(
-                    Entrez.esearch(
-                        db="pubmed",
-                        term=query,
-                        usehistory="y"  # the Entrez history feature
-                    )
-                )
-            self.search_results = search_results
-            return int(search_results["Count"])
+            )
         else:
-            raise NoQuerySpecified
+            search_results = Entrez.read(
+                Entrez.esearch(
+                    db="pubmed",
+                    term=query,
+                    usehistory="y"  # the Entrez history feature
+                )
+            )
+        self.search_results = search_results
+        return int(search_results["Count"])
 
     def results_query(self):
         """
@@ -109,18 +105,21 @@ class GeneSearcher:
         open_list = ["[", "("]
         close_list = ["]", ")"]
         stack = []
-        for i in query:
-            if i in open_list:
-                stack.append(i)
-            elif i in close_list:
-                pos = close_list.index(i)
-                if ((len(stack) > 0) and
-                        (open_list[pos] == stack[len(stack) - 1])):
-                    stack.pop()
-                else:
-                    raise MalformedQuery
-        if len(stack) != 0:
-            raise MalformedQuery
+        if query is not None or query == "":
+            for i in query:
+                if i in open_list:
+                    stack.append(i)
+                elif i in close_list:
+                    pos = close_list.index(i)
+                    if ((len(stack) > 0) and
+                            (open_list[pos] == stack[len(stack) - 1])):
+                        stack.pop()
+                    else:
+                        raise MalformedQuery
+            if len(stack) != 0:
+                raise MalformedQuery
+        else:
+            raise NoQuerySpecified
 
     def query_pubmed(self):
         """

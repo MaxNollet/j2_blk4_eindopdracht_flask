@@ -6,8 +6,8 @@ from gaps.models import *
 blueprint_results = Blueprint("blueprint_results", __name__)
 
 
-@blueprint_results.route("/results")
-def results():
+@blueprint_results.route("/results/<query_id>")
+def results(query_id):
     """A function which handles requests to the '/'-
        route for the webapp.
 
@@ -19,7 +19,7 @@ def results():
         .join(Journal)\
         .join(t_query_gene, Gene.id == t_query_gene.c.gene_id)\
         .join(Query, Query.id == t_query_gene.c.query_id)\
-        .where(Query.id == "df56db6d-ce3a-4aa3-b91e-48c455355f95")\
+        .where(Query.id == query_id)\
         .order_by(Gene.hgnc_symbol)
     print(joins)
     query_results = db.session.execute(joins)

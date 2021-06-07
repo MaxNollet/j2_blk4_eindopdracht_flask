@@ -129,40 +129,51 @@ function ToggleDisableSubmitButton(disable, target, original_text) {
  *                 about the response.
  * @param target_element_messages Target element to display
  *                                messages in.
+ * @param window_target Where to open the redirect in (new tab)
+ *                      or current tab.
  * */
-function ResponseHandler(response, target_element_messages) {
-    if (response.readyState === 4) {
-        let response_message;
-        let message_type;
-        switch (response.status) {
-            case 200:
-                const results = JSON.parse(response.responseText);
+function ResponseHandler(response, target_element_messages, window_target) {
+    let response_message;
+    let message_type;
+    switch (response.status) {
+        case 200:
+            const results = JSON.parse(response.responseText);
+            if (results.message !== undefined) {
                 response_message = results.message;
                 message_type = results.type;
-                break;
-            case 0:
-                response_message = `Could not contact the server! Is the server running and are you ` +
-                    `connected to the internet? Please contact your system administrator regarding ` +
-                    `this issue with the following status code: <i>HTML status code ${response.status}</i>.`;
-                message_type = "danger";
-                break;
-            case 400:
-                response_message = "The extension of the file you are trying to upload is not supported! " +
-                    "Only files with the following extensions are supported: <i>.txt</i>, <i>.csv</i> " +
-                    "and <i>.tsv</i>.";
-                message_type = "danger";
-                break;
-            case 413:
-                response_message = "The file you are trying to upload is too large! Shrink the file or " +
-                    "contact your system administrator to change the maximum upload size for files.";
-                message_type = "danger";
-                break;
-            default:
-                response_message = `Something went wrong on the server! Please contact your system administrator ` +
-                    `regarding this issue with the following status code: <i>HTML status code ${response.status}</i>.`;
-                message_type = "danger";
-                break
-        }
+            }
+            if (results.redirect !== undefined) {
+                if (window_target !== undefined && window_target != null) {
+                    window.open(results.redirect, window_target);
+                } else {
+                    window.location = results.redirect;
+                }
+            }
+            break;
+        case 0:
+            response_message = `Could not contact the server! Is the server running and are you ` +
+                `connected to the internet? Please contact your system administrator regarding ` +
+                `this issue with the following status code: <i>HTML status code ${response.status}</i>.`;
+            message_type = "danger";
+            break;
+        case 400:
+            response_message = "The extension of the file you are trying to upload is not supported! " +
+                "Only files with the following extensions are supported: <i>.txt</i>, <i>.csv</i> " +
+                "and <i>.tsv</i>.";
+            message_type = "danger";
+            break;
+        case 413:
+            response_message = "The file you are trying to upload is too large! Shrink the file or " +
+                "contact your system administrator to change the maximum upload size for files.";
+            message_type = "danger";
+            break;
+        default:
+            response_message = `Something went wrong on the server! Please contact your system administrator ` +
+                `regarding this issue with the following status code: <i>HTML status code ${response.status}</i>.`;
+            message_type = "danger";
+            break
+    }
+    if (response_message) {
         MessageBuilder(target_element_messages, message_type, response_message);
     }
 }
