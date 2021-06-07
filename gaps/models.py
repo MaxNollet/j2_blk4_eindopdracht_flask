@@ -94,34 +94,6 @@ class Journal(Model):
 
 
 @dataclass
-class Option(Model):
-    """A class which maps to the table 'option'
-       in the database.
-    """
-    __tablename__ = 'option'
-    __table_args__ = (
-        UniqueConstraint('date_after', 'date_before'),
-        {'schema': 'eindopdracht'}
-    )
-
-    id = Column(Integer, primary_key=True, server_default=text("nextval('eindopdracht.option_id_seq'::regclass)"))
-    date_after = Column(Date, nullable=False)
-    date_before = Column(Date, nullable=False)
-
-
-@dataclass
-class Symbol(Model):
-    """A class which maps to the table 'symbol'
-       in the database.
-    """
-    __tablename__ = 'symbol'
-    __table_args__ = {'schema': 'eindopdracht'}
-
-    id = Column(Integer, primary_key=True, server_default=text("nextval('eindopdracht.symbol_id_seq'::regclass)"))
-    symbol = Column(String(80), nullable=False, unique=True)
-
-
-@dataclass
 class Article(Model):
     """A class which maps to the table 'article'
        in the database.
@@ -169,7 +141,7 @@ class Query(Model):
     __tablename__ = 'query'
     __table_args__ = {'schema': 'eindopdracht'}
 
-    id = Column(UUID(as_uuid=True), primary_key=True)
+    id = Column(UUID, primary_key=True)
     query = Column(Text, nullable=False, unique=True)
     options_id = Column(ForeignKey('eindopdracht.option.id'))
 
@@ -209,13 +181,6 @@ t_query_gene = Table(
     'query_gene', metadata,
     Column('query_id', ForeignKey('eindopdracht.query.id'), primary_key=True, nullable=False),
     Column('gene_id', ForeignKey('eindopdracht.gene.id'), primary_key=True, nullable=False),
-    schema='eindopdracht'
-)
-
-t_query_symbol = Table(
-    'query_symbol', metadata,
-    Column('query_id', ForeignKey('eindopdracht.query.id'), primary_key=True, nullable=False),
-    Column('symbol_id', ForeignKey('eindopdracht.symbol.id'), primary_key=True, nullable=False),
     schema='eindopdracht'
 )
 
