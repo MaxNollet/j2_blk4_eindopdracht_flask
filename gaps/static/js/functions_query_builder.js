@@ -114,12 +114,15 @@ function SubmitQuery(event) {
     ToggleDisableSubmitButton(true, "button_submit", original_text);
 
     const form_element = document.getElementById("input_form");
+    const redirect_open_type = form_element.getAttribute("target");
     const target_url = form_element.getAttribute("action");
     const request = new XMLHttpRequest();
     request.open("POST", target_url, true);
     request.onreadystatechange = function () {
-        ResponseHandler(this, "alert_box");
-        ToggleDisableSubmitButton(false, "button_submit", "Search genes");
+        if (this.readyState === 4) {
+            ResponseHandler(this, "alert_box", redirect_open_type);
+            ToggleDisableSubmitButton(false, "button_submit", "Search genes");
+        }
     };
     request.send(new FormData(form_element));
 }
