@@ -25,7 +25,8 @@ def query_builder_submit():
 
     :return JSON-response containing valid values (JSON).
     """
-    secure_filenames = VerifyFormParameters.get_valid_filenames("input_load_symbols")
+    secure_filenames = VerifyFormParameters.get_valid_filenames(
+        "input_load_symbols")
     valid_parameters = VerifyFormParameters.get_valid_parameters()
     upload_path = current_app.config['UPLOAD_PATH']
     try:
@@ -37,11 +38,14 @@ def query_builder_submit():
         searcher = GeneSearcher()
         count = searcher.fetch_results(valid_parameters)
         if count < 1:
-            response = {"message": "No articles found! Adjust your search parameters and try again.",
-                        "type": "info"}
+            response = {
+                "message": "No articles found! Adjust your search parameters "
+                           "and try again.",
+                "type": "info"}
         else:
             searcher.results_query()
-            response = {"redirect": url_for("blueprint_results.results", query_id=searcher.uuid_query)}
+            response = {"redirect": url_for("blueprint_results.results",
+                                            query_id=searcher.uuid_query)}
         return jsonify(response)
     except (NoQuerySpecified, NoDateAfterSpecified, NoDateBeforeSpecified,
             MalformedQuery, IncorrectArticleFound, NoGeneFound) as e:
@@ -64,7 +68,8 @@ def update_genepanel_submit():
 
     :return JSON-response containing valid values (JSON).
     """
-    secure_filenames = VerifyFormParameters.get_valid_filenames("input_upload_genepanel")
+    secure_filenames = VerifyFormParameters.get_valid_filenames(
+        "input_upload_genepanel")
     upload_path = current_app.config['UPLOAD_PATH']
     try:
         if secure_filenames:
@@ -72,14 +77,17 @@ def update_genepanel_submit():
             filename = filenames[0]
             file_location = os.path.join(upload_path, filename)
             secure_filenames[filename].save(file_location)
-            genepanel_data = GenepanelReader(filename=file_location).get_genepanel_data()
+            genepanel_data = GenepanelReader(
+                filename=file_location).get_genepanel_data()
             DatabaseInserter().insert_genepanel(genepanel_data)
-            response = {"message": "Genepanels updated successfully! Refresh the page to "
-                                   "see the new statistics about the updated geneanels.",
-                        "type": "success"}
+            response = {
+                "message": "Genepanels updated successfully! Refresh the "
+                           "page to see the new statistics about "
+                           "the updated geneanels.", "type": "success"}
         else:
-            response = {"message": "No file uploaded! Could not update genepanels.",
-                        "type": "danger"}
+            response = {
+                "message": "No file uploaded! Could not update genepanels.",
+                "type": "danger"}
     except GenepanelColumnNotFound as e:
         response = {"message": str(e),
                     "type": "danger"}
@@ -111,11 +119,14 @@ class VerifyFormParameters:
             filenames = dict()
             for uploaded_file in uploaded_files:
                 if uploaded_file.filename != "":
-                    file_extension = os.path.splitext(uploaded_file.filename)[1]
-                    if file_extension in current_app.config["UPLOAD_EXTENSIONS"]:
+                    file_extension = os.path.splitext(uploaded_file.filename)[
+                        1]
+                    if file_extension in current_app.config[
+                        "UPLOAD_EXTENSIONS"]:
                         filename = secure_filename(uploaded_file.filename)
                         if filename != "":
-                            filenames[f"{random.randint(0, 9000)}_{filename}"] = uploaded_file
+                            filenames[
+                                f"{random.randint(0, 9000)}_{filename}"] = uploaded_file
                     else:
                         abort(400)
             if len(filenames) > 0:
@@ -135,7 +146,8 @@ class VerifyFormParameters:
             submitted_value = request.form[parameter_key].strip()
             if submitted_value != "":
                 if "date" in parameter_key:
-                    submitted_value = datetime.strptime(submitted_value, "%Y-%m-%d")
+                    submitted_value = datetime.strptime(submitted_value,
+                                                        "%Y-%m-%d")
                 verified_values[parameter_key] = submitted_value
         if len(verified_values) > 0:
             return verified_values
