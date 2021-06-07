@@ -27,3 +27,153 @@ function ClearFile(target) {
         file_chooser.value = "";
     }
 }
+
+/**
+ * A function which builds an alert with a given message and
+ * desired type and puts the alert in the specified target
+ * element.
+ *
+ * @author Max Nollet
+ * @param target Target element to put the alert into.
+ * @param type Type of the alert (success, warning or danger).
+ * @param message Message to display in the alert.
+ * */
+function MessageBuilder(target, type, message) {
+    let alert_header = "";
+    let type_safe = "";
+    switch (type) {
+        default:
+        case "info":
+            alert_header = "Info";
+            type_safe = "info";
+            break;
+        case "success":
+            alert_header = "Success";
+            type_safe = "success";
+            break;
+        case "warning":
+            alert_header = "Alert";
+            type_safe = "warning";
+            break;
+        case "danger":
+            alert_header = "Warning";
+            type_safe = "danger";
+            break;
+    }
+    const alert_box = document.getElementById(target);
+    const alert_element = document.createElement("div");
+    alert_element.setAttribute("class", `alert alert-${type_safe} alert-dismissible`);
+    alert_element.setAttribute("role", "alert");
+    alert_element.setAttribute("id", `alert_${type_safe}`);
+    const alert_dismiss_element = document.createElement("button");
+    alert_dismiss_element.setAttribute("type", "button");
+    alert_dismiss_element.setAttribute("class", "btn-close");
+    alert_dismiss_element.setAttribute("data-bs-dismiss", "alert");
+    alert_dismiss_element.setAttribute("aria-label", "Close");
+    alert_element.appendChild(alert_dismiss_element);
+    const alert_message_element = document.createElement("span");
+    alert_message_element.setAttribute("id", `alert_${type_safe}_message`);
+    alert_message_element.innerHTML = `<strong>${alert_header}</strong> ${message}`;
+    alert_element.appendChild(alert_message_element);
+    alert_box.appendChild(alert_element);
+}
+
+/**
+ * A function which removes all child elements from a
+ * given target.
+ *
+ * @author Max Nollet
+ * @param target Target element ot remove all childs from.
+ * */
+function RemoveChilds(target) {
+    const target_element = document.getElementById(target);
+    while (target_element.firstChild) {
+        target_element.removeChild(target_element.firstChild)
+    }
+}
+
+/**
+ * A function which enables or disables a button and updates
+ * its text and status indicator accordingly.
+ *
+ * @author Max Nollet
+ * @param disable Enable or disable the button.
+ * @param target Name of the button to be disabled/enabled,
+ *               used to search the button.
+ * @param original_text Original text of the button to put back
+ *                      when enabling the button again.
+ * */
+function ToggleDisableSubmitButton(disable, target, original_text) {
+    const submit_button = document.getElementById(target);
+    const spinner = submit_button.querySelector("#spinner_submit_button");
+    const button_text = submit_button.querySelector("#text_submit_button");
+    if (disable === true) {
+        submit_button.setAttribute("disabled", "true");
+        spinner.removeAttribute("hidden");
+        button_text.innerText = "Processing...";
+    } else {
+        button_text.innerText = original_text;
+        spinner.setAttribute("hidden", "true");
+        submit_button.removeAttribute("disabled");
+    }
+}
+
+/**
+ * A function which handles various HTML status codes and
+ * displays messages from the server. In case a status code
+ * other than 200 is received, the function tries to display
+ * a helpful message so the user can act accordingly.
+ *
+ * @author Max Nollet
+ * @param response Response-object containing information
+ *                 about the response.
+ * @param target_element_messages Target element to display
+ *                                messages in.
+ * @param window_target Where to open the redirect in (new tab)
+ *                      or current tab.
+ * */
+function ResponseHandler(response, target_element_messages, window_target) {
+    let response_message;
+    let message_type;
+    switch (response.status) {
+        case 200:
+            const results = JSON.parse(response.responseText);
+            if (results.message !== undefined) {
+                response_message = results.message;
+                message_type = results.type;
+            }
+            if (results.redirect !== undefined) {
+                if (window_target !== undefined && window_target != null) {
+                    window.open(results.redirect, window_target);
+                } else {
+                    window.location = results.redirect;
+                }
+            }
+            break;
+        case 0:
+            response_message = `Could not contact the server! Is the server running and are you ` +
+                `connected to the internet? Please contact your system administrator regarding ` +
+                `this issue with the following status code: <i>HTML status code ${response.status}</i>.`;
+            message_type = "danger";
+            break;
+        case 400:
+            response_message = "The extension of the file you are trying to upload is not supported! " +
+                "Only files with the following extensions are supported: <i>.txt</i>, <i>.csv</i> " +
+                "and <i>.tsv</i>.";
+            message_type = "danger";
+            break;
+        case 413:
+            response_message = "The file you are trying to upload is too large! Shrink the file or " +
+                "contact your system administrator to change the maximum upload size for files.";
+            message_type = "danger";
+            break;
+        default:
+            response_message = `Something went wrong on the server! Please contact your system administrator ` +
+                `regarding this issue with the following status code: <i>HTML status code ${response.status}</i>.`;
+            message_type = "danger";
+            break
+    }
+    if (response_message) {
+        MessageBuilder(target_element_messages, message_type, response_message);
+    }
+}

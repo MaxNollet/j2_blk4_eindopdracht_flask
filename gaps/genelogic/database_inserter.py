@@ -1,14 +1,12 @@
-import os
 import time
 from typing import List, Mapping, Tuple
 
 from sqlalchemy.orm import Session
 
-# from gaps.genelogic import reader, StatementGroups
-from gaps.genelogic import reader
-from gaps.genelogic.statement_groups import InsertStatementNotDefined, \
-    SelectStatementNotDefined, \
-    ColumnAsKeyNotDefined, StatementGroupNotDefined, StatementGroups
+from gaps.genelogic.genepanelreader import GenepanelContent
+from gaps.genelogic.statement_groups import InsertStatementNotDefined, SelectStatementNotDefined, ColumnAsKeyNotDefined, \
+    StatementGroupNotDefined
+from gaps.genelogic.statement_groups import StatementGroups
 from gaps.models import db
 
 
@@ -32,50 +30,25 @@ class DatabaseInserter(StatementGroups):
             self.session = session
         self.ids = dict()
 
-    def insert_genepanel(self, file):
-        # New improved data structures for the db.
-        all_genes = list()
-        all_aliases = list()
-        all_genepanel_symbols = list()
-        all_genepanels = list()
-        all_inheritace_types = list()
-        relation_gene_alias = list()
-        relation_gene_genepanel = list()
-        relation_genepanel_inheritance = list()
-        # Extract variables and separate into categories.
-        for line in file:
-            all_genes.append(
-                {"ncbi_gene_id": line.gene.ncbi_gene_id, "hgnc_symbol": line.gene.hgnc_symbol, "in_genepanel": True})
-            for alias in line.alias:
-                if alias.hgnc_symbol is not None and alias.hgnc_symbol != "":
-                    all_aliases.append({"hgnc_symbol": alias.hgnc_symbol})
-                    relation_gene_alias.append({"gene_id": line.gene.hgnc_symbol, "alias_id": alias.hgnc_symbol})
-            all_genepanel_symbols.append({"symbol": line.p_symbol.symbol})
-            for panel in line.panel:
-                all_genepanels.append({"abbreviation": panel[-1].abbreviation})
-                [all_inheritace_types.append({"type": element.type}) for element in panel[:-1]]
-                relation_gene_genepanel.append(
-                    {"gene_id": line.gene.hgnc_symbol, "genepanel_id": panel[-1].abbreviation})
-                [relation_genepanel_inheritance.append(
-                    {"genepanel_id": panel[-1].abbreviation, "inheritance_type_id": element.type}) for element in
-                    panel[:-1]]
-        # Generate combinations
-
+    def insert_genepanel(self, file_content: GenepanelContent):
         starttijd = time.perf_counter()
-
-        self.ids["gene_id"] = self.insert_values("gene", all_genes, True)
-        self.ids["alias_id"] = self.insert_values("alias", all_aliases, True)
-        self.ids["genepanel_symbol_id"] = self.insert_values("genepanel_symbol", all_genepanel_symbols, True)
-        self.ids["genepanel_id"] = self.insert_values("genepanel", all_genepanels, True)
-        self.ids["inheritance_type_id"] = self.insert_values("inheritance_type", all_inheritace_types, True)
+        self.ids["inheritance_type_id"] = self.insert_values("inheritance_type", file_content.all_inheritace_types,
+                                                             True)
+        self.ids["genepanel_id"] = self.insert_values("genepanel", file_content.all_genepanels, True)
+        self.ids["alias_id"] = self.insert_values("alias", file_content.all_aliases, True)
+        self.ids["genepanel_symbol_id"] = self.insert_values("genepanel_symbol", file_content.all_genepanel_symbols,
+                                                             True)
         # Opgehaalde primary keys gebruiken om relatie te updaten.
-        pks_gene_alias = self.combine(relation_gene_alias,
-                                      ("gene_id", "alias_id"))
-        pks_gene_genepanel = self.combine(relation_gene_genepanel,
-                                          ("gene_id", "genepanel_id"))
-        pks_genepanel_inheritance = self.combine(
-            relation_genepanel_inheritance,
-            ("genepanel_id", "inheritance_type_id"))
+        # print(self.ids["genepanel_symbol_id"])
+        for gene in file_content.all_genes:
+            original_value = gene["genepanel_symbol_id"]
+            gene["genepanel_symbol_id"] = self.ids["genepanel_symbol_id"][original_value]
+        self.ids["gene_id"] = self.insert_values("gene", file_content.all_genes, True)
+
+        pks_gene_alias = self.combine(file_content.relation_gene_alias, ("gene_id", "alias_id"))
+        pks_gene_genepanel = self.combine(file_content.relation_gene_genepanel, ("gene_id", "genepanel_id"))
+        pks_genepanel_inheritance = self.combine(file_content.relation_genepanel_inheritance,
+                                                 ("genepanel_id", "inheritance_type_id"))
         self.insert_values("gene_alias", pks_gene_alias)
         self.insert_values("genepanel_gene", pks_gene_genepanel)
         self.insert_values("genepanel_inheritance", pks_genepanel_inheritance)
@@ -84,18 +57,41 @@ class DatabaseInserter(StatementGroups):
 
     def insert_search_results(self, search_results):
         relation_genes_article = list()
+        pk_journal = list()
 
+        self.ids["query_id"] = self.insert_values("query",
+                                                  search_results.query_list,
+                                                  True)
+        if search_results.query_options_list:
+            self.insert_values("option", search_results.query_options_list)
+        # Insert journals.
+        self.ids["id"] = self.insert_values("journal", search_results.journal_list, True)
+        for article in search_results.article_list:
+            og = article["journal_id"]
+            article["journal_id"] = self.ids["id"][og]
         self.ids["article_id"] = self.insert_values("article",
-                                                 search_results.article_list,
-                                                 True)
-        self.ids["gene_id"] = self.insert_values("gene",
-                                              search_results.genes_list, True)
+                                                    search_results.article_list,
+                                                    True)
+        if search_results.genes_list:
+            self.ids["gene_id"] = self.insert_values("gene",
+                                                     search_results.genes_list,
+                                                     True)
+        if search_results.disease_list:
+            self.ids["disease_mesh_id"] = self.insert_values("disease",
+                                                     search_results.disease_list,
+                                                     True)
+        if search_results.article_gene:
+            t = self.combine(search_results.article_gene, ("article_id", "gene_id"))
+            self.insert_values(table_name="article_gene", values=t)
+        if search_results.query_gene:
+            quge = self.combine(search_results.query_gene, ("query_id", "gene_id"))
+            self.insert_values(table_name="query_gene", values=quge)
+        if search_results.article_disease:
 
-        t = self.combine(search_results.article_gene, ("article_id", "gene_id"))
-        self.insert_values(table_name="article_gene", values=t)
-
-        self.insert_values("journal", search_results.journal_list)
-
+            article_disease = self.combine(search_results.article_disease, ("disease_mesh_id", "article_id"))
+            self.insert_values(table_name="article_disease", values=article_disease)
+        # if search_results.journal_pk_list:
+        #     self.ids["id"] = self.insert_values("article", search_results.journal_pk_list)
         self.session.commit()
 
     def insert_values(self, table_name: str, values: List[dict],
@@ -145,17 +141,3 @@ class DatabaseInserter(StatementGroups):
                 original_value = combo[key]
                 combo[key] = self.ids[key][original_value]
         return original_combinations
-
-
-def update_genepanel_v2():
-    """A function which inserts every line of a file
-       into the database.
-    """
-    print("Triggered")
-    path = os.path.join(os.path.dirname(__file__), "GenPanelOverzicht_DG-3.1.0_HAN_original_tsv.txt")
-    if os.path.exists(path):
-        file = reader.get_reader(path)
-        print("Executing . . .")
-        inserter = DatabaseInserter()
-        inserter.insert_genepanel(file)
-        print("Done")

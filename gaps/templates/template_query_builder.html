@@ -4,8 +4,7 @@
 
 {% block head %}
     <script src="{{ url_for("static", filename="js/generic_functions.js") }}"></script>
-    <script src="{{ url_for("static", filename="js/query_builder_functions.js") }}"></script>
-    <script src="{{ url_for("static", filename="js/events_query_builder.js") }}"></script>
+    <script src="{{ url_for("static", filename="js/functions_query_builder.js") }}"></script>
 {% endblock %}
 
 {% block content %}
@@ -19,8 +18,7 @@
                 <p id="paragraph_help">For detailed information about every step in the query builder, and a step-by-step-guide, please refer to '<em>How to use the query builder</em>' in the help-section.</p>
             </div>
         </div>
-        <div class="alert alert-info alert-dismissible" role="alert" id="alert" hidden=""><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button><span id="alert_message"><strong>Alert</strong> text.</span></div>
-        <form id="input_form" class="gy-5" method="post" enctype="multipart/form-data">
+        <form id="input_form" class="gy-5" method="post" enctype="multipart/form-data" action="{{ url_for('blueprint_query_builder.query_builder') }}">
             <div class="row gy-5 gx-lg-5" id="row_query_symbols">
                 <div class="col-lg-7 d-flex flex-column overflow-hidden" id="col_query_builder">
                     <h2 id="header_query_builder" class="section_header">1. Build a query</h2>
@@ -100,28 +98,31 @@
                         </div>
                         <div class="col-lg-12" id="col_display_symbols"><label class="form-label" id="label_symbols" for="input_symbols">Gene symbols to include/exclude</label><textarea class="form-control textarea_minimal_height font-monospace" id="input_symbols" autocomplete="off" spellcheck="false" placeholder="No gene symbols specified" style="min-height: 93px;" name="input_symbols"></textarea><small class="form-text" id="help_multiple_symbols">Separate gene symbols with a comma-sign (,)</small></div>
                         <div class="col" id="col_load_symbols"><label class="form-label" id="label_load_symbols" for="input_load_symbols">Or, load gene symbols from a file</label>
-                            <div class="input-group" id="input_group_clear_file"><input class="form-control" type="file" id="input_load_symbols" name="input_load_symbols"><button class="btn btn-outline-primary" id="button_clear_file" type="button">Clear</button></div><small class="form-text">File may contain only one gene symbol per line</small>
+                            <div class="input-group" id="input_group_clear_file"><input class="form-control" type="file" id="input_load_symbols" name="input_load_symbols" accept=".txt, .csv, .tsv"><button class="btn btn-outline-primary" id="button_clear_file" type="button">Clear</button></div><small class="form-text">Only files with one gene symbol per line are accepted with a size limit of 10 MB</small>
                         </div>
                     </div>
                 </div>
                 <div class="col-12" id="col_options">
                     <h2 id="header_options" class="section_header">3. Optional options</h2>
                     <div class="row gy-3" id="row_date_options">
-                        <div class="col text-nowrap" id="row_date_after"><label class="form-label" id="label_date_after" for="input_date_after">Search articles published after</label><input class="form-control" id="input_date_after" type="date" name="input_date_after"></div>
-                        <div class="col text-nowrap" id="row_date_before"><label class="form-label" id="label_date_before" for="input_date_before">Search articles published before</label><input class="form-control" id="input_date_before" type="date" name="input_date_before"></div>
+                        <div class="col text-nowrap" id="row_date_after"><label class="form-label" id="label_date_after" for="input_date_after">Search articles published after date</label><input class="form-control" id="input_date_after" type="date" name="input_date_after"></div>
+                        <div class="col text-nowrap" id="row_date_before"><label class="form-label" id="label_date_before" for="input_date_before">Search articles published before date</label><input class="form-control" id="input_date_before" type="date" name="input_date_before"></div>
                     </div>
                 </div>
                 <div class="col" id="col_submit_options">
+                    <div id="alert_box"></div>
                     <div class="row gy-3" id="row_submit_options">
                         <div class="col-auto d-flex align-items-center" id="col_new_tab">
                             <div id="div_new_tab" class="form-check form-switch"><input type="checkbox" id="check_new_tab" class="form-check-input"><label class="form-label text-nowrap form-check-label my-0" id="label_new_tab" for="check_new_tab">Open search in new tab</label></div>
                         </div>
-                        <div class="col-md-auto" id="col_submit_clear">
-                            <div class="row gy-2" id="row_submit_clear">
-                                <div class="col d-grid" id="col_submit"><button class="btn btn-primary text-nowrap flex-nowrap" id="button_submit" type="submit">Search genes</button></div>
-                                <div class="col d-grid" id="col_clear"><button class="btn btn-outline-danger text-nowrap" id="button_clear" type="reset">Clear all input</button></div>
-                            </div>
+                        <div class="col-sm-1 gy-0 gx-0" id="col_spacer_submit_reset_0">
+                            <div id="spacer_submit_reset_0"></div>
                         </div>
+                        <div class="col-sm-12 col-md-auto flex-grow-0 d-grid" id="col_clear"><button class="btn btn-outline-danger text-nowrap" id="button_clear" type="reset">Clear all input</button></div>
+                        <div class="col-sm-1 gy-0 gx-0" id="col_spacer_submit_reset_1">
+                            <div id="spacer_submit_reset_1"></div>
+                        </div>
+                        <div class="col-sm-12 col-md-auto d-grid" id="col_submit"><button class="btn btn-primary text-nowrap" id="button_submit" type="submit"><span class="spinner-border spinner-border-sm gx-2" role="status" id="spinner_submit_button" hidden=""></span><span id="text_submit_button">Search genes<br></span></button></div>
                     </div>
                 </div>
             </div>

@@ -1,9 +1,7 @@
 from sqlalchemy.dialects.postgresql import insert
 
-from gaps.genelogic import statement_group
-from gaps.models import Gene, Alias, GenepanelSymbol, Genepanel, \
-    InheritanceType, t_gene_alias, t_genepanel_gene, \
-    t_genepanel_inheritance, Article, Journal, t_article_gene
+from gaps.genelogic.statement_groups import statement_group
+from gaps.models import *
 
 
 class InsertStatements:
@@ -20,7 +18,14 @@ class InsertStatements:
 
         :return Insert-statement for the gene-table (Insert).
         """
-        return insert(Gene).on_conflict_do_nothing()
+        statement = insert(Gene)
+        column_references = {c.name: c for c in statement.excluded}
+        return statement.on_conflict_do_update(
+            index_elements=["hgnc_symbol"],
+            set_={"ncbi_gene_id": column_references["ncbi_gene_id"],
+                  "in_genepanel": column_references["in_genepanel"],
+                  "genepanel_symbol_id": column_references["genepanel_symbol_id"]}
+        )
 
     @staticmethod
     @statement_group(table="alias")
@@ -106,3 +111,28 @@ class InsertStatements:
     @statement_group(table="article_gene")
     def _insert_article_gene():
         return insert(t_article_gene).on_conflict_do_nothing()
+
+    @staticmethod
+    @statement_group(table="disease")
+    def _insert_disease():
+        return insert(Disease).on_conflict_do_nothing()
+
+    @staticmethod
+    @statement_group(table="query")
+    def _insert_query():
+        return insert(Query).on_conflict_do_nothing()
+
+    @staticmethod
+    @statement_group(table="query_gene")
+    def _insert_query_gene():
+        return insert(t_query_gene).on_conflict_do_nothing()
+
+    @staticmethod
+    @statement_group(table="article_disease")
+    def _insert_article_disease():
+        return insert(t_article_disease).on_conflict_do_nothing()
+
+    @staticmethod
+    @statement_group(table="option")
+    def _insert_options():
+        return insert(Option).on_conflict_do_nothing()

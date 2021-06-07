@@ -1,8 +1,8 @@
 from sqlalchemy import select, bindparam
 
-from gaps.genelogic import statement_group
+from gaps.genelogic.statement_groups import statement_group
 from gaps.models import Gene, Alias, GenepanelSymbol, Genepanel, \
-    InheritanceType, Article
+    InheritanceType, Article, Journal, Query, Disease
 
 
 class SelectStatements:
@@ -91,3 +91,23 @@ class SelectStatements:
     def _select_article_id():
         return select(Article.doi, Article.id).where(
             Article.doi.in_(bindparam("values")))
+
+    @staticmethod
+    @statement_group(table="journal", column_as_key="name")
+    def _select_journal_id():
+        print(select(Journal.id).where(Journal.name.in_(bindparam("values"))))
+        return select(Journal.name, Journal.id).where(
+            Journal.name.in_(bindparam("values")))
+
+    @staticmethod
+    @statement_group(table="query", column_as_key="query")
+    def _select_query_id():
+        return select(Query.query, Query.id).where(
+            Query.query.in_(bindparam("values")))
+
+    @staticmethod
+    @statement_group(table="disease", column_as_key="disease")
+    def _select_disease_id():
+        return select(Disease.disease, Disease.mesh_id).where(
+            Disease.disease.in_(bindparam("values"))
+        )
