@@ -277,11 +277,6 @@ class GeneSearcher:
                         self.db.article_disease.append(
                             {"disease_mesh_id": disease,
                              "article_id": idlist[article]})
-
-            print(self.db.article_disease, "article_disease\n")
-            print(self.db.disease_list, "diseases\n")
-            print(self.db.genes_list, "genes\n")
-            print(self.db.article_gene, "article_gene\n")
         else:
             print("Request not succesful.")
 
@@ -327,14 +322,12 @@ class GeneSearcher:
                 documents)
         data_pubtator = {}
         for pmid, data in data_doc.items():  # pubmed id, data pubtator
-            print(pmid, "pmid")
             genes = {}
             mesh = {}
             for gene in data:  # gene = {'key': 'identifier'}, '5362']
                 try:
                     if gene[0]["key"] == "identifier":
                         gene_id = gene[1]
-                        print(gene_id)
                         genes[gene_id] = ""
                     if gene[0]["key"] == "Identifier":  # mesh
                         gene_id = gene[1]
