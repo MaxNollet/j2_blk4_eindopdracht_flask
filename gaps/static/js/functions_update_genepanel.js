@@ -32,8 +32,10 @@ function SubmitGenepanel(event) {
     const request = new XMLHttpRequest();
     request.open("POST", target_url, true);
     request.onreadystatechange = function() {
-        ResponseHandler(this, "alert_box");
-        ToggleDisableSubmitButton(false, "button_update_genepanel", original_text);
+        if (request.readyState === 4) {
+            ResponseHandler(this, "alert_box");
+            ToggleDisableSubmitButton(false, "button_update_genepanel", original_text);
+        }
     }
     request.send(new FormData(form_element));
 }
