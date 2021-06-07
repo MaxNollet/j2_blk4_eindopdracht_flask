@@ -1,46 +1,65 @@
 {% extends "base_template.html" %}
-{% block title %}GAPS results{% endblock %}
+
+{% block title %}GAPS search results{% endblock %}
+
+{% block head %}{% endblock %}
 
 {% block content %}
-    {% if results %}
-        <table class="table table-hover table-primary table-striped table-sm">
-            <thead>
-            <tr>
-                <th scope="col">Article title</th>
-                <th scope="col">Publication date</th>
-                <th scope="col">Genes</th>
-                <th scope="col">Diseases</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for result in results %}
-                <tr>
-                    <td>
-                        <a href="https://pubmed.ncbi.nlm.nih.gov/{{ result["article"]["pubmed_id"] }}/"
-                           target="_blank" title="PubMed article"
-                           class="link-secondary">{{ result["article"]["title"] | safe }}</a>
-                    </td>
-                    <td>{{ result["article"]["publication_date"] }}</td>
-                    <td>
-                        {% for gene in result["genes"].items() %}
-                            {% if not ";" in gene[0] %}
-                                <a href="https://www.ncbi.nlm.nih.gov/gene/{{ gene[0] }}"
-                                   class="link-secondary" target="_blank"
-                                   title="Gene ncbi">{{ gene[1] }}</a>
-                            {% endif %}
-                        {% endfor %}
-                    </td>
-                    <td> {% for gene in result["diseases"].items() %}
-                        <a href="https://meshb.nlm.nih.gov/record/ui?ui={{ gene[0][5:] }}"
-                           class="link-secondary" target="_blank"
-                           title="mesh link">{{ gene[1] }}</a>
-                    {% endfor %}
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>No results found ┗|｀O′|┛</p>
-    {% endif %}
+    <div class="container">
+        <div class="row flex-column gy-2 padding_below_section" id="row_informative_text">
+            <div class="col">
+                <h1 class="display-2">Search_results</h1>
+            </div>
+            <div class="col-lg-9">
+                <p>Results from queries are shown below.</p>
+                <p hidden="">Paragraph 2</p>
+                <p hidden="">Search ID: {% if query_id %}{{ query_id }}{% endif %}</p>
+            </div>
+        </div>
+        <div class="row flex-column padding_below_section" id="row_filters" hidden="">
+            <div class="col">
+                <h2 class="section_header">Order and filter results</h2>
+            </div>
+            <div class="col gy-3">
+                <form class="gy-5">
+                    <div class="row flex-column gy-3">
+                        <div class="col">
+                            <fieldset>
+                                <legend>1. Field Group</legend>
+                                <div id="switch_hide_genes_in_genepanel" class="form-check form-switch"><input type="checkbox" id="hide_genes_in_genepanel" class="form-check-input"><label class="form-label form-switch-label my-0" id="label_hide_genes_in_genepanel" for="hide_genes_in_genepanel">Hide genes already in genepanels</label></div>
+                            </fieldset>
+                        </div>
+                        <div class="col"><button class="btn btn-primary text-nowrap" id="button_update_filters" type="submit"><span class="spinner-border spinner-border-sm gx-2" role="status" id="spinner_submit_button" hidden=""></span><span id="text_submit_button">Apply filters<br></span></button></div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="row flex-column" id="row_results">
+            <div class="col" id="col_header_results">
+                <h2 id="header_results" class="section_header">Results</h2>
+            </div>
+            <div class="col" id="col_results"><code>Text</code>
+                <div class="table-responsive" id="results">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Column 1</th>
+                                <th>Column 2</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Cell 1</td>
+                                <td>Cell 2</td>
+                            </tr>
+                            <tr>
+                                <td>Cell 3</td>
+                                <td>Cell 4</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
