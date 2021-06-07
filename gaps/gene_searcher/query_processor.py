@@ -25,6 +25,7 @@ def main():
 
     print(Entrez.email)
     query = "((\"2021\"[Date - Publication] : \"3000\"[Date - Publication])) AND (CDH8[Text Word])"
+    # ((Loss of sight[ALL]) AND (Blindness[ALL])) AND (Loss of hearing[ALL])
 
 
 class GeneSearcher:
@@ -32,6 +33,7 @@ class GeneSearcher:
         self.search_results = None
         # creates a new uuid for each new search
         self.uuid_query = uuid.uuid4()
+        # self.uu
         self.db = InsertDB()
 
     def fetch_results(self, parameters: dict) -> int:
@@ -148,8 +150,13 @@ class GeneSearcher:
                     "ArticleTitle")
                 doi_element = record.get("MedlineCitation").get("Article").get(
                     "ELocationID")
+                # [StringElement('21479269', attributes={'IdType': 'pubmed'}), StringElement('10.1371/journal.pone.0015669', attributes={'IdType': 'doi'}), StringElement('PMC3066203', attributes={'IdType': 'pmc'})]
+
                 if not doi_element:  # if there isn't a doi number
-                    raise IncorrectArticleFound
+                    doi = str(uuid.uuid4())
+                    # doi = record.get("PubmedData").get("ArticleIdList")[-1]
+                    # if "/" not in doi and "." not in doi:
+                    #     raise IncorrectArticleFound
                 else:
                     if doi_element is not None:
                         try:
@@ -327,9 +334,15 @@ class GeneSearcher:
             for gene in data:  # gene = {'key': 'identifier'}, '5362']
                 try:
                     if gene[0]["key"] == "identifier":
-                        gene_id = gene[1]
-                        genes[gene_id] = ""
+                        # print(gene[1])
+                        if gene[1][:4] == "MESH":
+                            gene_id = gene[1]
+                            mesh[gene_id] = ""
+                        else:
+                            gene_id = gene[1]
+                            genes[gene_id] = ""
                     if gene[0]["key"] == "Identifier":  # mesh
+                        # if gene[1][:4] == "MESH":
                         gene_id = gene[1]
                         mesh[gene_id] = ""
                 except KeyError:
@@ -342,6 +355,7 @@ class GeneSearcher:
                         else:
                             genes[gene_id] = gene[1]
             data_pubtator[pmid] = [genes, mesh]
+            print(data_pubtator)
         return data_pubtator
 
 
