@@ -115,7 +115,12 @@ class InsertStatements:
     @staticmethod
     @statement_group(table="disease")
     def _insert_disease():
-        return insert(Disease).on_conflict_do_nothing()
+        statement = insert(Disease)
+        column_references = {c.name: c for c in statement.excluded}
+        return statement.on_conflict_do_update(
+            index_elements=["disease"],
+            set_={"mesh_id": column_references["mesh_id"]}
+        )
 
     @staticmethod
     @statement_group(table="query")
