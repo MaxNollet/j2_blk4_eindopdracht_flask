@@ -284,8 +284,8 @@ class GeneSearcher:
         idlist = {}
         for article in batch:
             idlist[article["pubmed_id"]] = str(article["doi"])
-        json_parameters = {"pmids": [str(element) for element in idlist.keys()]}
-        json_parameters["concepts"] = ("gene", "disease")
+        json_parameters = {"pmids": [str(element) for element in idlist.keys()],
+                           "concepts": ("gene", "disease")}
         base_url = "https://www.ncbi.nlm.nih.gov/research/pubtator-api/publications/export/"
         result = requests.post(base_url + "biocxml", json=json_parameters)  # get xml-page pubtator
         if result.status_code == 200:

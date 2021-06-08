@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from flask import Blueprint, render_template, url_for
 from sqlalchemy import select
 
@@ -13,27 +15,39 @@ def results(query_id):
 
     :return Rendered template of 'homepage.html' (str).
     """
-    joins = select([Gene.hgnc_symbol, Article.doi, Article.journal_id])\
-        .join(t_article_gene, Gene.id == t_article_gene.c.gene_id)\
-        .join(Article, Article.id == t_article_gene.c.article_id)\
-        .join(Journal)\
-        .join(t_query_gene, Gene.id == t_query_gene.c.gene_id)\
-        .join(Query, Query.id == t_query_gene.c.query_id)\
-        .where(Query.id == query_id)\
+    joins = select([Gene.hgnc_symbol, Disease.disease])\
+        .join()\
         .order_by(Gene.hgnc_symbol)
-    print(joins)
-
     query_results = db.session.execute(joins)
     for row in query_results:
         print(row)
+    print(joins)
+    # SelectStatementBuilder()
     return render_template("template_results.html")
 
 
 class SelectStatementBuilder:
     column_name_getter = {"HGNC symbol": Gene.hgnc_symbol, "DOI": Article.doi, "Journal": Article.journal_id}
     column_name_converter = {"hgnc_symbol": "HGNC symbol", "doi": "DOI", "name": "Journal"}
+    table_joins = {""}
 
-    def select_statement_builder(self, columns: tuple):
+    def __init__(self):
+        self.statement = None
+        self.select_statement_builder(("HGNC symbol", "DOI", "Journal"))
+        print(self.statement)
+        db.session.execute(self.statement)
+
+    def select_statement_builder(self, columns: Tuple[str, ...]):
+        select_columns = self.get_select_columns(columns)
+
+    def get_select_columns(self, columns: Tuple[str, ...]) -> tuple:
+        select_columns = list()
         for column in columns:
-            pass
-        return None
+            column_name = self.column_name_getter.get(column)
+            if column_name:
+                select_columns.append(column_name)
+        self.statement = select(select_columns)
+        return tuple(select_columns)
+
+    def join_tables(self):
+        pass
