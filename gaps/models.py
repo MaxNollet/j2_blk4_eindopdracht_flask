@@ -34,8 +34,9 @@ class Disease(Model):
     __tablename__ = 'disease'
     __table_args__ = {'schema': 'eindopdracht'}
 
-    mesh_id = Column(String(25), primary_key=True)
-    disease = Column(String(100), nullable=False)
+    id = Column(Integer, primary_key=True, server_default=text("nextval('eindopdracht.disease_id_seq'::regclass)"))
+    mesh_id = Column(String(25), nullable=False)
+    disease = Column(String(100), nullable=False, unique=True)
 
 
 @dataclass
@@ -90,7 +91,7 @@ class Journal(Model):
     __table_args__ = {'schema': 'eindopdracht'}
 
     id = Column(Integer, primary_key=True, server_default=text("nextval('eindopdracht.journal_id_seq'::regclass)"))
-    name = Column(String(60), nullable=False, unique=True)
+    name = Column(String(100), nullable=False, unique=True)
 
 
 @dataclass
@@ -106,12 +107,12 @@ class Article(Model):
     pubmed_id = Column(Integer)
     doi = Column(String(60), nullable=False, unique=True)
     publication_date = Column(Date)
-    abstract = Column(String(3000), nullable=False)
+    abstract = Column(String(3000))
     journal_id = Column(ForeignKey('eindopdracht.journal.id'))
 
     journal = relationship('Journal')
     genes = relationship('Gene', secondary='eindopdracht.article_gene')
-    disease_meshs = relationship('Disease', secondary='eindopdracht.article_disease')
+    diseases = relationship('Disease', secondary='eindopdracht.article_disease')
 
 
 @dataclass
@@ -187,6 +188,6 @@ t_query_gene = Table(
 t_article_disease = Table(
     'article_disease', metadata,
     Column('article_id', ForeignKey('eindopdracht.article.id'), primary_key=True, nullable=False),
-    Column('disease_mesh_id', ForeignKey('eindopdracht.disease.mesh_id'), primary_key=True, nullable=False),
+    Column('disease_id', ForeignKey('eindopdracht.disease.id'), primary_key=True, nullable=False),
     schema='eindopdracht'
 )
