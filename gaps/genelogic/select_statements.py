@@ -107,6 +107,6 @@ class SelectStatements:
     @staticmethod
     @statement_group(table="disease", column_as_key="disease")
     def _select_disease_id():
-        return select(Disease.disease, Disease.mesh_id).where(
+        return select(Disease.disease, Disease.id).where(
             Disease.disease.in_(bindparam("values"))
         )

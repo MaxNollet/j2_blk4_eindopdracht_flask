@@ -77,9 +77,9 @@ class DatabaseInserter(StatementGroups):
                                                      search_results.genes_list,
                                                      True)
         if search_results.disease_list:
-            self.ids["disease_mesh_id"] = self.insert_values("disease",
-                                                     search_results.disease_list,
-                                                     True)
+            self.ids["disease_id"] = self.insert_values("disease",
+                                                        search_results.disease_list,
+                                                        True)
         if search_results.article_gene:
             t = self.combine(search_results.article_gene, ("article_id", "gene_id"))
             self.insert_values(table_name="article_gene", values=t)
@@ -87,8 +87,8 @@ class DatabaseInserter(StatementGroups):
             quge = self.combine(search_results.query_gene, ("query_id", "gene_id"))
             self.insert_values(table_name="query_gene", values=quge)
         if search_results.article_disease:
-
-            article_disease = self.combine(search_results.article_disease, ("disease_mesh_id", "article_id"))
+            article_disease = self.combine(search_results.article_disease,
+                                           ("disease_id", "article_id"))
             self.insert_values(table_name="article_disease", values=article_disease)
         # if search_results.journal_pk_list:
         #     self.ids["id"] = self.insert_values("article", search_results.journal_pk_list)
@@ -139,5 +139,6 @@ class DatabaseInserter(StatementGroups):
         for combo in original_combinations:
             for key in primary_keys:
                 original_value = combo[key]
+
                 combo[key] = self.ids[key][original_value]
         return original_combinations

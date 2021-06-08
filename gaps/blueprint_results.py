@@ -22,6 +22,7 @@ def results(query_id):
         .where(Query.id == query_id)\
         .order_by(Gene.hgnc_symbol)
     print(joins)
+
     query_results = db.session.execute(joins)
     retrieved_values = list()
     for rowproxy in query_results:
