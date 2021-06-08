@@ -144,10 +144,6 @@ class Query(Model):
 
     id = Column(UUID, primary_key=True)
     query = Column(Text, nullable=False, unique=True)
-    options_id = Column(ForeignKey('eindopdracht.option.id'))
-
-    options = relationship('Option')
-    symbols = relationship('Symbol', secondary='eindopdracht.query_symbol')
 
 
 t_gene_alias = Table(

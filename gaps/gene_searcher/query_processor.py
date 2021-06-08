@@ -50,8 +50,10 @@ class GeneSearcher:
         min_date: datetime = parameters.get("input_date_after")
         max_date: datetime = parameters.get("input_date_before")
         self.query_validator(query)
-        self.db.query_list.append({"id": self.uuid_query, "query": query})
+        self.db.query_list.append({"id": str(self.uuid_query), "query": query})
         # options_id moet nog verwerkt worden TODO
+        # UUID IS WEER een str?
+        # exact deze error https://stackoverflow.com/questions/47429929/attributeerror-uuid-object-has-no-attribute-replace-when-using-backend-agno
         if any(date is not None for date in (min_date, max_date)):
             if min_date is None:  # if there isn't a min date
                 raise NoDateAfterSpecified()
@@ -90,6 +92,7 @@ class GeneSearcher:
         # print(self.db.disease_list, "disease list")
         # print(self.db.genes_list, "genes_list")
         # print(self.db.article_gene, "article gene")
+        print(self.db.article_disease, "jaa")
         if not self.db.genes_list:  # no genes found.
             raise NoGeneFound
         else:  # found gene and inserts into database
@@ -153,7 +156,11 @@ class GeneSearcher:
                 # [StringElement('21479269', attributes={'IdType': 'pubmed'}), StringElement('10.1371/journal.pone.0015669', attributes={'IdType': 'doi'}), StringElement('PMC3066203', attributes={'IdType': 'pmc'})]
 
                 if not doi_element:  # if there isn't a doi number
+                    # doi = str(uuid.uuid4())
+                    # doi = self.uuid_fix(uuid.uuid4())
                     doi = str(uuid.uuid4())
+                    print(type(doi), "type")
+                    print(doi, "doi, uuid", pubmed_id)
                     # doi = record.get("PubmedData").get("ArticleIdList")[-1]
                     # if "/" not in doi and "." not in doi:
                     #     raise IncorrectArticleFound
@@ -183,6 +190,13 @@ class GeneSearcher:
                 self.db.journal_pk_list.append({  # structure to insert
                     "id": journal_name})  # into the database
         self.pubtator_output()
+
+    @staticmethod
+    def uuid_fix(doi):
+        if doi is None:
+            return doi
+        else:
+            return uuid.UUID(str(doi))
 
     @staticmethod
     def extract_date(record: dict):
@@ -282,8 +296,10 @@ class GeneSearcher:
                         self.db.disease_list.append(
                             {"mesh_id": id_disease[5:], "disease": disease})
                         self.db.article_disease.append(
-                            {"disease_mesh_id": disease,
+                            {"disease_id": disease,
                              "article_id": idlist[article]})
+            print(self.db.disease_list, "dis")
+            print(self.db.article_disease, "arty_dis")
         else:
             print("Request not succesful.")
 
