@@ -93,6 +93,8 @@ class GeneSearcher:
         # print(self.db.disease_list, "disease list")
         # print(self.db.genes_list, "genes_list")
         # print(self.db.article_gene, "article gene")
+        print(self.db.genes_list)
+        print(self.db.disease_list)
         if not self.db.genes_list:  # no genes found.
             raise NoGeneFound
         else:  # found gene and inserts into database
@@ -255,6 +257,7 @@ class GeneSearcher:
         complete_url = "https://www.ncbi.nlm.nih.gov/research/pubtator-api" \
                        "/publications/export/biocxml?pmids={}&" \
                        "concepts=gene,disease".format(url)
+
         # complete_url is url for pubtator from pubtator API
         return complete_url
 
@@ -285,12 +288,16 @@ class GeneSearcher:
         json_parameters["concepts"] = ("gene", "disease")
         base_url = "https://www.ncbi.nlm.nih.gov/research/pubtator-api/publications/export/"
         result = requests.post(base_url + "biocxml", json=json_parameters)  # get xml-page pubtator
+
         if result.status_code == 200:
             print("Request succesful.")
             data = self.parse_results(result)
-            if len(data) == len(idlist):  # if something is wrong
-                for article in idlist.keys():  # article is a int pb_id
-                    # 0 is always gene, 1 is always diseases
+            print(len(data), len(idlist))
+
+            # if len(data) == len(idlist):  # if something is wrong
+            for article in idlist.keys():  # article is a int pb_id
+                # 0 is always gene, 1 is always diseases
+                try:
                     for id_gene, gene in data[article][0].items():
                         if ";" not in id_gene:
                             if ":" in id_gene:
@@ -321,8 +328,10 @@ class GeneSearcher:
                             self.db.article_disease.append(
                                 {"disease_id": disease,
                                  "article_id": idlist[article]})
-            # print(self.db.disease_list, "dis")
-            # print(self.db.article_disease, "arty_dis")
+                except KeyError as e:
+                    print("Een artikel had geen genen of diseases")
+            print(self.db.disease_list, "dis")
+            print(self.db.article_disease, "arty_dis")
         else:
             print("Request not succesful.")
 
@@ -378,7 +387,6 @@ class GeneSearcher:
                             # print(gene[1])
                             if gene[1][:4] == "MESH":
                                 gene_id = gene[1] + "_" + str(count)
-                                print(gene_id)
                                 mesh[gene_id] = ""
                                 count += 1
                             elif gene[1][:4] == "OMIM":
@@ -407,7 +415,7 @@ class GeneSearcher:
                         else:
                             genes[gene_id] = gene[1]
             data_pubtator[pmid] = [genes, mesh]
-            # print(data_pubtator)
+            print(data_pubtator)
         return data_pubtator
 
 
