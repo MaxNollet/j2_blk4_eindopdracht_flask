@@ -310,11 +310,20 @@ class GeneSearcher:
                                 {"query_id": self.db.query_list[0]["query"],
                                  "gene_id": gene})
                     for id_disease, disease in data[article][1].items():
-                        self.db.disease_list.append(
-                            {"mesh_id": id_disease[5:], "disease": disease})
-                        self.db.article_disease.append(
-                            {"disease_id": disease,
-                             "article_id": idlist[article]})
+                        if id_disease[:4] == "OMIM":
+                            self.db.disease_list.append(
+                                # OMIM in disease_id
+                                {"mesh_id": id_disease, "disease": disease})
+                            self.db.article_disease.append(
+                                {"disease_id": disease,
+                                 "article_id": idlist[article]})
+                        else:
+                            self.db.disease_list.append(
+                                {"mesh_id": id_disease[5:-5],
+                                 "disease": disease})
+                            self.db.article_disease.append(
+                                {"disease_id": disease,
+                                 "article_id": idlist[article]})
             # print(self.db.disease_list, "dis")
             # print(self.db.article_disease, "arty_dis")
         else:
@@ -365,25 +374,38 @@ class GeneSearcher:
         for pmid, data in data_doc.items():  # pubmed id, data pubtator
             genes = {}
             mesh = {}
+            count = 1000
             for gene in data:  # gene = {'key': 'identifier'}, '5362']
-                try:
-                    if gene[0]["key"] == "identifier":
-                        # print(gene[1])
-                        if gene[1][:4] == "MESH":
+                if count <= 9999:  # unique id voor mesh/ omim
+                    try:               # prevents aliases/ synonyms
+                        if gene[0]["key"] == "identifier":
+                            # print(gene[1])
+                            if gene[1][:4] == "MESH":
+                                gene_id = gene[1] + "_" + str(count)
+                                print(gene_id)
+                                mesh[gene_id] = ""
+                                count += 1
+                            elif gene[1][:4] == "OMIM":
+                                gene_id = gene[1] + "_" + str(count)
+                                print(gene_id)
+                                mesh[gene_id] == ""
+
+                                count += 1
+                            else:
+                                gene_id = gene[1]
+                                genes[gene_id] = ""
+                        if gene[0]["key"] == "Identifier":  # mesh
+                            # if gene[1][:4] == "MESH":
                             gene_id = gene[1]
                             mesh[gene_id] = ""
-                        else:
-                            gene_id = gene[1]
-                            genes[gene_id] = ""
-                    if gene[0]["key"] == "Identifier":  # mesh
-                        # if gene[1][:4] == "MESH":
-                        gene_id = gene[1]
-                        mesh[gene_id] = ""
-                except KeyError:
+                    except KeyError:
+                        pass
+                else:
+                    print("wow, dat zijn veel diseases")
                     pass
                 if len(gene) >= 2:
                     if not gene[0]:
-                        if gene_id[:4] == "MESH":
+                        if gene_id[:4] == "MESH" or gene_id[:4] == "OMIM":
                             if gene[1].strip() != "":
                                 mesh[gene_id.strip()] = gene[1].strip()
                         else:
