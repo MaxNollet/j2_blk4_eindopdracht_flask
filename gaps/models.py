@@ -35,7 +35,7 @@ class Disease(Model):
     __table_args__ = {'schema': 'eindopdracht'}
 
     id = Column(Integer, primary_key=True, server_default=text("nextval('eindopdracht.disease_id_seq'::regclass)"))
-    mesh_id = Column(String(25), nullable=False)
+    mesh_id = Column(String(50), nullable=False)
     disease = Column(String(100), nullable=False, unique=True)
 
 
@@ -61,8 +61,7 @@ class GenepanelSymbol(Model):
     __tablename__ = 'genepanel_symbol'
     __table_args__ = {'schema': 'eindopdracht'}
 
-    id = Column(Integer, primary_key=True,
-                server_default=text("nextval('eindopdracht.genepanel_symbol_id_seq'::regclass)"))
+    id = Column(Integer, primary_key=True, server_default=text("nextval('eindopdracht.genepanel_symbol_id_seq'::regclass)"))
     symbol = Column(String(30), nullable=False, unique=True)
     # gene_id = Column(ForeignKey('eindopdracht.gene.id'), nullable=False)
 
@@ -77,8 +76,7 @@ class InheritanceType(Model):
     __tablename__ = 'inheritance_type'
     __table_args__ = {'schema': 'eindopdracht'}
 
-    id = Column(Integer, primary_key=True,
-                server_default=text("nextval('eindopdracht.inheritance_type_id_seq'::regclass)"))
+    id = Column(Integer, primary_key=True, server_default=text("nextval('eindopdracht.inheritance_type_id_seq'::regclass)"))
     type = Column(String(15), nullable=False, unique=True)
 
 
@@ -91,7 +89,8 @@ class Journal(Model):
     __table_args__ = {'schema': 'eindopdracht'}
 
     id = Column(Integer, primary_key=True, server_default=text("nextval('eindopdracht.journal_id_seq'::regclass)"))
-    name = Column(String(100), nullable=False, unique=True)
+    name = Column(String(250), nullable=False, unique=True)
+
 
 
 @dataclass
@@ -103,7 +102,7 @@ class Article(Model):
     __table_args__ = {'schema': 'eindopdracht'}
 
     id = Column(Integer, primary_key=True, server_default=text("nextval('eindopdracht.article_id_seq'::regclass)"))
-    title = Column(String(200), nullable=False)
+    title = Column(String(500), nullable=False)
     pubmed_id = Column(Integer)
     doi = Column(String(60), nullable=False, unique=True)
     publication_date = Column(Date)
