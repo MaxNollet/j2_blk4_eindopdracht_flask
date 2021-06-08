@@ -295,6 +295,7 @@ class GeneSearcher:
                         self.db.article_disease.append(
                             {"disease_id": disease,
                              "article_id": idlist[article]})
+
         else:
             print("Request not succesful.")
 
