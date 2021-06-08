@@ -93,7 +93,6 @@ class GeneSearcher:
         # print(self.db.disease_list, "disease list")
         # print(self.db.genes_list, "genes_list")
         # print(self.db.article_gene, "article gene")
-        print(self.db.article_disease, "jaa")
         if not self.db.genes_list:  # no genes found.
             raise NoGeneFound
         else:  # found gene and inserts into database
@@ -160,8 +159,6 @@ class GeneSearcher:
                     # doi = str(uuid.uuid4())
                     # doi = self.uuid_fix(uuid.uuid4())
                     doi = str(uuid.uuid4())
-                    print(type(doi), "type")
-                    print(doi, "doi, uuid", pubmed_id)
                     # doi = record.get("PubmedData").get("ArticleIdList")[-1]
                     # if "/" not in doi and "." not in doi:
                     #     raise IncorrectArticleFound
@@ -328,7 +325,6 @@ class GeneSearcher:
             # print(self.db.article_disease, "arty_dis")
         else:
             print("Request not succesful.")
-        pass
 
     @staticmethod
     def anno_document(documents):
