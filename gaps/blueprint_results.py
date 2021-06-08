@@ -5,6 +5,8 @@ from gaps.models import *
 
 blueprint_results = Blueprint("blueprint_results", __name__)
 
+column_name_converter = {"hgnc_symbol": "HGNC symbol", "doi": "DOI", "name": "Journal"}
+
 
 @blueprint_results.route("/results/<query_id>")
 def results(query_id):
@@ -13,7 +15,7 @@ def results(query_id):
 
     :return Rendered template of 'homepage.html' (str).
     """
-    joins = select([Gene.hgnc_symbol, Article.doi, Journal.name])\
+    joins = select([Gene.hgnc_symbol, Article.doi, Article.journal_id])\
         .join(t_article_gene, Gene.id == t_article_gene.c.gene_id)\
         .join(Article, Article.id == t_article_gene.c.article_id)\
         .join(Journal)\
@@ -24,16 +26,16 @@ def results(query_id):
     print(joins)
 
     query_results = db.session.execute(joins)
-    retrieved_values = list()
-    for rowproxy in query_results:
-        row = dict()
-        for field, value in zip(rowproxy._fields, rowproxy._data):
-            row[field] = value
-        retrieved_values.append(row)
-    for jup in retrieved_values:
-        print(jup)
-    # for row in results:
-    #     print(row.__dict__)
+    for row in query_results:
+        print(row)
+    # retrieved_values = list()
+    # for rowproxy in query_results:
+    #     row = dict()
+    #     for field, value in zip(rowproxy.fields, rowproxy.data):
+    #         row[field] = value
+    #     retrieved_values.append(row)
+    # for jup in retrieved_values:
+    #     print(jup)
     return render_template("template_results.html")
     # search = request.args.get("search")
     # return render_template("template_query_builder.html", active="home", search=search)

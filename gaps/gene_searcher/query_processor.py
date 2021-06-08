@@ -3,6 +3,7 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
 from os import environ
+from typing import List
 from xml.etree import ElementTree as etree
 
 import requests
@@ -135,7 +136,7 @@ class GeneSearcher:
 
         count = int(self.search_results["Count"])
         print("Found %i results" % count)
-        batch_size = 100
+        batch_size = 1000
         for start in range(0, count, batch_size):
             handle = Entrez.efetch(
                 db="pubmed",
@@ -238,7 +239,7 @@ class GeneSearcher:
         return None
 
     @staticmethod
-    def url_maker(idlist: list):
+    def url_maker(idlist: tuple):
         """
         Creates the URL used for looking up genes on Pubtator
         :param idlist: List that contains all of the unique ids found in
@@ -266,13 +267,27 @@ class GeneSearcher:
         It contains the genes found in the articles
         :return: articles updated with genes from pubtator
         """
+        batch_size = 1000
+        count_articles = len(self.db.article_list)
+        if count_articles > batch_size:
+            for slice_start in range(0, count_articles, batch_size):
+                if slice_start >= count_articles - batch_size:
+                    slice_end = count_articles
+                else:
+                    slice_end = slice_start + batch_size - 1
+                batch = self.db.article_list[slice_start:slice_end]
+                self.pubtator_results_processor(batch)
+        else:
+            self.pubtator_results_processor(self.db.article_list)
+
+    def pubtator_results_processor(self, batch):
         idlist = {}
-        for article in self.db.article_list:  # all the found articles
+        for article in batch:
             idlist[article["pubmed_id"]] = str(article["doi"])
-        url = self.url_maker(
-            list(idlist.keys()))  # url for the articles pubmed found
-        print(url)
-        result = requests.get(url)  # get xml-page pubtator
+        json_parameters = {"pmids": [str(element) for element in idlist.keys()]}
+        json_parameters["concepts"] = ("gene", "disease")
+        base_url = "https://www.ncbi.nlm.nih.gov/research/pubtator-api/publications/export/"
+        result = requests.post(base_url + "biocxml", json=json_parameters)  # get xml-page pubtator
         if result.status_code == 200:
             print("Request succesful.")
             data = self.parse_results(result)
@@ -281,6 +296,8 @@ class GeneSearcher:
                     # 0 is always gene, 1 is always diseases
                     for id_gene, gene in data[article][0].items():
                         if ";" not in id_gene:
+                            if ":" in id_gene:
+                                print(id_gene)
                             self.db.genes_list.append({"ncbi_gene_id":
                                                            int(id_gene),
                                                        "hgnc_symbol": str(
@@ -298,10 +315,11 @@ class GeneSearcher:
                         self.db.article_disease.append(
                             {"disease_id": disease,
                              "article_id": idlist[article]})
-            print(self.db.disease_list, "dis")
-            print(self.db.article_disease, "arty_dis")
+            # print(self.db.disease_list, "dis")
+            # print(self.db.article_disease, "arty_dis")
         else:
             print("Request not succesful.")
+        pass
 
     @staticmethod
     def anno_document(documents):
@@ -371,7 +389,7 @@ class GeneSearcher:
                         else:
                             genes[gene_id] = gene[1]
             data_pubtator[pmid] = [genes, mesh]
-            print(data_pubtator)
+            # print(data_pubtator)
         return data_pubtator
 
 
