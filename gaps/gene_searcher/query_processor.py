@@ -92,7 +92,6 @@ class GeneSearcher:
         # print(self.db.disease_list, "disease list")
         # print(self.db.genes_list, "genes_list")
         # print(self.db.article_gene, "article gene")
-        print(self.db.article_disease, "jaa")
         if not self.db.genes_list:  # no genes found.
             raise NoGeneFound
         else:  # found gene and inserts into database
@@ -159,8 +158,6 @@ class GeneSearcher:
                     # doi = str(uuid.uuid4())
                     # doi = self.uuid_fix(uuid.uuid4())
                     doi = str(uuid.uuid4())
-                    print(type(doi), "type")
-                    print(doi, "doi, uuid", pubmed_id)
                     # doi = record.get("PubmedData").get("ArticleIdList")[-1]
                     # if "/" not in doi and "." not in doi:
                     #     raise IncorrectArticleFound
@@ -271,7 +268,7 @@ class GeneSearcher:
             idlist[article["pubmed_id"]] = str(article["doi"])
         url = self.url_maker(
             list(idlist.keys()))  # url for the articles pubmed found
-        print(url)
+        print("Used url:", url)
         result = requests.get(url)  # get xml-page pubtator
         if result.status_code == 200:
             print("Request succesful.")
@@ -298,8 +295,6 @@ class GeneSearcher:
                         self.db.article_disease.append(
                             {"disease_id": disease,
                              "article_id": idlist[article]})
-            print(self.db.disease_list, "dis")
-            print(self.db.article_disease, "arty_dis")
         else:
             print("Request not succesful.")
 
@@ -371,7 +366,7 @@ class GeneSearcher:
                         else:
                             genes[gene_id] = gene[1]
             data_pubtator[pmid] = [genes, mesh]
-            print(data_pubtator)
+            # print(data_pubtator)  # example
         return data_pubtator
 
 
