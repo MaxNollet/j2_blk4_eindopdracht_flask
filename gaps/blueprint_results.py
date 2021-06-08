@@ -5,8 +5,6 @@ from gaps.models import *
 
 blueprint_results = Blueprint("blueprint_results", __name__)
 
-column_name_converter = {"hgnc_symbol": "HGNC symbol", "doi": "DOI", "name": "Journal"}
-
 
 @blueprint_results.route("/results/<query_id>")
 def results(query_id):
@@ -28,16 +26,14 @@ def results(query_id):
     query_results = db.session.execute(joins)
     for row in query_results:
         print(row)
-    # retrieved_values = list()
-    # for rowproxy in query_results:
-    #     row = dict()
-    #     for field, value in zip(rowproxy.fields, rowproxy.data):
-    #         row[field] = value
-    #     retrieved_values.append(row)
-    # for jup in retrieved_values:
-    #     print(jup)
     return render_template("template_results.html")
-    # search = request.args.get("search")
-    # return render_template("template_query_builder.html", active="home", search=search)
 
-# shift command r = hard refresh cache/ en zooi
+
+class SelectStatementBuilder:
+    column_name_getter = {"HGNC symbol": Gene.hgnc_symbol, "DOI": Article.doi, "Journal": Article.journal_id}
+    column_name_converter = {"hgnc_symbol": "HGNC symbol", "doi": "DOI", "name": "Journal"}
+
+    def select_statement_builder(self, columns: tuple):
+        for column in columns:
+            pass
+        return None
