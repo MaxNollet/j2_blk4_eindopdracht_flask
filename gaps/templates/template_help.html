@@ -1,0 +1,33 @@
+{% extends "base_template.html" %}
+
+{% block title %}GAPS help{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row gy-5">
+            <div class="col-lg-10 order-last order-lg-first">
+                <h1>Help</h1>
+            </div>
+            <div class="col-lg-2 order-lg-last"><strong class="h6">On this page</strong>
+                <hr>
+                <ul class="list-unstyled list-group">
+                    <li><a href="#">Link 1</a>
+                        <ul class="list-unstyled" id="list_level_2">
+                            <li>Item 1</li>
+                            <li>Item 2</li>
+                            <li>Item 3</li>
+                            <li>Item 4</li>
+                        </ul>
+                        <a href="#">Link 2</a>
+                        <ul class="list-unstyled" id="list_level_2">
+                            <li>Item 1</li>
+                            <li>Item 2</li>
+                            <li>Item 3</li>
+                            <li>Item 4</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+{% endblock %}

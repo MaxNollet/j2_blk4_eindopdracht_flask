@@ -35,6 +35,7 @@ def query_builder_submit():
             filename = filenames[0]
             file_location = os.path.join(upload_path, filename)
             secure_filenames[filename].save(file_location)
+        pass
         searcher = GeneSearcher()
         count = searcher.fetch_results(valid_parameters)
         if count < 1:

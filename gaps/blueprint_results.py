@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, jsonify
+from flask import Blueprint, render_template
 
 from gaps.models import *
 from gaps.query_builder import SelectStatementBuilder
@@ -21,18 +21,17 @@ def results(query_id: str):
     # In genepanel, Inheritance type, Inheritance type ID, Journal ID,
     # Journal name, NCBI gene ID, Query, Query ID.
     # See builder.get_field_names().
-    fields = ("Gene symbol", "NCBI gene ID", "In genepanel", "Article title", "Article PubMed ID",
-              "Article publication date", "Disease", "Disease MESH ID")
+    fields = ("Gene symbol", "NCBI gene ID", "Article title", "Article PubMed ID",
+              "Article publication date", "Disease")
     builder = SelectStatementBuilder(fields, query_id)
     print(builder.get_statement())
     query_results = db.session.execute(builder.get_statement())
-
-    test_results = list()
-    group_by = "Gene symbol"
-    # group_by = "Article PubMed ID"
-    group_index = fields.index(group_by)
-    cache_element = None
-    cache_group = None
+    # test_results = list()
+    # group_by = "Gene symbol"
+    # # group_by = "Article PubMed ID"
+    # group_index = fields.index(group_by)
+    # cache_element = None
+    # cache_group = None
     # for result in query_results:
     #     element = result[group_index]
     #     if element != cache_element:
@@ -47,6 +46,4 @@ def results(query_id: str):
     #         group = cache_group[index]
     #         if column not in group:
     #             group.append(column)
-        # print(result)
-
-    return render_template("template_results.html", fields=fields, results=query_results)
+    return render_template("template_results.html", fields=fields, results=query_results, grouped=False)

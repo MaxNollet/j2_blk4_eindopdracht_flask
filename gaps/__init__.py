@@ -3,6 +3,7 @@ from os import environ
 
 from flask import Flask
 
+from blueprint_help import blueprint_help
 from gaps.blueprint_api import blueprint_api
 from gaps.blueprint_homepage import blueprint_homepage
 from gaps.blueprint_query_builder import blueprint_query_builder
@@ -47,4 +48,5 @@ def create_app(testing=False):
     app.register_blueprint(blueprint_update_genepanel)
     app.register_blueprint(blueprint_api)
     app.register_blueprint(blueprint_results)
+    app.register_blueprint(blueprint_help)
     return app

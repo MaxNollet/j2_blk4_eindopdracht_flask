@@ -19,7 +19,7 @@
                         <li class="nav-item" id="navigation_query"><a class="nav-link {% if active_nav and active_nav == 'query' %}active{% endif %}" id="link_query" href="{{ url_for('blueprint_query_builder.query_builder') }}">Query_builder</a></li>
                         <li class="nav-item" id="navigation_history" hidden=""><a class="nav-link {% if active_nav and active_nav == 'history' %}active{% endif %}" id="link_history" href="#">Retrieve history</a></li>
                         <li class="nav-item" id="navigation_genepanel"><a class="nav-link {% if active_nav and active_nav == 'genepanel' %}active{% endif %}" id="link_genepanel" href="{{ url_for('blueprint_update_genepanel.update_genepanel') }}">Update_genepanel</a></li>
-                        <li class="nav-item" id="navigation_help"><a class="nav-link {% if active_nav and active_nav == 'help' %}active{% endif %}" id="link_help" href="#">Help</a></li>
+                        <li class="nav-item" id="navigation_help"><a class="nav-link {% if active_nav and active_nav == 'help' %}active{% endif %}" id="link_help" href="{{ url_for('blueprint_help.route_help') }}">Help</a></li>
                     </ul>
                 </div>
             </div>

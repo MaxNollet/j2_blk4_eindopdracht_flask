@@ -11,12 +11,12 @@
                 <h1 class="display-2">Search_results</h1>
             </div>
             <div class="col-lg-9">
-                <p>Results from queries are shown below.</p>
+                <p>This page contains all results from a query. Only genes which are not present in a genepanel are displayed below in the table.</p>
                 <p hidden="">Paragraph 2</p>
                 <p hidden="">Search ID: {% if query_id %}{{ query_id }}{% endif %}</p>
             </div>
         </div>
-        <div class="row flex-column padding_below_section" id="row_filters">
+        <div class="row flex-column padding_below_section" id="row_filters" hidden="">
             <div class="col">
                 <h2 class="section_header">Order and filter results</h2>
             </div>
@@ -24,10 +24,8 @@
                 <form class="gy-5">
                     <div class="row flex-column gy-3">
                         <div class="col">
-                            <fieldset>
-                                <legend>1. Field Group</legend>
-                                <div id="switch_hide_genes_in_genepanel" class="form-check form-switch"><input type="checkbox" id="hide_genes_in_genepanel" class="form-check-input"><label class="form-label form-switch-label my-0" id="label_hide_genes_in_genepanel" for="hide_genes_in_genepanel">Hide genes already in genepanels</label></div>
-                            </fieldset>
+                            <div id="switch_hide_genes_in_genepanel" class="form-check form-switch"><input type="checkbox" id="hide_genes_in_genepanel" class="form-check-input"><label class="form-label form-switch-label my-0" id="label_hide_genes_in_genepanel" for="hide_genes_in_genepanel">Hide genes already in genepanels</label></div>
+                            <fieldset></fieldset>
                         </div>
                         <div class="col"><button class="btn btn-primary text-nowrap" id="button_update_filters" type="submit"><span class="spinner-border spinner-border-sm gx-2" role="status" id="spinner_submit_button" hidden=""></span><span id="text_submit_button">Apply filters<br></span></button></div>
                     </div>
@@ -35,7 +33,7 @@
             </div>
         </div>
         <div class="row flex-column" id="row_results"><div id="result_custom_code">
-    <div class="table-responsive" id="results">
+        <div class="table-responsive" id="results">
         <table class="table table-striped">
             <thead>
                 <tr>
