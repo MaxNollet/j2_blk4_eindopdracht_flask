@@ -22,7 +22,7 @@ class TableJoinDescriber:
         self.table_t_article_disease()
         self.table_t_gene_alias()
         self.table_t_genepanel_gene()
-        self.t_genepanel_inheritance()
+        self.table_t_genepanel_inheritance()
 
     def table_genepanel_symbol(self) -> None:
         """A method which describes how the table

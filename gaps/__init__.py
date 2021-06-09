@@ -3,7 +3,7 @@ from os import environ
 
 from flask import Flask
 
-from blueprint_help import blueprint_help
+from gaps.blueprint_help import blueprint_help
 from gaps.blueprint_api import blueprint_api
 from gaps.blueprint_homepage import blueprint_homepage
 from gaps.blueprint_query_builder import blueprint_query_builder
