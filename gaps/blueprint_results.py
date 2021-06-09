@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, jsonify
 
 from gaps.models import *
-from query_builder import SelectStatementBuilder
+from gaps.query_builder import SelectStatementBuilder
 
 blueprint_results = Blueprint("blueprint_results", __name__)
 
@@ -24,6 +24,7 @@ def results(query_id: str):
     fields = ("Gene symbol", "NCBI gene ID", "In genepanel", "Article title", "Article PubMed ID",
               "Article publication date", "Disease", "Disease MESH ID")
     builder = SelectStatementBuilder(fields, query_id)
+    print(builder.get_statement())
     query_results = db.session.execute(builder.get_statement())
 
     test_results = list()

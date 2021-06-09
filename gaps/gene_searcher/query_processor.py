@@ -159,6 +159,12 @@ class GeneSearcher:
                 # [StringElement('21479269', attributes={'IdType': 'pubmed'}), StringElement('10.1371/journal.pone.0015669', attributes={'IdType': 'doi'}), StringElement('PMC3066203', attributes={'IdType': 'pmc'})]
 
                 if not doi_element:  # if there isn't a doi number
+                    # doi_test = record.get("PubmedData").get("ArticleIdList")
+                    # print(list(doi_test))
+                    # print(list(doi_test)[0])
+                    # print(doi_test[-1][0])
+                    # print(doi_test.index("attributes"))
+                    # print(doi_test[-1])
                     # doi = str(uuid.uuid4())
                     # doi = self.uuid_fix(uuid.uuid4())
                     doi = str(uuid.uuid4())
@@ -208,6 +214,7 @@ class GeneSearcher:
         """
         pub_date = record.get("MedlineCitation").get("Article") \
             .get("Journal").get("JournalIssue").get("PubDate")
+        # DictElement({'Volume': '105', 'Issue': '1-2', 'PubDate': {'MedlineDate': '1999 Jul-Aug'}}, attributes={'CitedMedium': 'Print'})
         if pub_date is not None:
             year: str = pub_date.get("Year")
             month: str = pub_date.get("Month")
@@ -232,7 +239,7 @@ class GeneSearcher:
                     medline_date = pub_date.get("MedlineDate")
                     if medline_date:
                         date = datetime.strptime(medline_date.split("-")[0],
-                                                 "%Y-%b")
+                                                 "%Y %b")
                 except ValueError:
                     date = None
             return date
@@ -306,47 +313,48 @@ class GeneSearcher:
                 try:
                     for id_gene, gene in data[article][0].items():
                         if ";" not in id_gene:  # doesn't work with db
-                            self._extract_gene(id_gene, gene, article, idlist)
+                            self._extract_gene(id_gene, gene, article)
                             self.db.query_gene.append(
                                 {"query_id": self.db.query_list[0]["query"],
                                  "gene_id": gene})
                     for id_disease, disease in data[article][1].items():
-                        self._extract_disease(id_disease, disease, article, idlist)
+                        self._extract_disease(id_disease, disease, article)
                 except KeyError as e:
                     print("An article had no genes or diseases ->", e)
         else:
             print("Request not succesful.")
 
-    def _extract_gene(self, id_gene, gene, article, idlist):
+    def _extract_gene(self, id_gene, gene, article):
         """A method which checks if a gene is already in the database,
         to prevent on conflict_do_update problemds. But fills the between
         table article_gene
         :param id_gene: id from gene
         :param gene: gene
         :param article: Id from article so pubmed_id
-        :param idlist: dict with pubmed_id en doi (or uuid)
         :return:
         """
         cache = self._cached_values["gene"]
-        if gene not in cache:   # check if gene is already in cache
-            cache.add(gene) # adds to set
+        if gene not in cache:  # check if gene is already in cache
+            cache.add(gene)  # adds to set
             self.db.genes_list.append({"ncbi_gene_id":
                                            int(id_gene),
                                        "hgnc_symbol": str(
                                            gene),
                                        "in_genepanel": False})
+        # self.db.article_gene.append(
+        #     {"article_id": idlist[article],
+        #      "gene_id": gene})
         self.db.article_gene.append(
-            {"article_id": idlist[article],
+            {"article_id": int(article),
              "gene_id": gene})
 
-    def _extract_disease(self, id_disease, disease, article, idlist):
+    def _extract_disease(self, id_disease, disease, article):
         """A method which checks if a disease is already in the datsbase,
         to prevent on_conflict_do_update problems. But fills the between
         table article_disease
         :param id_disease: MESH_ID
         :param disease: Disease
         :param article: Id from article so pubmed_id
-        :param idlist: dict with pubmed_id en doi (or uuid)
         :return:
         """
         cache = self._cached_values["disease"]
@@ -366,9 +374,12 @@ class GeneSearcher:
                     self.db.disease_list.append(
                         {"mesh_id": id_disease[5:],
                          "disease": disease})
+        # self.db.article_disease.append(
+        # {"disease_id": disease,
+        # "article_id": idlist[article]})
         self.db.article_disease.append(
             {"disease_id": disease,
-             "article_id": idlist[article]})
+             "article_id": int(article)})
 
     @staticmethod
     def anno_document(documents):
