@@ -169,6 +169,7 @@ class GenepanelReader:
         cache_genepanel = self._cached_values["genepanel"]
         cache_inheritance = self._cached_values["inheritance_type"]
         if genepanels != "":
+            print(genepanels)
             line_fix = self._fix_delimeter_inconsistency(genepanels)
             for value in line_fix.split(";"):
                 genepanel = self._pattern_find_genepanel_abbreviation.findall(value)[0]
