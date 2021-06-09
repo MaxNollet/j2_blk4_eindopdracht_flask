@@ -87,10 +87,10 @@ class SelectStatements:
         )
 
     @staticmethod
-    @statement_group(table="article", column_as_key="doi")
+    @statement_group(table="article", column_as_key="pubmed_id")
     def _select_article_id():
-        return select(Article.doi, Article.id).where(
-            Article.doi.in_(bindparam("values")))
+        return select(Article.pubmed_id, Article.id).where(
+            Article.pubmed_id.in_(bindparam("values")))
 
     @staticmethod
     @statement_group(table="journal", column_as_key="name")

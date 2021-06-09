@@ -24,6 +24,7 @@ def results(query_id: str):
     fields = ("Gene symbol", "NCBI gene ID", "In genepanel", "Article title", "Article PubMed ID",
               "Article publication date", "Disease", "Disease MESH ID")
     builder = SelectStatementBuilder(fields, query_id)
+    print(builder.get_statement())
     query_results = db.session.execute(builder.get_statement())
 
     test_results = list()
