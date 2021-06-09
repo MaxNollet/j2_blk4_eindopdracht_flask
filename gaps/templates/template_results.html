@@ -16,7 +16,7 @@
                 <p hidden="">Search ID: {% if query_id %}{{ query_id }}{% endif %}</p>
             </div>
         </div>
-        <div class="row flex-column padding_below_section" id="row_filters" hidden="">
+        <div class="row flex-column padding_below_section" id="row_filters">
             <div class="col">
                 <h2 class="section_header">Order and filter results</h2>
             </div>
@@ -26,51 +26,57 @@
                         <div class="col">
                             <fieldset>
                                 <legend>1. Field Group</legend>
-                                <div id="switch_hide_genes_in_genepanel" class="form-check form-switch"><input
-                                        type="checkbox" id="hide_genes_in_genepanel" class="form-check-input"><label
-                                        class="form-label form-switch-label my-0" id="label_hide_genes_in_genepanel"
-                                        for="hide_genes_in_genepanel">Hide genes already in genepanels</label></div>
+                                <div id="switch_hide_genes_in_genepanel" class="form-check form-switch"><input type="checkbox" id="hide_genes_in_genepanel" class="form-check-input"><label class="form-label form-switch-label my-0" id="label_hide_genes_in_genepanel" for="hide_genes_in_genepanel">Hide genes already in genepanels</label></div>
                             </fieldset>
                         </div>
-                        <div class="col">
-                            <button class="btn btn-primary text-nowrap" id="button_update_filters" type="submit"><span
-                                    class="spinner-border spinner-border-sm gx-2" role="status"
-                                    id="spinner_submit_button" hidden=""></span><span id="text_submit_button">Apply filters<br></span>
-                            </button>
-                        </div>
+                        <div class="col"><button class="btn btn-primary text-nowrap" id="button_update_filters" type="submit"><span class="spinner-border spinner-border-sm gx-2" role="status" id="spinner_submit_button" hidden=""></span><span id="text_submit_button">Apply filters<br></span></button></div>
                     </div>
                 </form>
             </div>
         </div>
-        <div class="row flex-column" id="row_results">
-            <div class="col" id="col_header_results">
-                <h2 id="header_results" class="section_header">Results</h2>
-            </div>
-            <div class="col" id="col_results">
-
-                <code>
-                    <div class="table-responsive" id="results">
-                        <table class="table table-striped">
-                            <thead>
-                            <tr>
-                                {% for field in fields %}
-                                    <th>{{ field }}</th>
-                                {% endfor %}
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {% for result in results %}
-                                <tr>
-                                    {% for element in result %}
-                                        <td>{{ element }}</td>
-                                    {% endfor %}
-                                </tr>
-                            {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </code>
-            </div>
-        </div>
+        <div class="row flex-column" id="row_results"><div id="result_custom_code">
+    <div class="table-responsive" id="results">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    {% for field in fields %}
+                    <th>{{ field }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% if grouped and grouped == True %}
+                {% for result in results %}
+                <tr>
+                    {% for element in result %}
+                    {% if element|length == 1 %}
+                    <td>{{ element[0] }}</td>
+                    {% else %}
+                    <td>
+                        {% for column in element %}
+                        {% if not loop.last %}
+                        {{ column }},
+                        {% else %}
+                        {{ column }}
+                        {% endif %}
+                        {% endfor %}
+                    </td>
+                    {% endif %}
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+                {% else %}
+                {% for element in results %}
+                <tr>
+                    {% for column in element %}
+                    <td>{{ column }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div></div>
     </div>
 {% endblock %}

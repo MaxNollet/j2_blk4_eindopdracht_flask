@@ -53,5 +53,8 @@ class SelectStatementBuilder(TableFieldDescriber, TableJoinDescriber):
         # return statement.where(Query.id == query_id)
         return statement.where(self.column_name_describer.get("Query ID").get("column") == query_id)
 
+    def order_by(self, statement: select, order: str):
+        pass
+
     def get_statement(self) -> select:
         return self.__statement

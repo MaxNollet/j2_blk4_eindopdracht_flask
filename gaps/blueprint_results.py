@@ -28,6 +28,7 @@ def results(query_id: str):
 
     test_results = list()
     group_by = "Gene symbol"
+    # group_by = "Article PubMed ID"
     group_index = fields.index(group_by)
     cache_element = None
     cache_group = None
