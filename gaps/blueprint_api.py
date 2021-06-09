@@ -8,10 +8,23 @@ from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 
 from gaps.gene_searcher import *
+from gaps import file_reader as reader
 from gaps.genelogic import GenepanelReader, DatabaseInserter, \
     GenepanelColumnNotFound
 
 blueprint_api = Blueprint("blueprint_api", __name__)
+
+
+def genes_box(searcher, valid_parameters):
+    if valid_parameters["radio_include_symbols"] == "true":
+        searcher.include_exclude = True
+    else:
+        searcher.include_exclude = False
+    genes_list = list(valid_parameters["input_symbols"].split(","))
+    set_genes_list = set()
+    for gene in genes_list:
+        set_genes_list.add(gene.strip())
+    searcher.specific_gene_symbols = set_genes_list
 
 
 @blueprint_api.route("/query_builder", methods=["POST"])
@@ -35,8 +48,27 @@ def query_builder_submit():
             filename = filenames[0]
             file_location = os.path.join(upload_path, filename)
             secure_filenames[filename].save(file_location)
-        pass
         searcher = GeneSearcher()
+        # check dit met true of false
+
+        # for the include / exclude
+        # if valid_parameters.get("input_symbols"):
+        #     searcher.specify_gene = True
+        #     genes_box(searcher, valid_parameters)
+        # elif file_location and len(file_location) > 1:  # for the file input
+        #     searcher.specify_gene = True  # use white/black list
+        #     if valid_parameters["radio_include_symbols"] == "true":
+        #         searcher.include_exclude = True
+        #     else:
+        #         searcher.include_exclude = False
+        #     searcher.specific_gene_symbols = reader.file_reader(file_location)
+        #
+        #     print("Reading file")
+        # elif file_location and len(file_location) > 1 and \
+        #         valid_parameters.get("input_symbols"):
+        #     print("komt die")
+        #     searcher.specify_gene = True
+        #     genes_box(searcher, valid_parameters)
         count = searcher.fetch_results(valid_parameters)
         if count < 1:
             response = {

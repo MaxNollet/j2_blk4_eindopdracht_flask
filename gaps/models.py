@@ -101,17 +101,20 @@ class Article(Model):
     __tablename__ = 'article'
     __table_args__ = {'schema': 'eindopdracht'}
 
-    id = Column(Integer, primary_key=True, server_default=text("nextval('eindopdracht.article_id_seq'::regclass)"))
+    id = Column(Integer, primary_key=True, server_default=text(
+        "nextval('eindopdracht.article_id_seq'::regclass)"))
     title = Column(String(500), nullable=False)
-    pubmed_id = Column(Integer)
-    doi = Column(String(60), nullable=False, unique=True)
+    pubmed_id = Column(Integer, nullable=False, unique=True)
+    doi = Column(String(60))
     publication_date = Column(Date)
     abstract = Column(Text)
     journal_id = Column(ForeignKey('eindopdracht.journal.id'))
 
     journal = relationship('Journal')
     genes = relationship('Gene', secondary='eindopdracht.article_gene')
-    diseases = relationship('Disease', secondary='eindopdracht.article_disease')
+    diseases = relationship('Disease',
+                            secondary='eindopdracht.article_disease')
+    querys = relationship('Query', secondary='eindopdracht.query_article')
 
 
 @dataclass
@@ -130,7 +133,6 @@ class Gene(Model):
 
     genepanel_symbol = relationship('GenepanelSymbol')
     genepanels = relationship('Genepanel', secondary='eindopdracht.genepanel_gene')
-    querys = relationship('Query', secondary='eindopdracht.query_gene')
 
 
 @dataclass
@@ -173,16 +175,20 @@ t_article_gene = Table(
     schema='eindopdracht'
 )
 
-t_query_gene = Table(
-    'query_gene', metadata,
-    Column('query_id', ForeignKey('eindopdracht.query.id'), primary_key=True, nullable=False),
-    Column('gene_id', ForeignKey('eindopdracht.gene.id'), primary_key=True, nullable=False),
+t_article_disease = Table(
+    'article_disease', metadata,
+    Column('article_id', ForeignKey('eindopdracht.article.id'),
+           primary_key=True, nullable=False),
+    Column('disease_id', ForeignKey('eindopdracht.disease.id'),
+           primary_key=True, nullable=False),
     schema='eindopdracht'
 )
 
-t_article_disease = Table(
-    'article_disease', metadata,
-    Column('article_id', ForeignKey('eindopdracht.article.id'), primary_key=True, nullable=False),
-    Column('disease_id', ForeignKey('eindopdracht.disease.id'), primary_key=True, nullable=False),
+t_query_article = Table(
+    'query_article', metadata,
+    Column('query_id', ForeignKey('eindopdracht.query.id'), primary_key=True,
+           nullable=False),
+    Column('article_id', ForeignKey('eindopdracht.article.id'),
+           primary_key=True, nullable=False),
     schema='eindopdracht'
 )

@@ -81,15 +81,18 @@ class DatabaseInserter(StatementGroups):
                                                         search_results.disease_list,
                                                         True)
         if search_results.article_gene:
-            t = self.combine(search_results.article_gene, ("article_id", "gene_id"))
+            t = self.combine(search_results.article_gene,
+                             ("article_id", "gene_id"))
             self.insert_values(table_name="article_gene", values=t)
-        if search_results.query_gene:
-            quge = self.combine(search_results.query_gene, ("query_id", "gene_id"))
-            self.insert_values(table_name="query_gene", values=quge)
+        if search_results.query_article:
+            quge = self.combine(search_results.query_article,
+                                ("query_id", "article_id"))
+            self.insert_values(table_name="query_article", values=quge)
         if search_results.article_disease:
             article_disease = self.combine(search_results.article_disease,
                                            ("disease_id", "article_id"))
-            self.insert_values(table_name="article_disease", values=article_disease)
+            self.insert_values(table_name="article_disease",
+                               values=article_disease)
         # if search_results.journal_pk_list:
         #     self.ids["id"] = self.insert_values("article", search_results.journal_pk_list)
         self.session.commit()
