@@ -317,15 +317,15 @@ class GeneSearcher:
                 try:
                     for id_gene, gene in data[article][0].items():
                         if ";" not in id_gene:  # doesn't work with db
-                            if self.specify_gene:  # true to activate
-                                self._check_include_exclude(id_gene, gene,
-                                                            article)
-                            else:  # don't use it
-                                self._extract_gene(id_gene, gene, article)
-                                self.db.query_gene.append(
-                                    {"query_id": self.db.query_list[0][
-                                        "query"],
-                                     "gene_id": gene})
+                            # if self.specify_gene:  # true to activate
+                            #     self._check_include_exclude(id_gene, gene,
+                            #                                 article)
+                            # else:  # don't use it
+                            self._extract_gene(id_gene, gene, article)
+                            self.db.query_gene.append(  # TEST
+                                {"query_id": self.db.query_list[0][
+                                    "query"],
+                                 "gene_id": gene})
                     for id_disease, disease in data[article][1].items():
                         self._extract_disease(id_disease, disease, article)
                 except KeyError as e:
@@ -335,16 +335,17 @@ class GeneSearcher:
         else:
             print("Request not succesful.")
 
-    def _check_include_exclude(self, id_gene, gene, article):
-        if self.include_exclude:  # true include de genen
-            print(self.specific_gene_symbols)
-            if gene in self.specific_gene_symbols:
-                print("include", gene)
-                self._extract_gene(id_gene, gene, article)
-        else:
-            if gene not in self.specific_gene_symbols:
-                print("exclude", gene)
-                self._extract_gene(id_gene, gene, article)
+    # def _check_include_exclude(self, id_gene, gene, article):
+    #     if self.include_exclude:  # true include de genen
+    #         print(self.specific_gene_symbols)
+    #         if gene in self.specific_gene_symbols:
+    #             print("include", gene)
+    #             self._extract_gene(id_gene, gene, article)
+    #
+    #     else:
+    #         if gene not in self.specific_gene_symbols:
+    #             print("exclude", gene)
+    #             self._extract_gene(id_gene, gene, article)
 
     def _extract_gene(self, id_gene, gene, article):
         """A method which checks if a gene is already in the database,

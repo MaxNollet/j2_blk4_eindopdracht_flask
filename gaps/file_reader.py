@@ -8,4 +8,5 @@ def file_reader(bestandsnaam):
     for line in file:
         if not re.search(symbolen, line):
             set_genes_list.add(line.strip())
+    print(set_genes_list)
     return set_genes_list

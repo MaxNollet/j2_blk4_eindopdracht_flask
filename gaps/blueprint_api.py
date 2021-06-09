@@ -52,26 +52,24 @@ def query_builder_submit():
         print(secure_filenames)
         searcher = GeneSearcher()
         # check dit met true of false
-        try:
-            if len(valid_parameters["input_symbols"]) > 1:
-                searcher.specify_gene = True
-                genes_box(searcher, valid_parameters)
-            elif secure_filenames:  # for the file input
-                searcher.specify_gene = True  # use white/black list
-                if valid_parameters["radio_include_symbols"] == "true":
-                    searcher.include_exclude = True
-                else:
-                    searcher.include_exclude = False
-                # reader() hoe krijg je het uit file reader?
-                print("bestand in lezen")
-            elif secure_filenames and len(
-                    valid_parameters["input_symbols"]) > 1:
-                searcher.specify_gene = True
-                genes_box(searcher, valid_parameters)
 
-        except KeyError:
-            print("pech gehad")
+        if valid_parameters.get("input_symbols"):
+            searcher.specify_gene = True
+            genes_box(searcher, valid_parameters)
+        elif file_location and len(file_location) > 1:  # for the file input
+            searcher.specify_gene = True  # use white/black list
+            if valid_parameters["radio_include_symbols"] == "true":
+                searcher.include_exclude = True
+            else:
+                searcher.include_exclude = False
+            searcher.specific_gene_symbols = reader.file_reader(file_location)
 
+            print("Reading file")
+        elif file_location and len(file_location) > 1 and \
+                valid_parameters.get("input_symbols"):
+            print("komt die")
+            searcher.specify_gene = True
+            genes_box(searcher, valid_parameters)
         count = searcher.fetch_results(valid_parameters)
         if count < 1:
             response = {
