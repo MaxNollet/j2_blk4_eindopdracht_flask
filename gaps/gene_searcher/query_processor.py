@@ -322,10 +322,10 @@ class GeneSearcher:
                             #                                 article)
                             # else:  # don't use it
                             self._extract_gene(id_gene, gene, article)
-                            self.db.query_gene.append(  # TEST
+                            self.db.query_article.append(  # TEST
                                 {"query_id": self.db.query_list[0][
                                     "query"],
-                                 "gene_id": gene})
+                                 "article_id": int(article)})
                     for id_disease, disease in data[article][1].items():
                         self._extract_disease(id_disease, disease, article)
                 except KeyError as e:
@@ -500,7 +500,7 @@ class InsertDB:  # class to insert all results into the database
 
     query_list: list = field(default_factory=list)
     query_options_list: list = field(default_factory=list)
-    query_gene: list = field(default_factory=list)
+    query_article: list = field(default_factory=list)
 
 
 class MalformedQuery(Exception):

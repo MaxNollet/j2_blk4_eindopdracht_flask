@@ -39,9 +39,9 @@ class TableJoinDescriber:
 
     def table_query(self) -> None:
         self.table_joins[Query.__tablename__] = {
-            "required": (t_query_gene.description,),
+            "required": (t_query_article.description,),
             "table": Query,
-            "id1": t_query_gene.c.query_id,
+            "id1": t_query_article.c.query_id,
             "id2": Query.id
         }
         return None
@@ -92,9 +92,9 @@ class TableJoinDescriber:
         return None
 
     def table_t_query_gene(self) -> None:
-        self.table_joins[t_query_gene.description] = {
-            "table": t_query_gene,
-            "id1": t_query_gene.c.gene_id,
+        self.table_joins[t_query_article.description] = {
+            "table": t_query_article,
+            "id1": t_query_article.c.article_id,
             "id2": Gene.id
         }
         return None
@@ -102,7 +102,7 @@ class TableJoinDescriber:
     def table_t_article_gene(self) -> None:
         self.table_joins[t_article_gene.description] = {
             "table": t_article_gene,
-            "id1": t_article_gene.c.gene_id,
+            "id1": t_article_gene.c.article_id,
             "id2": Gene.id
         }
         return None
