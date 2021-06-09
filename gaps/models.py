@@ -174,10 +174,10 @@ t_article_gene = Table(
     schema='eindopdracht'
 )
 
-t_query_gene = Table(
-    'query_gene', metadata,
-    Column('query_id', ForeignKey('eindopdracht.query.id'), primary_key=True, nullable=False),
-    Column('gene_id', ForeignKey('eindopdracht.gene.id'), primary_key=True, nullable=False),
+t_article_disease = Table(
+    'article_disease', metadata,
+    Column('article_id', ForeignKey('eindopdracht.article.id'), primary_key=True, nullable=False),
+    Column('disease_id', ForeignKey('eindopdracht.disease.id'), primary_key=True, nullable=False),
     schema='eindopdracht'
 )
 
