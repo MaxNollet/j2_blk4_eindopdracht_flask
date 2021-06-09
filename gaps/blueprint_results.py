@@ -11,7 +11,7 @@ def results(query_id: str):
     """A function which handles requests to the '/'-
        route for the webapp.
 
-    :return Rendered template of 'homepage.html' (str).
+    :return Rendered template of 'template_results.html' (str).
     """
     # Possible fields to select:
     # Alias ID, Alias Symbol, Article DOI, Article ID, Article PubMed ID,

@@ -8,7 +8,7 @@ def query_builder():
     """A function which handles requests of the '.query_builder'-
        route for the webapp.
 
-    :return Rendered template of 'query.html' (str).
+    :return Rendered template of 'template_query_builder.html' (str).
     """
     return render_template("template_query_builder.html", active_nav="query")
 

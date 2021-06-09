@@ -2,6 +2,10 @@ from gaps.models import *
 
 
 class TableJoinDescriber:
+    """A class which describes how tables van be joined
+       and which table a table requires for a successful
+       join-statement.
+    """
     table_joins = dict()
 
     def __init__(self):
@@ -21,6 +25,9 @@ class TableJoinDescriber:
         self.t_genepanel_inheritance()
 
     def table_genepanel_symbol(self) -> None:
+        """A method which describes how the table
+           'genepanel_symbol' can be successfully joined.
+        """
         self.table_joins[GenepanelSymbol.__tablename__] = {
             "table": GenepanelSymbol,
             "id1": Gene.genepanel_symbol_id,
@@ -29,6 +36,9 @@ class TableJoinDescriber:
         return None
 
     def table_alias(self) -> None:
+        """A method which describes how the table
+           'alias' can be successfully joined.
+        """
         self.table_joins[Alias.__tablename__] = {
             "required": (t_gene_alias.description,),
             "table": Alias,
@@ -38,6 +48,9 @@ class TableJoinDescriber:
         return None
 
     def table_query(self) -> None:
+        """A method which describes how the table
+           'query' can be successfully joined.
+        """
         self.table_joins[Query.__tablename__] = {
             "required": (t_query_gene.description,),
             "table": Query,
@@ -47,6 +60,9 @@ class TableJoinDescriber:
         return None
 
     def table_article(self) -> None:
+        """A method which describes how the table
+           'article' can be successfully joined.
+        """
         self.table_joins[Article.__tablename__] = {
             "required": (t_article_gene.description,),
             "table": Article,
@@ -56,6 +72,9 @@ class TableJoinDescriber:
         return None
 
     def table_journal(self) -> None:
+        """A method which describes how the table
+           'journal' can be successfully joined.
+        """
         self.table_joins[Journal.__tablename__] = {
             "required": (Article.__tablename__,),
             "table": Journal,
@@ -65,6 +84,9 @@ class TableJoinDescriber:
         return None
 
     def table_disease(self) -> None:
+        """A method which describes how the table
+           'disease' can be successfully joined.
+        """
         self.table_joins[Disease.__tablename__] = {
             "required": (t_article_disease.description,),
             "table": Disease,
@@ -74,6 +96,9 @@ class TableJoinDescriber:
         return None
 
     def table_genepanel(self) -> None:
+        """A method which describes how the table
+           'genepanel' can be successfully joined.
+        """
         self.table_joins[Genepanel.__tablename__] = {
             "required": (t_genepanel_gene.description,),
             "table": Genepanel,
@@ -83,6 +108,9 @@ class TableJoinDescriber:
         return None
 
     def table_inheritance_type(self) -> None:
+        """A method which describes how the table
+           'inheritance_type' can be successfully joined.
+        """
         self.table_joins[InheritanceType.__tablename__] = {
             "required": (t_genepanel_inheritance.description,),
             "table": InheritanceType,
@@ -92,6 +120,9 @@ class TableJoinDescriber:
         return None
 
     def table_t_query_gene(self) -> None:
+        """A method which describes how the table
+           't_query_gene' can be successfully joined.
+        """
         self.table_joins[t_query_gene.description] = {
             "table": t_query_gene,
             "id1": t_query_gene.c.gene_id,
@@ -100,6 +131,9 @@ class TableJoinDescriber:
         return None
 
     def table_t_article_gene(self) -> None:
+        """A method which describes how the table
+           't_article_gene' can be successfully joined.
+        """
         self.table_joins[t_article_gene.description] = {
             "table": t_article_gene,
             "id1": t_article_gene.c.gene_id,
@@ -108,6 +142,9 @@ class TableJoinDescriber:
         return None
 
     def table_t_article_disease(self) -> None:
+        """A method which describes how the table
+           't_article_disease' can be successfully joined.
+        """
         self.table_joins[t_article_disease.description] = {
             "required": (Article.__tablename__,),
             "table": t_article_disease,
@@ -117,6 +154,9 @@ class TableJoinDescriber:
         return None
 
     def table_t_gene_alias(self) -> None:
+        """A method which describes how the table
+           't_gene_alias' can be successfully joined.
+        """
         self.table_joins[t_gene_alias.description] = {
             "table": t_gene_alias,
             "id1": t_gene_alias.c.gene_id,
@@ -125,6 +165,9 @@ class TableJoinDescriber:
         return None
 
     def table_t_genepanel_gene(self) -> None:
+        """A method which describes how the table
+           't_genepanel_gene' can be successfully joined.
+        """
         self.table_joins[t_genepanel_gene.description] = {
             "table": t_genepanel_gene,
             "id1": t_genepanel_gene.c.gene_id,
@@ -132,7 +175,10 @@ class TableJoinDescriber:
         }
         return None
 
-    def t_genepanel_inheritance(self) -> None:
+    def table_t_genepanel_inheritance(self) -> None:
+        """A method which describes how the table
+           't_genepanel_inheritance' can be successfully joined.
+        """
         self.table_joins[t_genepanel_inheritance.description] = {
             "requiresd": (Genepanel.__tablename__,),
             "table": t_genepanel_inheritance.description,

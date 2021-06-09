@@ -8,7 +8,7 @@ def homepage():
     """A function which handles requests to the '/'-
        route for the webapp.
 
-    :return Rendered template of 'homepage.html' (str).
+    :return Rendered template of 'template_homepage.html' (str).
     """
     return redirect(url_for("blueprint_query_builder.query_builder"))
     # search = request.args.get("search")

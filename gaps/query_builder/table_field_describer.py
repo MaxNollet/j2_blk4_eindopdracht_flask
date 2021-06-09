@@ -2,6 +2,10 @@ from gaps.models import *
 
 
 class TableFieldDescriber:
+    """A class which groups methods that specify how fields
+       can be selected and from which table the field is
+       from.
+    """
     column_name_describer = dict()
 
     def __init__(self):
@@ -16,6 +20,9 @@ class TableFieldDescriber:
         self.table_columns_inheritance_type()
 
     def table_columns_gene(self) -> None:
+        """A method which describes how fields from the table
+           'gene' can be selected.
+        """
         table = Gene.__tablename__
         self.column_name_describer["Gene ID"] = {
             "table": table,
@@ -36,6 +43,9 @@ class TableFieldDescriber:
         return None
 
     def table_columns_genepanel_symbol(self) -> None:
+        """A method which describes how fields from the table
+           'genepanel_symbol' can be selected.
+        """
         table = GenepanelSymbol.__tablename__
         self.column_name_describer["Genepanel symbol ID"] = {
             "table": table,
@@ -48,6 +58,9 @@ class TableFieldDescriber:
         return None
 
     def table_columns_alias(self) -> None:
+        """A method which describes how fields from the table
+           'alias' can be selected.
+        """
         table = t_gene_alias.description
         self.column_name_describer["Alias ID"] = {
             "table": table,
@@ -60,6 +73,9 @@ class TableFieldDescriber:
         return None
 
     def table_columns_query(self) -> None:
+        """A method which describes how fields from the table
+           'query' can be selected.
+        """
         table = Query.__tablename__
         self.column_name_describer["Query ID"] = {
             "table": table,
@@ -72,6 +88,9 @@ class TableFieldDescriber:
         return None
 
     def table_columns_article(self) -> None:
+        """A method which describes how fields from the table
+            'article' can be selected.
+        """
         table = Article.__tablename__
         self.column_name_describer["Article ID"] = {
             "table": table,
@@ -100,6 +119,9 @@ class TableFieldDescriber:
         return None
 
     def table_columns_journal(self) -> None:
+        """A method which describes how fields from the table
+           'journal' can be selected.
+        """
         table = Journal.__tablename__
         self.column_name_describer["Journal ID"] = {
             "table": table,
@@ -112,6 +134,9 @@ class TableFieldDescriber:
         return None
 
     def table_columns_disease(self) -> None:
+        """A method which describes how fields from the table
+           'disease' can be selected.
+        """
         table = Disease.__tablename__
         self.column_name_describer["Disease ID"] = {
             "table": table,
@@ -128,6 +153,9 @@ class TableFieldDescriber:
         return None
 
     def table_columns_genepanel(self) -> None:
+        """A method which describes how fields from the table
+           'genepanel' can be selected.
+        """
         table = Genepanel.__tablename__
         self.column_name_describer["Genepanel ID"] = {
             "table": table,
@@ -140,6 +168,9 @@ class TableFieldDescriber:
         return None
 
     def table_columns_inheritance_type(self) -> None:
+        """A method which describes how fields from the table
+           'inheritance_type' can be selected.
+        """
         table = InheritanceType.__tablename__
         self.column_name_describer["Inheritance type ID"] = {
             "table": table,
@@ -152,4 +183,9 @@ class TableFieldDescriber:
         return None
 
     def get_field_names(self):
+        """A method which returns a list of all fields that
+           can be selected from the database.
+
+        :return All valid selectable fields from different tables (Tuple[str]).
+        """
         return sorted(self.column_name_describer.keys())

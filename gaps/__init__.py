@@ -43,10 +43,10 @@ def create_app(testing=False):
 
     # Initiate database and register blueprints.
     db.init_app(app)
+    app.register_blueprint(blueprint_api)
+    app.register_blueprint(blueprint_help)
     app.register_blueprint(blueprint_homepage)
     app.register_blueprint(blueprint_query_builder)
-    app.register_blueprint(blueprint_update_genepanel)
-    app.register_blueprint(blueprint_api)
     app.register_blueprint(blueprint_results)
-    app.register_blueprint(blueprint_help)
+    app.register_blueprint(blueprint_update_genepanel)
     return app
