@@ -21,7 +21,7 @@ class Alias(Model):
     __table_args__ = {'schema': 'eindopdracht'}
 
     id = Column(Integer, primary_key=True, server_default=text("nextval('eindopdracht.alias_id_seq'::regclass)"))
-    hgnc_symbol = Column(String(30), nullable=False, unique=True)
+    hgnc_symbol = Column(String(100), nullable=False, unique=True)
 
     genes = relationship('Gene', secondary='eindopdracht.gene_alias')
 
@@ -106,7 +106,7 @@ class Article(Model):
     pubmed_id = Column(Integer)
     doi = Column(String(60), nullable=False, unique=True)
     publication_date = Column(Date)
-    abstract = Column(String(3000))
+    abstract = Column(Text)
     journal_id = Column(ForeignKey('eindopdracht.journal.id'))
 
     journal = relationship('Journal')
@@ -124,7 +124,7 @@ class Gene(Model):
 
     id = Column(Integer, primary_key=True, server_default=text("nextval('eindopdracht.gene_id_seq'::regclass)"))
     ncbi_gene_id = Column(Integer)
-    hgnc_symbol = Column(String(30), nullable=False, unique=True)
+    hgnc_symbol = Column(String(100), nullable=False, unique=True)
     in_genepanel = Column(Boolean, nullable=False, server_default=text("false"))
     genepanel_symbol_id = Column(ForeignKey('eindopdracht.genepanel_symbol.id'))
 

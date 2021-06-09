@@ -3,12 +3,10 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
 from os import environ
-from typing import List
+from typing import Dict
 from xml.etree import ElementTree as etree
-
 import requests
 from Bio import Entrez
-
 from gaps.genelogic.database_inserter import DatabaseInserter
 
 Entrez.email = environ.get("EMAIL_ENTREZ")
@@ -34,6 +32,11 @@ class GeneSearcher:
         self.search_results = None
         # creates a new uuid for each new search
         self.uuid_query = uuid.uuid4()
+
+        self._cached_values: Dict[str, set] = dict()
+        tables = ["gene", "disease"]
+        for table in tables:
+            self._cached_values[table] = set()
         # self.uu
         self.db = InsertDB()
 
@@ -93,7 +96,6 @@ class GeneSearcher:
         # print(self.db.disease_list, "disease list")
         # print(self.db.genes_list, "genes_list")
         # print(self.db.article_gene, "article gene")
-        print(self.db.article_disease, "jaa")
         if not self.db.genes_list:  # no genes found.
             raise NoGeneFound
         else:  # found gene and inserts into database
@@ -160,8 +162,6 @@ class GeneSearcher:
                     # doi = str(uuid.uuid4())
                     # doi = self.uuid_fix(uuid.uuid4())
                     doi = str(uuid.uuid4())
-                    print(type(doi), "type")
-                    print(doi, "doi, uuid", pubmed_id)
                     # doi = record.get("PubmedData").get("ArticleIdList")[-1]
                     # if "/" not in doi and "." not in doi:
                     #     raise IncorrectArticleFound
@@ -258,6 +258,7 @@ class GeneSearcher:
         complete_url = "https://www.ncbi.nlm.nih.gov/research/pubtator-api" \
                        "/publications/export/biocxml?pmids={}&" \
                        "concepts=gene,disease".format(url)
+
         # complete_url is url for pubtator from pubtator API
         return complete_url
 
@@ -281,45 +282,93 @@ class GeneSearcher:
             self.pubtator_results_processor(self.db.article_list)
 
     def pubtator_results_processor(self, batch):
-        idlist = {}
+        """
+        Get results from pubtator by a post request, and calls function
+        to insert in lists from the dataclass 'InsertDB'
+        :param batch: size of the request (max 1000 per request in post)
+        :return:
+        """
+        idlist = {}  # dict with pubmed_id and doi (or uuid if no doi)
         for article in batch:
             idlist[article["pubmed_id"]] = str(article["doi"])
-        json_parameters = {"pmids": [str(element) for element in idlist.keys()],
-                           "concepts": ("gene", "disease")}
-        base_url = "https://www.ncbi.nlm.nih.gov/research/pubtator-api/publications/export/"
-        result = requests.post(base_url + "biocxml", json=json_parameters)  # get xml-page pubtator
+        json_parameters = {"pmids": [str(element)
+                                     for element in idlist.keys()]}
+        json_parameters["concepts"] = ("gene", "disease")
+        base_url = "https://www.ncbi.nlm.nih.gov/research/pubtator-api" \
+                   "/publications/export/"
+        result = requests.post(base_url + "biocxml",
+                               json=json_parameters)  # get xml-page pubtator
         if result.status_code == 200:
             print("Request succesful.")
             data = self.parse_results(result)
-            if len(data) == len(idlist):  # if something is wrong
-                for article in idlist.keys():  # article is a int pb_id
-                    # 0 is always gene, 1 is always diseases
+            for article in idlist.keys():  # article is a int pb_id
+                # 0 is always gene, 1 is always diseases
+                try:
                     for id_gene, gene in data[article][0].items():
-                        if ";" not in id_gene:
-                            if ":" in id_gene:
-                                print(id_gene)
-                            self.db.genes_list.append({"ncbi_gene_id":
-                                                           int(id_gene),
-                                                       "hgnc_symbol": str(
-                                                           gene),
-                                                       "in_genepanel": False})
-                            self.db.article_gene.append(
-                                {"article_id": idlist[article],
-                                 "gene_id": gene})
+                        if ";" not in id_gene:  # doesn't work with db
+                            self._extract_gene(id_gene, gene, article, idlist)
                             self.db.query_gene.append(
                                 {"query_id": self.db.query_list[0]["query"],
                                  "gene_id": gene})
                     for id_disease, disease in data[article][1].items():
-                        self.db.disease_list.append(
-                            {"mesh_id": id_disease[5:], "disease": disease})
-                        self.db.article_disease.append(
-                            {"disease_id": disease,
-                             "article_id": idlist[article]})
-            # print(self.db.disease_list, "dis")
-            # print(self.db.article_disease, "arty_dis")
+                        self._extract_disease(id_disease, disease, article, idlist)
+                except KeyError as e:
+                    print("An article had no genes or diseases ->", e)
         else:
             print("Request not succesful.")
-        pass
+
+    def _extract_gene(self, id_gene, gene, article, idlist):
+        """A method which checks if a gene is already in the database,
+        to prevent on conflict_do_update problemds. But fills the between
+        table article_gene
+        :param id_gene: id from gene
+        :param gene: gene
+        :param article: Id from article so pubmed_id
+        :param idlist: dict with pubmed_id en doi (or uuid)
+        :return:
+        """
+        cache = self._cached_values["gene"]
+        if gene not in cache:   # check if gene is already in cache
+            cache.add(gene) # adds to set
+            self.db.genes_list.append({"ncbi_gene_id":
+                                           int(id_gene),
+                                       "hgnc_symbol": str(
+                                           gene),
+                                       "in_genepanel": False})
+        self.db.article_gene.append(
+            {"article_id": idlist[article],
+             "gene_id": gene})
+
+    def _extract_disease(self, id_disease, disease, article, idlist):
+        """A method which checks if a disease is already in the datsbase,
+        to prevent on_conflict_do_update problems. But fills the between
+        table article_disease
+        :param id_disease: MESH_ID
+        :param disease: Disease
+        :param article: Id from article so pubmed_id
+        :param idlist: dict with pubmed_id en doi (or uuid)
+        :return:
+        """
+        cache = self._cached_values["disease"]
+        if disease not in cache:
+            cache.add(disease)
+            if id_disease[:4] == "OMIM":
+                self.db.disease_list.append(
+                    # OMIM in disease_id
+                    {"mesh_id": id_disease, "disease": disease})
+            else:
+                if "_" in id_disease:  # to prevent unwanted slicing
+                    self.db.disease_list.append(
+                        # eg id_disease MESH:D064752_10001
+                        {"mesh_id": id_disease[5:-5],  # eg D064752
+                         "disease": disease})
+                else:
+                    self.db.disease_list.append(
+                        {"mesh_id": id_disease[5:],
+                         "disease": disease})
+        self.db.article_disease.append(
+            {"disease_id": disease,
+             "article_id": idlist[article]})
 
     @staticmethod
     def anno_document(documents):
@@ -365,25 +414,35 @@ class GeneSearcher:
         for pmid, data in data_doc.items():  # pubmed id, data pubtator
             genes = {}
             mesh = {}
+            count = 1000
             for gene in data:  # gene = {'key': 'identifier'}, '5362']
-                try:
-                    if gene[0]["key"] == "identifier":
-                        # print(gene[1])
-                        if gene[1][:4] == "MESH":
+                if count <= 9999:  # unique id voor mesh/ omim
+                    try:               # prevents aliases/ synonyms
+                        if gene[0]["key"] == "identifier":
+                            if gene[1][:4] == "MESH":
+                                gene_id = gene[1] + "_" + str(count)
+                                mesh[gene_id] = ""
+                                count += 1
+                            elif gene[1][:4] == "OMIM":
+                                gene_id = gene[1] + "_" + str(count)
+                                # print(gene_id)  # verification
+                                mesh[gene_id] == ""
+                                count += 1
+                            else:
+                                gene_id = gene[1]
+                                genes[gene_id] = ""
+                        if gene[0]["key"] == "Identifier":  # mesh
+                            # if gene[1][:4] == "MESH":
                             gene_id = gene[1]
                             mesh[gene_id] = ""
-                        else:
-                            gene_id = gene[1]
-                            genes[gene_id] = ""
-                    if gene[0]["key"] == "Identifier":  # mesh
-                        # if gene[1][:4] == "MESH":
-                        gene_id = gene[1]
-                        mesh[gene_id] = ""
-                except KeyError:
+                    except KeyError:
+                        pass
+                else:
+                    print("wow, that are a lot of unexpected diseases")
                     pass
                 if len(gene) >= 2:
                     if not gene[0]:
-                        if gene_id[:4] == "MESH":
+                        if gene_id[:4] == "MESH" or gene_id[:4] == "OMIM":
                             if gene[1].strip() != "":
                                 mesh[gene_id.strip()] = gene[1].strip()
                         else:
