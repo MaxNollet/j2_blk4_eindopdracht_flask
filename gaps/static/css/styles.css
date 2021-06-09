@@ -47,11 +47,21 @@
   margin-right: 0.3rem;
 }
 
-#list_level_2 {
+.list_level_2 {
   margin-left: 1.5rem;
 }
 
 hr {
   margin: 10px 0;
+}
+
+.section_segment {
+  font-weight: 400;
+  color: var(--bs-gray-dark);
+  padding-top: 16px;
+}
+
+.list-group {
+  padding-bottom: 16px;
 }
 
