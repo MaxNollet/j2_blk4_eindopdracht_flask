@@ -103,8 +103,8 @@ class Article(Model):
 
     id = Column(Integer, primary_key=True, server_default=text("nextval('eindopdracht.article_id_seq'::regclass)"))
     title = Column(String(500), nullable=False)
-    pubmed_id = Column(Integer)
-    doi = Column(String(60), nullable=False, unique=True)
+    pubmed_id = Column(Integer, nullable=False, unique=True)
+    doi = Column(String(60))
     publication_date = Column(Date)
     abstract = Column(Text)
     journal_id = Column(ForeignKey('eindopdracht.journal.id'))
@@ -112,6 +112,7 @@ class Article(Model):
     journal = relationship('Journal')
     genes = relationship('Gene', secondary='eindopdracht.article_gene')
     diseases = relationship('Disease', secondary='eindopdracht.article_disease')
+    querys = relationship('Query', secondary='eindopdracht.query_article')
 
 
 @dataclass
@@ -180,9 +181,9 @@ t_query_gene = Table(
     schema='eindopdracht'
 )
 
-t_article_disease = Table(
-    'article_disease', metadata,
+t_query_article = Table(
+    'query_article', metadata,
+    Column('query_id', ForeignKey('eindopdracht.query.id'), primary_key=True, nullable=False),
     Column('article_id', ForeignKey('eindopdracht.article.id'), primary_key=True, nullable=False),
-    Column('disease_id', ForeignKey('eindopdracht.disease.id'), primary_key=True, nullable=False),
     schema='eindopdracht'
 )
