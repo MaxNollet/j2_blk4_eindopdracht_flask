@@ -4,7 +4,7 @@ from sqlalchemy import select
 
 from gaps.query_builder.table_field_describer import TableFieldDescriber
 from gaps.query_builder.table_join_describer import TableJoinDescriber
-from models import Query
+from gaps.models import Query
 
 
 class SelectStatementBuilder(TableFieldDescriber, TableJoinDescriber):

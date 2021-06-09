@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, jsonify
 
 from gaps.models import *
-from query_builder import SelectStatementBuilder
+from gaps.query_builder import SelectStatementBuilder
 
 blueprint_results = Blueprint("blueprint_results", __name__)
 
