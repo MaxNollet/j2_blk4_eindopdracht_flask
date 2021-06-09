@@ -131,7 +131,6 @@ class Gene(Model):
 
     genepanel_symbol = relationship('GenepanelSymbol')
     genepanels = relationship('Genepanel', secondary='eindopdracht.genepanel_gene')
-    querys = relationship('Query', secondary='eindopdracht.query_gene')
 
 
 @dataclass
