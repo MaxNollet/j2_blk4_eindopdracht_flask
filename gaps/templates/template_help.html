@@ -35,6 +35,7 @@
                             <li class="list-group-item" id="list_item_specify_gene_symbols_load"><span id="specify_gene_symbols_load"><strong>Load gene symbols from an existing file.</strong> This can be done by loading a text file from your computer. The structure of the file needs to be gene symbols separated on every line. The gene symbols cannot contain characters other than letters of the alphabet and numbers, genes containing other symbols (such as commas or slashes) will not be included.&nbsp;</span></li>
                         </ul>
                         <div class="alert alert-info" role="alert" id="specify_gene_symbols_important"><span id="text_specify_gene_symbols_important"><strong>Important</strong>&nbsp;While using the text field and loading a file simultaneously as input, the text field will be prioritized, and the loaded file input will not be used. Also make sure to not use any other symbols than alphabetic letters and numbers.</span></div>
+                        <div class="alert alert-warning" role="alert" id="specify_gene_symbols_warning"><span id="text_specify_gene_symbols_warning"><strong>Warning </strong>Specifying gene symbols is currently in active development and it is not guaranteed to work 100% accurately.</span></div>
                     </div>
                     <div class="col-lg-11" id="col_optional_options">
                         <h3 id="header_optional_options" class="section_segment">1.3. Optional options</h3>
@@ -48,9 +49,9 @@
                 <div class="row padding_below_section" id="row_update_genepanel">
                     <div class="col-lg-11" id="col-update_genepanel">
                         <h1 id="header_update_genepanel" class="section_header">2. About Update_genepanel</h1>
-                        <p id="paragraph_update_genepanel_intro">This page gives the possibility to update a gene panel into the database. This can be done by uploading a tab-separated file with a size limit of 10mb. By pressing the button “Upload &amp; update gene panel” the content of the file will be inserted into the database. After doing this, the possibility to exclude already existing genes found in the gene panel will be unlocked.</p>
+                        <p id="paragraph_update_genepanel_intro">This page gives the possibility to update a gene panel into the database. This can be done by uploading a tab-separated file with a size limit of 10 MB. By pressing the button '<em>Upload &amp; update gene panel'</em>&nbsp;the content of the file will be inserted into the database. After doing this, the possibility to exclude already existing genes found in the gene panel will be unlocked.</p>
                         <p id="paragraph_update_genepanel_file_structure">The structure of the genepanel needs to exist out of the following columns:</p>
-                        <ul id="list_update_genepanel_file_structure">
+                        <ul class="font-monospace" id="list_update_genepanel_file_structure">
                             <li id="list_update_genepanel_column_gene_id">GeneID_NCBI</li>
                             <li id="list_update_genepanel_column_symbol">Symbol_HGNC</li>
                             <li id="list_update_genepanel_column_aliases">Aliases</li>
@@ -59,24 +60,40 @@
                         </ul>
                     </div>
                 </div>
-                <div class="row" id="row-howtos">
+                <div class="row padding_below_section" id="row-howtos">
                     <div class="col-lg-11" id="col_howtos">
                         <h1 id="header_howtos" class="section_header">3. GAPS HowTos</h1>
                         <p id="paragraph_howtos_intro">Below are a few HowTos, short tutorials on how to do some of the stuff most users do when visiting this site.</p>
                     </div>
                     <div class="col-lg-11" id="col_howto_query_builder">
                         <h3 id="header_howto_query_builder" class="section_segment">3.1. How to use the query builder</h3><strong id="howto_query_builder_step_1">Step 1: Insert/build a query</strong>
-                        <p id="howto_query_builder_paragraph_1_step_1" class="howto_indent">If you own an existing query you want to use, it is possible to simply paste or type your query into the text field “Query”. If you are not in possession of an already existing query, it is possible to create one from scratch. Choose a subject from the “Field to search” dropdown menu and type in a search term into the “Search term” bar. You can insert every separate element by pressing the “Add” button or by pressing enter.</p>
-                        <p id="howto_query_builder_paragraph_2_step_1" class="howto_indent">After determining the first element of the query, choose “AND”, “OR” or “NOT” for every&nbsp;additional element from the “Type of addition” dropdown menu.</p><strong id="howto_query_builder_step_2">Step 2: Specify gene symbols</strong>
-                        <p id="howto_query_builder_paragraph_1_step_2" class="howto_indent">If you are aware of certain gene symbols you want to include/exclude into your results, there are two possibilities for inserting them. The first one is typing them into the text field “Gene symbols to include/exclude”, separated by commas. The other method is to upload a file into “Or, load gene symbols from a file” consisting of the gene symbols, separated on every line.</p>
+                        <p id="howto_query_builder_paragraph_1_step_1" class="howto_indent">If you own an existing query you want to use, it is possible to simply paste or type your query into the text field '<em>Query'</em>. If you are not in possession of an already existing query, it is possible to create one from scratch. Choose a subject from the '<em>Field to search'</em>&nbsp;dropdown menu and type in a search term into the '<em>Search term'</em>&nbsp;bar. You can insert every separate element by pressing the '<em>Add'</em>&nbsp;button or by pressing enter.</p>
+                        <p id="howto_query_builder_paragraph_2_step_1" class="howto_indent">After determining the first element of the query, choose '<em>AND'</em>, '<em>OR'</em>&nbsp;or '<em>NOT'</em>&nbsp;for every&nbsp;additional element from the '<em>Type of addition'</em>&nbsp;dropdown menu.</p><strong id="howto_query_builder_step_2">Step 2: Specify gene symbols</strong>
+                        <p id="howto_query_builder_paragraph_1_step_2" class="howto_indent">If you are aware of certain gene symbols you want to include/exclude into your results, there are two possibilities for inserting them. The first one is typing them into the text field '<em>Gene symbols to include/exclude'</em>, separated by commas. The other method is to upload a file into '<em>Or, load gene symbols from a file'</em>&nbsp;consisting of the gene symbols, separated on every line.</p>
                         <div class="alert alert-info" role="alert" id="howto_query_builder_info_step_2"><span><strong>Important</strong>&nbsp;While using the text field and loading a file simultaneously as input, the text field will be prioritized, and the loaded file input will not be used. Also make sure to not use any other symbols than alphabetic letters and numbers.</span></div><strong id="howto_query_builder_step_3">Step 3: Optional options (Publication date)</strong>
                         <p id="howto_query_builder_paragraph_1_step_3" class="howto_indent">Insert publication date to set a range for finding articles. This can be done by clicking on the bars and typing it in, or by clicking on the calendar clicking on the desired date. </p><strong id="howto_query_builder_step_4">Step 4: Find results</strong>
-                        <p id="howto_query_builder_paragraph_1_step_4" class="howto_indent">After determining all required search terms, you are ready to start the article search. This can be done by clicking on the “Search genes” button. If you want the results to be opened into a new tab, you can click the slider “Open search in new tab”. At last, if there is a mistake made while inserting the search terms, there is a possibility to clear everything. This is done by clicking the “Clear all input” button.</p>
+                        <p id="howto_query_builder_paragraph_1_step_4" class="howto_indent">After determining all required search terms, you are ready to start the article search. This can be done by clicking on the '<em>Search genes'</em>&nbsp;button. If you want the results to be opened into a new tab, you can click the slider '<em>Open search in new tab'</em>. At last, if there is a mistake made while inserting the search terms, there is a possibility to clear everything. This is done by clicking the “Clear all input” button.</p>
                     </div>
                     <div class="col-lg-11" id="col_howto_update_genepanel">
                         <h3 id="header_howto_update_genepanel" class="section_segment">3.2. How to update a genepanel</h3><strong id="howto_update_genepanel_step_1">Step 1: Dataset</strong>
-                        <p id="howto_update_genepanel_paragraph_1_step_1" class="howto_indent">The gene panel can be updated by uploading a gene panel that is in your possession. The gene panel updater only accepts TVS-files (Tap separated files), so make sure you are using the correct format. To load a file, click on the “Choose file” button. When chosen the correct file, click on “Upload &amp; update gene panel” to update it.</p><strong id="howto_update_genepanel_step_2">Step 2: Up to date data</strong>
+                        <p id="howto_update_genepanel_paragraph_1_step_1" class="howto_indent">The gene panel can be updated by uploading a gene panel that is in your possession. The gene panel updater only accepts TVS-files (Tap separated files), so make sure you are using the correct format. To load a file, click on the “Choose file” button. When chosen the correct file, click on '<em>Upload &amp; update gene panel'</em>&nbsp;to update it.</p><strong id="howto_update_genepanel_step_2">Step 2: Up to date data</strong>
                         <p id="howto_update_genepanel_paragraph_1_step_" class="howto_indent">It is important to keep your data up to date, so make sure you upload an updated gene panel regularly. Doing this will generate the most optimal and useful results.</p>
+                    </div>
+                </div>
+                <div class="row" id="row_about_gaps">
+                    <div class="col" id="col_about_gaps">
+                        <h2 id="header_about_gaps" class="section_header">4. About GAPS</h2>
+                        <p id="paragraph_about_gaps_development">This application is made in request by the Radboud UMC. An application was needed for updating various genes and disease characteristics into gene panels with aid of a database. This is because the gene panels are updated every three months by hand. It would be efficient to possess a user-friendly application that will take care of this task automatically.</p>
+                        <p id="paragraph_about_gaps_used_packages">This application is made by using:</p>
+                        <ul id="about_gaps_used_packages">
+                            <li id="about_gaps_package_python">Python 3.8</li>
+                            <li id="about_gaps_package_flask">Flask</li>
+                            <li id="about_gaps_package_sqlalchemy">SQLAlchemy Database</li>
+                            <li id="about_gaps_package_bootstrap">Bootstrap 5</li>
+                            <li id="about_gaps_package_pytest">PyTest</li>
+                            <li id="about_gaps_package_selenium">Selenium</li>
+                        </ul>
+                        <p id="about_gaps_developed_by">This application is developed by: Femke Nijman, Lean Schoonveld &amp; Max Nollet.</p>
                     </div>
                 </div>
             </div>
@@ -93,7 +110,7 @@
                         <ul class="list-unstyled list_level_2" id="childs_heading_howtos">
                             <li><a href="#header_howto_query_builder">3.1. How to use the query builder</a></li>
                             <li><a href="#header_howto_update_genepanel">3.2. How to update a genepanel</a></li>
-                        </ul>
+                        </ul><a href="#header_about_gaps">4. About GAPS</a>
                     </li>
                 </ul>
             </div>
