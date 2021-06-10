@@ -15,7 +15,7 @@
             </div>
             <div class="col-lg-9" id="col_text">
                 <p id="paragraph_welcome">Welcome to the Query_builder! Your quest for finding new genes starts here. Use the three simple steps below to specify what you are looking for and press '<em>Search genes</em>' to start searching for new genes.</p>
-                <p id="paragraph_help">For detailed information about every step in the query builder, and a step-by-step-guide, please refer to '<em>How to use the query builder</em>' in the help-section.</p>
+                <p id="paragraph_help">For detailed information about every step in the query builder, and a step-by-step-guide, please refer to '<a href="{{ url_for('blueprint_help.route_help') }}#header_howto_query_builder" target="_blank"><em>How to use the query builder</em></a>' in the help-section.</p>
             </div>
         </div>
         <form id="input_form" class="gy-5" method="post" enctype="multipart/form-data" action="{{ url_for('blueprint_query_builder.query_builder') }}">
