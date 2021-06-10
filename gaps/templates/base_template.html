@@ -3,20 +3,38 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <title>{% block title %}{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for("static", filename="bootstrap/css/bootstrap.min.css") }}">
-    <link rel="stylesheet" href="{{ url_for("static", filename="css/styles.css") }}">
+    <link rel="stylesheet"
+          href="{{ url_for("static", filename="bootstrap/css/bootstrap.min.css") }}">
+    <link rel="stylesheet"
+          href="{{ url_for("static", filename="css/styles.css") }}">
+    <link rel="shortcut icon"
+          href="{{ url_for('static', filename='mining.ico') }}">
     {% block head %}{% endblock %}
 </head>
 
 <body id="body">
-    <header id="header">
-        <nav class="navbar navbar-dark navbar-expand-md" id="navigation_top">
-            <div class="container-fluid"><a class="navbar-brand" id="app_name" href="{{ url_for('blueprint_homepage.homepage') }}">Gene App Scraper</a><button data-bs-toggle="collapse" class="navbar-toggler navbar-dark" data-bs-target="#navigation_items_collapse" id="hamburger_button"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon" id="hamburger_icon"></span></button>
-                <div class="collapse navbar-collapse" id="navigation_items_collapse">
-                    <ul class="navbar-nav" id="navigation_items">
-                        <li class="nav-item" id="navigation_query"><a class="nav-link {% if active_nav and active_nav == 'query' %}active{% endif %}" id="link_query" href="{{ url_for('blueprint_query_builder.query_builder') }}">Query_builder</a></li>
+<header id="header">
+    <nav class="navbar navbar-dark navbar-expand-md" id="navigation_top">
+        <div class="container-fluid"><a class="navbar-brand" id="app_name"
+                                        href="{{ url_for('blueprint_homepage.homepage') }}">Gene
+            App Scraper</a>
+            <button data-bs-toggle="collapse"
+                    class="navbar-toggler navbar-dark"
+                    data-bs-target="#navigation_items_collapse"
+                    id="hamburger_button"><span class="visually-hidden">Toggle navigation</span><span
+                    class="navbar-toggler-icon" id="hamburger_icon"></span>
+            </button>
+            <div class="collapse navbar-collapse"
+                 id="navigation_items_collapse">
+                <ul class="navbar-nav" id="navigation_items">
+                    <li class="nav-item" id="navigation_query"><a
+                            class="nav-link {% if active_nav and active_nav == 'query' %}active{% endif %}"
+                            id="link_query"
+                            href="{{ url_for('blueprint_query_builder.query_builder') }}">Query_builder</a>
+                    </li>
                         <li class="nav-item" id="navigation_history" hidden=""><a class="nav-link {% if active_nav and active_nav == 'history' %}active{% endif %}" id="link_history" href="#">Retrieve history</a></li>
                         <li class="nav-item" id="navigation_genepanel"><a class="nav-link {% if active_nav and active_nav == 'genepanel' %}active{% endif %}" id="link_genepanel" href="{{ url_for('blueprint_update_genepanel.update_genepanel') }}">Update_genepanel</a></li>
                         <li class="nav-item" id="navigation_help"><a class="nav-link {% if active_nav and active_nav == 'help' %}active{% endif %}" id="link_help" href="{{ url_for('blueprint_help.route_help') }}">Help</a></li>

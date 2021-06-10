@@ -65,7 +65,7 @@ class SelectStatementBuilder(TableFieldDescriber, TableJoinDescriber):
         """
         if table_name not in self.__joined_tables and table_name in self.table_joins:
             self.__joined_tables.add(table_name)
-            print(table_name)
+            # print(table_name)  # eg gene, article_gene, disease, etc.
             join_table = self.table_joins.get(table_name)
             required_joins: list = join_table.get("required")
             if required_joins:

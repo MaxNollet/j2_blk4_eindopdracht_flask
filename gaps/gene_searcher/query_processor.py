@@ -13,34 +13,39 @@ Entrez.email = environ.get("EMAIL_ENTREZ")
 Entrez.email = "mjh.nollet@student.han.nl"
 
 
-def main():
-    # ssl._create_default_https_context = ssl._create_unverified_context
-
-    query = "((variant [tiab] OR variants [tiab] OR mutation [tiab] OR mutations [tiab] OR substitutions [tiab] OR substitution [tiab] ) \
-    AND (\"loss of function\" [tiab] OR \"loss-of-function\" [tiab] OR \"haplo-insufficiency\" [tiab] OR haploinsufficiency [tiab] \
-    OR \"bi-allelic\" [tiab] OR \"biallelic\" [tiab] OR recessive [tiab] OR homozygous [tiab] OR heterozygous [tiab] OR \"de novo\" \
-    [tiab] OR dominant [tiab] OR \" X-linked\" [tiab]) AND (\"intellectual\" [tiab] OR \"mental retardation\" [tiab] OR \"cognitive\" \
-    [tiab] OR \"developmental\" [tiab] OR \"neurodevelopmental\" [tiab]) AND “last 2 years”[dp] AND KDM3B)"
-
-    print(Entrez.email)
-    query = "((\"2021\"[Date - Publication] : \"3000\"[Date - Publication])) AND (CDH8[Text Word])"
-    # ((Loss of sight[ALL]) AND (Blindness[ALL])) AND (Loss of hearing[ALL])
+# def main():
+#     # ssl._create_default_https_context = ssl._create_unverified_context
+#
+#     query = "((variant [tiab] OR variants [tiab] OR mutation [tiab] OR mutations [tiab] OR substitutions [tiab] OR substitution [tiab] ) \
+#     AND (\"loss of function\" [tiab] OR \"loss-of-function\" [tiab] OR \"haplo-insufficiency\" [tiab] OR haploinsufficiency [tiab] \
+#     OR \"bi-allelic\" [tiab] OR \"biallelic\" [tiab] OR recessive [tiab] OR homozygous [tiab] OR heterozygous [tiab] OR \"de novo\" \
+#     [tiab] OR dominant [tiab] OR \" X-linked\" [tiab]) AND (\"intellectual\" [tiab] OR \"mental retardation\" [tiab] OR \"cognitive\" \
+#     [tiab] OR \"developmental\" [tiab] OR \"neurodevelopmental\" [tiab]) AND “last 2 years”[dp] AND KDM3B)"
+#
+#     print(Entrez.email)
+#     query = "((\"2021\"[Date - Publication] : \"3000\"[Date - Publication])) AND (CDH8[Text Word])"
+#     # ((Loss of sight[ALL]) AND (Blindness[ALL])) AND (Loss of hearing[ALL])
 
 
 class GeneSearcher:
     def __init__(self):
         self.search_results = None
-        # creates a new uuid for each new search
+
+        # disabled
+        # =-=-=-=-=-=
         self.specify_gene = None  # true or false to use it or not
         self.include_exclude = None  # true or false
         self.specific_gene_symbols = None  # list to include or exclude
+        # =-=-=-=-=-=
+        # creates a new uuid for each new search
         self.uuid_query = uuid.uuid4()
 
         self._cached_values: Dict[str, set] = dict()
+        # checks if a gene is already in the cache, but still
+        # inserts in the between tables
         tables = ["gene", "disease"]
         for table in tables:
             self._cached_values[table] = set()
-        # self.uu
         self.db = InsertDB()
 
     def fetch_results(self, parameters: dict) -> int:
@@ -51,16 +56,13 @@ class GeneSearcher:
 
         :param parameters Parameters entered by the user (dict).
         :return Count of matching articles (int).
-        """
+        """  # query from querybuilder
         query = parameters.get("input_generated_query")
-
         min_date: datetime = parameters.get("input_date_after")
         max_date: datetime = parameters.get("input_date_before")
         self.query_validator(query)
         self.db.query_list.append({"id": str(self.uuid_query), "query": query})
         # options_id moet nog verwerkt worden TODO
-        # UUID IS WEER een str?
-        # exact deze error https://stackoverflow.com/questions/47429929/attributeerror-uuid-object-has-no-attribute-replace-when-using-backend-agno
         if any(date is not None for date in (min_date, max_date)):
             if min_date is None:  # if there isn't a min date
                 raise NoDateAfterSpecified()
@@ -159,17 +161,12 @@ class GeneSearcher:
                     "ArticleTitle")
                 doi_element = record.get("MedlineCitation").get("Article").get(
                     "ELocationID")
-                # [StringElement('21479269', attributes={'IdType': 'pubmed'}), StringElement('10.1371/journal.pone.0015669', attributes={'IdType': 'doi'}), StringElement('PMC3066203', attributes={'IdType': 'pmc'})]
-
+                # [StringElement('21479269', attributes={'IdType':
+                # 'pubmed'}), StringElement('10.1371/journal.
+                # pone.0015669', attributes={'IdType': 'doi'}),
+                # StringElement('PMC3066203', attributes={'IdType':
+                # 'pmc'})]
                 if not doi_element:  # if there isn't a doi number
-                    # doi_test = record.get("PubmedData").get("ArticleIdList")
-                    # print(list(doi_test))
-                    # print(list(doi_test)[0])
-                    # print(doi_test[-1][0])
-                    # print(doi_test.index("attributes"))
-                    # print(doi_test[-1])
-                    # doi = str(uuid.uuid4())
-                    # doi = self.uuid_fix(uuid.uuid4())
                     doi = str(uuid.uuid4())
                     # doi = record.get("PubmedData").get("ArticleIdList")[-1]
                     # if "/" not in doi and "." not in doi:
@@ -202,14 +199,6 @@ class GeneSearcher:
         self.pubtator_output()
 
     @staticmethod
-    def uuid_fix(doi):
-        if doi is None:
-            return doi
-        else:
-            return uuid.UUID(str(doi))
-
-
-    @staticmethod
     def extract_date(record: dict):
         """A method which safely extracts a publication date
            from an article, in the correct format for the database.
@@ -218,7 +207,8 @@ class GeneSearcher:
         """
         pub_date = record.get("MedlineCitation").get("Article") \
             .get("Journal").get("JournalIssue").get("PubDate")
-        # DictElement({'Volume': '105', 'Issue': '1-2', 'PubDate': {'MedlineDate': '1999 Jul-Aug'}}, attributes={'CitedMedium': 'Print'})
+        # DictElement({'Volume': '105', 'Issue': '1-2', 'PubDate': {
+        # 'MedlineDate': '1999 Jul-Aug'}}, attributes={'CitedMedium': 'Print'})
         if pub_date is not None:
             year: str = pub_date.get("Year")
             month: str = pub_date.get("Month")
@@ -330,12 +320,12 @@ class GeneSearcher:
                         self._extract_disease(id_disease, disease, article)
                 except KeyError as e:
                     print("An article had no genes or diseases ->", e)
-            print(self.db.genes_list)
-            print(self.db.article_gene)
         else:
             print("Request not succesful.")
 
     # def _check_include_exclude(self, id_gene, gene, article):
+    #   # developed to include and exlude the specify genes
+    #   # but gives problems for the db with the query_article table
     #     if self.include_exclude:  # true include de genen
     #         print(self.specific_gene_symbols)
     #         if gene in self.specific_gene_symbols:
@@ -429,6 +419,11 @@ class GeneSearcher:
 
     @staticmethod
     def article_id(documents):
+        """
+        Find al articles in the output from pubtator
+        :param documents:
+        :return:
+        """
         for document in documents.findall("id"):
             return document.text
 

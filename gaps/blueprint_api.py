@@ -16,6 +16,14 @@ blueprint_api = Blueprint("blueprint_api", __name__)
 
 
 def genes_box(searcher, valid_parameters):
+    """
+    Checks to include/ exlude genes symbols, and creates a set
+    with the genes to include/ exlude, if a gene is in a set, the gene
+    will be or won't be added to the database later in query_processor.py
+    :param searcher: query_proccessor link to fill init variables
+    :param valid_parameters: parameters with input from the user
+    :return:
+    """
     if valid_parameters["radio_include_symbols"] == "true":
         searcher.include_exclude = True
     else:
@@ -50,8 +58,8 @@ def query_builder_submit():
             secure_filenames[filename].save(file_location)
         searcher = GeneSearcher()
         # check dit met true of false
-
-        # for the include / exclude
+        # for the include / exclude, but currently disabled due to
+        # issues with the database
         # if valid_parameters.get("input_symbols"):
         #     searcher.specify_gene = True
         #     genes_box(searcher, valid_parameters)

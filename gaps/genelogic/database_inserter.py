@@ -62,10 +62,11 @@ class DatabaseInserter(StatementGroups):
         self.ids["query_id"] = self.insert_values("query",
                                                   search_results.query_list,
                                                   True)
-        if search_results.query_options_list:
-            self.insert_values("option", search_results.query_options_list)
+        # if search_results.query_options_list:
+        #     self.insert_values("option", search_results.query_options_list)
         # Insert journals.
-        self.ids["id"] = self.insert_values("journal", search_results.journal_list, True)
+        self.ids["id"] = self.insert_values("journal",
+                                            search_results.journal_list, True)
         for article in search_results.article_list:
             og = article["journal_id"]
             article["journal_id"] = self.ids["id"][og]
