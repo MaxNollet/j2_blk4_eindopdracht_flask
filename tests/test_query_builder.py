@@ -21,7 +21,7 @@ webDriver = Union[
 ]
 
 
-class ElementSelector:
+class ElementSelectorQueryBuilder:
     """A class that groups methods which select various
        elements on the query_builder-page.
 
@@ -136,9 +136,9 @@ class HelperFunctions:
         :param terms Terms to search (tuple).
         :param additions Types of additions to use (tuple).
         """
-        input_field = Select(ElementSelector.select_input_field(selenium))
-        input_search_term = ElementSelector.select_input_search_term(selenium)
-        input_add_type = Select(ElementSelector.select_input_add_type(selenium))
+        input_field = Select(ElementSelectorQueryBuilder.select_input_field(selenium))
+        input_search_term = ElementSelectorQueryBuilder.select_input_search_term(selenium)
+        input_add_type = Select(ElementSelectorQueryBuilder.select_input_add_type(selenium))
         input_field.select_by_value(fields[0])
         input_search_term.send_keys(terms[0], Keys.ENTER)
         if len(fields) > 1 and len(terms) > 1 and additions is not None:
@@ -148,7 +148,7 @@ class HelperFunctions:
                 input_search_term.send_keys(term, Keys.ENTER)
 
 
-class TestDefaultsQueryGenerator(ElementSelector):
+class TestDefaultsQueryGenerator(ElementSelectorQueryBuilder):
     """A class which groups tests that check the defaults
        for the query builder in step 1 in the interface.
     """
@@ -247,7 +247,7 @@ class TestDefaultsQueryGenerator(ElementSelector):
         assert self.select_input_generated_query(selenium).get_attribute("value") == ""
 
 
-class TestDefaultsGeneSymbols(ElementSelector):
+class TestDefaultsGeneSymbols(ElementSelectorQueryBuilder):
     """A class which groups tests that check the defaults
        for the gene symbols section in step 2 in the interface.
     """
@@ -318,7 +318,7 @@ class TestDefaultsGeneSymbols(ElementSelector):
         assert self.select_button_clear_file(selenium).text == "Clear"
 
 
-class TestDefaultsOptionalOptions(ElementSelector):
+class TestDefaultsOptionalOptions(ElementSelectorQueryBuilder):
     """A class which groups tests that check the defaults
        for the optional options in step 3 in the interface.
     """
@@ -379,7 +379,7 @@ class TestDefaultsOptionalOptions(ElementSelector):
         assert self.select_button_clear(selenium).get_attribute("type") == "reset"
 
 
-class TestQueryBuilder(ElementSelector, HelperFunctions):
+class TestQueryBuilder(ElementSelectorQueryBuilder, HelperFunctions):
     """A class which groups tests related to the query
        builder. These tests are in place to ensure the
        query builder keeps working as intended.
@@ -484,7 +484,7 @@ class TestQueryBuilder(ElementSelector, HelperFunctions):
         assert input_generated_query.get_attribute("value") == check
 
 
-class TestJavaScript(ElementSelector, HelperFunctions):
+class TestJavaScript(ElementSelectorQueryBuilder, HelperFunctions):
     """A class which groups tests related to JavaScript-
        functions. These tests help ensure all functions
        related to JavaScript are working as intended.
@@ -536,7 +536,7 @@ class TestJavaScript(ElementSelector, HelperFunctions):
         assert input_form.get_attribute("target") == ""
 
 
-class TestEntireForm(ElementSelector, HelperFunctions):
+class TestEntireForm(ElementSelectorQueryBuilder, HelperFunctions):
     """A class which groups methods for testing several
        elements in the form.
     """
