@@ -1,13 +1,6 @@
-import ntpath
-from os import path
 from typing import Union
 
 from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions
-from selenium.webdriver.support.ui import WebDriverWait
-
-from tests.test_query_builder import HelperFunctions
 
 webDriver = Union[
     webdriver.Firefox,
@@ -87,7 +80,6 @@ class TestDefaultsUpdateGenepanel(ElementSelectorUpdateGenepanel):
         button_type = button_update_genepanel.get_attribute("type")
         assert button_type == "submit"
 
-
 # class TestJavaScript(ElementSelectorUpdateGenepanel, HelperFunctions):
 #     """A class that groups tests which are related to
 #        JavaScript-based features.
@@ -100,7 +92,6 @@ class TestDefaultsUpdateGenepanel(ElementSelectorUpdateGenepanel):
 #
 
 
-
 # class TestUpdateGenepanel(ElementSelectorUpdateGenepanel):
 #     """A class which groups tests that check if a genepanel
 #        can be updated.
@@ -110,7 +101,6 @@ class TestDefaultsUpdateGenepanel(ElementSelectorUpdateGenepanel):
 #         """Test for uploading files"""
 #         selenium.get(self.base_url)
 #
-
 
 
 # def test_clear_file(selenium: webDriver):
