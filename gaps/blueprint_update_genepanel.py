@@ -14,7 +14,7 @@ def update_genepanel():
     :return Rendered template of 'template_update_genepanel.html'.
     """
     try:
-        genes = Gene.query.count()
+        genes = Gene.query.where(Gene.in_genepanel == True).count()
         aliases = Alias.query.count()
         genepanels = Genepanel.query.count()
         return render_template("template_update_genepanel.html",
